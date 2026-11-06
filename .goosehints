@@ -1,0 +1,15 @@
+# Technical Specifications: realkevbase.com
+
+## Stack
+- Backend: C# / .NET 10 Minimal APIs, Stripe SDK.
+- Frontend: React + Material UI (MUI) SPA.
+
+## Backend Rules (RealKevbase.Api)
+- Organize endpoints logically in `Endpoints/` using route groups.
+- Product models must distinguish `FulfillmentType.DigitalPdf` from `FulfillmentType.PhysicalMerch`.
+- Process Stripe payment webhooks asynchronously; do not block HTTP responses.
+- PDF download links must use Azure Blob Storage SAS presigned URLs valid for 24 hours.
+
+## Frontend Rules (realkevbase-web)
+- Use Material UI components (`Grid`, `Card`, `Drawer`) for the layout.
+- Cart state must handle mixed orders (PDFs + Merch) seamlessly.

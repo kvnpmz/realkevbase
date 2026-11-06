@@ -1,0 +1,27 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Secrets and local configuration overrides
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+
+# Editor / OS
+.vs/
+.vscode/
+.idea/
+.DS_Store

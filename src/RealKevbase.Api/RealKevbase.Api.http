@@ -1,0 +1,6 @@
+@RealKevbase.Api_HostAddress = http://localhost:5283
+
+GET {{RealKevbase.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

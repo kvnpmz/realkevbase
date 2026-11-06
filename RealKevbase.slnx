@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RealKevbase.Api/RealKevbase.Api.csproj" />
+    <Project Path="src/RealKevbase.Core/RealKevbase.Core.csproj" />
+  </Folder>
+</Solution>
