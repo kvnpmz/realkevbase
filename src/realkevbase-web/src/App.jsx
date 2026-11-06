@@ -57,7 +57,7 @@ function App() {
                     'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.14), transparent 62%), radial-gradient(45% 45% at 8% 18%, rgba(124, 58, 237, 0.12), transparent 60%)',
                 }}
               />
-              <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 6, md: 10 } }}>
+              <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 5 } }}>
                 <Stack spacing={3} sx={{ maxWidth: 720 }}>
                   <Typography variant="overline" color="secondary.main">
                     Digital PDFs + physical merch
@@ -104,7 +104,11 @@ function App() {
             <Box
               component="section"
               id="how-it-works"
-              sx={{ py: { xs: 7, md: 10 }, bgcolor: '#F5F2EA' }}
+              sx={{
+                py: { xs: 7, md: 10 },
+                bgcolor: '#F5F2EA',
+                scrollMarginTop: { xs: '72px', md: '88px' },
+              }}
             >
               <Container maxWidth="lg">
                 <Stack spacing={1} sx={{ mb: { xs: 4, md: 5 }, maxWidth: 560 }}>

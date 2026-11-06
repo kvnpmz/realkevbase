@@ -60,7 +60,12 @@ export function Navbar() {
             spacing={1.25}
             component="a"
             href="#top"
-            sx={{ alignItems: 'center', textDecoration: 'none', color: 'inherit' }}
+            sx={{
+              alignItems: 'center',
+              flexShrink: 0,
+              textDecoration: 'none',
+              color: 'inherit',
+            }}
           >
             <Box
               aria-hidden="true"
@@ -79,7 +84,11 @@ export function Navbar() {
             >
               RK
             </Box>
-            <Typography variant="h6" component="span" sx={{ fontWeight: 800 }}>
+            <Typography
+              variant="h6"
+              component="span"
+              sx={{ fontWeight: 800, fontSize: { xs: '1.05rem', sm: '1.25rem' }, whiteSpace: 'nowrap' }}
+            >
               RealKevbase
             </Typography>
           </Stack>

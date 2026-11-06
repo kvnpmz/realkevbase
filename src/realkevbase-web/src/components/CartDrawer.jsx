@@ -78,7 +78,17 @@ function CartLine({ item }) {
 
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between' }}>
-            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 700,
+                pr: 1,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
               {item.name}
             </Typography>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
@@ -163,7 +173,12 @@ export function CartDrawer() {
       aria-labelledby="cart-drawer-title"
       slotProps={{
         paper: {
-          sx: { width: { xs: '100%', sm: 420 }, display: 'flex', flexDirection: 'column' },
+          sx: {
+            width: { xs: '100%', sm: 420 },
+            height: '100dvh',
+            display: 'flex',
+            flexDirection: 'column',
+          },
         },
       }}
     >
@@ -198,7 +213,7 @@ export function CartDrawer() {
             sx={{
               textAlign: 'center',
               height: '100%',
-              minHeight: 320,
+              minHeight: { xs: 260, sm: 320 },
               color: 'text.secondary',
               alignItems: 'center',
               justifyContent: 'center',

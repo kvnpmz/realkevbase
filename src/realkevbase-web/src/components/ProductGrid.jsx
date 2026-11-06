@@ -143,7 +143,16 @@ function ProductCard({ product }) {
 
         <Divider sx={{ my: 0.5 }} />
 
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            rowGap: 1.5,
+          }}
+        >
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
               {formatMoney(product.unitPrice)}
@@ -190,7 +199,11 @@ export function ProductGrid({ products = [] }) {
   }
 
   return (
-    <Box component="section" id="products" sx={{ py: { xs: 7, md: 10 } }}>
+    <Box
+      component="section"
+      id="products"
+      sx={{ py: { xs: 7, md: 10 }, scrollMarginTop: { xs: '72px', md: '88px' } }}
+    >
       <Container maxWidth="lg">
         <Stack
           direction={{ xs: 'column', md: 'row' }}
@@ -219,6 +232,7 @@ export function ProductGrid({ products = [] }) {
             aria-label="Filter products by fulfillment type"
             size="small"
             sx={{
+              alignSelf: { xs: 'stretch', md: 'auto' },
               bgcolor: 'background.paper',
               borderRadius: 999,
               p: 0.5,
@@ -227,10 +241,13 @@ export function ProductGrid({ products = [] }) {
               '& .MuiToggleButton-root': {
                 border: 0,
                 borderRadius: '999px !important',
-                px: 2,
+                flex: { xs: 1, md: 'initial' },
+                px: { xs: 1.25, md: 2 },
                 py: 0.75,
+                fontSize: { xs: 13, md: 14 },
                 fontWeight: 600,
                 textTransform: 'none',
+                whiteSpace: 'nowrap',
               },
             }}
           >

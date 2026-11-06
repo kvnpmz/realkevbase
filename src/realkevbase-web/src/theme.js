@@ -41,6 +41,11 @@ export const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          scrollBehavior: 'smooth',
+          '@media (prefers-reduced-motion: reduce)': { scrollBehavior: 'auto' },
+        },
+        '#root': { minHeight: '100vh' },
         body: {
           backgroundColor: '#FBFAF7',
           color: ink,
