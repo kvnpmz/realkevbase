@@ -11,6 +11,13 @@ builder.Services.AddOpenApi();
 // "AzureStorage" section or environment variables. No secrets are stored in source.
 builder.Services.AddAzureBlobPdfStorage(builder.Configuration);
 
+// Product catalog used to validate carts and resolve authoritative prices server-side.
+builder.Services.AddSingleton<IProductCatalog, InMemoryProductCatalog>();
+
+// Stripe Checkout sessions. The secret key comes from configuration, environment
+// variables or user secrets; payment fulfillment happens in the async webhook.
+builder.Services.AddStripeCheckout(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

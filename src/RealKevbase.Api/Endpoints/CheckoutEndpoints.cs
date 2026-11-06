@@ -1,5 +1,9 @@
+using Microsoft.Extensions.Logging;
+
 using RealKevbase.Core.Models;
 using RealKevbase.Core.Services;
+
+using Stripe;
 
 namespace RealKevbase.Api.Endpoints;
 
@@ -8,27 +12,6 @@ namespace RealKevbase.Api.Endpoints;
 /// </summary>
 public static class CheckoutEndpoints
 {
-    // Placeholder catalog so the download endpoint is runnable today. Replace with the
-    // persistence-backed product repository once the catalog layer exists.
-    private static readonly IReadOnlyDictionary<Guid, Product> Catalog = new Dictionary<Guid, Product>
-    {
-        [Guid.Parse("6f1b6a9e-2f4c-4f1e-9a1d-0c2b3e4d5f60")] = new Product
-        {
-            Id = Guid.Parse("6f1b6a9e-2f4c-4f1e-9a1d-0c2b3e4d5f60"),
-            Name = "RealKevbase Field Guide (PDF)",
-            Price = 19.99m,
-            Fulfillment = FulfillmentType.DigitalPdf,
-            PdfBlobName = "guides/field-guide.pdf"
-        },
-        [Guid.Parse("9c2d4e6f-8a0b-4c1d-9e3f-5a7b9c1d3e5f")] = new Product
-        {
-            Id = Guid.Parse("9c2d4e6f-8a0b-4c1d-9e3f-5a7b9c1d3e5f"),
-            Name = "RealKevbase Logo Tee",
-            Price = 24.00m,
-            Fulfillment = FulfillmentType.PhysicalMerch
-        }
-    };
-
     /// <summary>
     /// Maps the checkout route group onto the application.
     /// </summary>
@@ -41,8 +24,16 @@ public static class CheckoutEndpoints
 
         var group = endpoints.MapGroup("/api/checkout").WithTags("Checkout");
 
+        group.MapPost("/sessions", CreateCheckoutSessionAsync)
+            .WithName("CreateCheckoutSession")
+            .WithSummary("Creates a Stripe Checkout Session for a cart.")
+            .Produces<CheckoutSessionResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status502BadGateway);
+
         group.MapPost("/downloads/pdf", CreatePdfDownloadLinkAsync)
             .WithName("CreatePdfDownloadLink")
+            .WithSummary("Creates a 24-hour pre-signed download link for a PDF product.")
             .Produces<PdfDownloadLinkResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -50,12 +41,108 @@ public static class CheckoutEndpoints
         return endpoints;
     }
 
+    /// <summary>
+    /// Validates the requested cart against the catalog and creates a Stripe Checkout
+    /// Session covering both digital PDFs and physical merchandise.
+    /// </summary>
+    /// <remarks>
+    /// Prices are always read from <see cref="IProductCatalog"/>; the request only carries
+    /// product ids and quantities. Payment confirmation and PDF fulfillment are handled by
+    /// the Stripe webhook asynchronously, never in this request.
+    /// </remarks>
+    private static async Task<IResult> CreateCheckoutSessionAsync(
+        CheckoutSessionRequest request,
+        IProductCatalog catalog,
+        IStripeCheckoutService stripe,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        if (request.Items is not { Count: > 0 })
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Empty cart",
+                detail: "At least one item is required to start checkout.");
+        }
+
+        // Aggregate duplicate lines so a client cannot split quantities to bypass checks.
+        var requestedQuantities = new Dictionary<Guid, long>();
+        foreach (var item in request.Items)
+        {
+            if (item.Quantity < 1)
+            {
+                return TypedResults.Problem(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Invalid quantity",
+                    detail: $"Quantity for product '{item.ProductId}' must be at least 1.");
+            }
+
+            requestedQuantities[item.ProductId] =
+                requestedQuantities.GetValueOrDefault(item.ProductId) + item.Quantity;
+        }
+
+        var lines = new List<CheckoutLine>(requestedQuantities.Count);
+        var unknownProductIds = new List<Guid>();
+
+        foreach (var (productId, quantity) in requestedQuantities)
+        {
+            if (catalog.TryGetProduct(productId, out var product))
+            {
+                lines.Add(new CheckoutLine(product, quantity));
+            }
+            else
+            {
+                unknownProductIds.Add(productId);
+            }
+        }
+
+        if (unknownProductIds.Count > 0)
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Unknown products",
+                detail: $"These products are not in the catalog: {string.Join(", ", unknownProductIds)}.");
+        }
+
+        try
+        {
+            var session = await stripe.CreateSessionAsync(lines, cancellationToken);
+            return TypedResults.Ok(new CheckoutSessionResponse(session.SessionId, session.Url));
+        }
+        catch (StripeException exception)
+        {
+            loggerFactory
+                .CreateLogger(typeof(CheckoutEndpoints))
+                .LogError(exception, "Stripe rejected checkout session creation (code: {StripeCode}).", exception.StripeError?.Code);
+
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status502BadGateway,
+                title: "Checkout unavailable",
+                detail: "We could not start checkout right now. Please try again in a moment.");
+        }
+        catch (HttpRequestException exception)
+        {
+            loggerFactory
+                .CreateLogger(typeof(CheckoutEndpoints))
+                .LogError(exception, "Could not reach Stripe to create a checkout session.");
+
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status502BadGateway,
+                title: "Checkout unavailable",
+                detail: "We could not start checkout right now. Please try again in a moment.");
+        }
+    }
+
+    /// <summary>
+    /// Creates a read-only, 24-hour pre-signed download link for a digital product.
+    /// </summary>
     private static async Task<IResult> CreatePdfDownloadLinkAsync(
         PdfDownloadRequest request,
+        IProductCatalog catalog,
         IPdfStorageService pdfStorage,
         CancellationToken cancellationToken)
     {
-        if (!Catalog.TryGetValue(request.ProductId, out var product))
+        if (!catalog.TryGetProduct(request.ProductId, out var product))
         {
             return TypedResults.Problem(
                 statusCode: StatusCodes.Status404NotFound,
@@ -79,6 +166,26 @@ public static class CheckoutEndpoints
             DateTimeOffset.UtcNow.Add(pdfStorage.LinkLifetime)));
     }
 }
+
+/// <summary>
+/// Request body for creating a Stripe Checkout Session.
+/// </summary>
+/// <param name="Items">Cart lines; only product ids and quantities are accepted.</param>
+public sealed record CheckoutSessionRequest(IReadOnlyList<CheckoutSessionItem>? Items);
+
+/// <summary>
+/// A single requested cart line.
+/// </summary>
+/// <param name="ProductId">Identifier of a product in the catalog.</param>
+/// <param name="Quantity">Positive quantity ordered.</param>
+public sealed record CheckoutSessionItem(Guid ProductId, int Quantity);
+
+/// <summary>
+/// Stripe Checkout Session returned to the storefront.
+/// </summary>
+/// <param name="SessionId">Stripe Checkout Session identifier.</param>
+/// <param name="Url">Stripe-hosted checkout URL to redirect the buyer to.</param>
+public sealed record CheckoutSessionResponse(string SessionId, string? Url);
 
 /// <summary>
 /// Request body for creating a PDF download link.
