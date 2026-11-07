@@ -105,6 +105,17 @@ public sealed class AzureBlobPdfStorageService : IPdfStorageService
         ArgumentException.ThrowIfNullOrWhiteSpace(blobName);
 
         var blob = _containerClient.GetBlobClient(blobName);
+
+        // A signed URL is valid even when the blob is missing, which hands the buyer a link
+        // that 404s. Fail loudly instead: a missing blob is an operational mistake (wrong
+        // container, or an upload that never happened), not something the buyer can resolve.
+        if (!await blob.ExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException(
+                $"Blob '{blobName}' does not exist in container '{_containerClient.Name}'. " +
+                "Upload the product PDF before selling it.");
+        }
+
         var startsOn = DateTimeOffset.UtcNow.Subtract(SasClockSkew);
         var expiresOn = DateTimeOffset.UtcNow.Add(LinkLifetime);
 

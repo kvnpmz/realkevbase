@@ -47,6 +47,14 @@ public static class CheckoutEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
+        group.MapGet("/sessions/{sessionId}/downloads", GetSessionDownloadsAsync)
+            .WithName("GetSessionDownloads")
+            .WithSummary("Lists download links for a paid session, for the checkout success page.")
+            .Produces<SessionDownloadsResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status502BadGateway);
+
         group.MapPost("/downloads/pdf", CreatePdfDownloadLinkAsync)
             .WithName("CreatePdfDownloadLink")
             .WithSummary("Creates a 24-hour pre-signed download link for a PDF product.")
@@ -256,6 +264,76 @@ public static class CheckoutEndpoints
     }
 
     /// <summary>
+    /// Returns the download links for a paid Checkout Session so the success page can hand
+    /// the files to the buyer.
+    /// </summary>
+    /// <remarks>
+    /// The session id is an unguessable capability that Stripe put in the success redirect,
+    /// and payment is re-verified against Stripe on every call, so a client cannot obtain
+    /// links by guessing an id or by editing the redirect. Links are freshly signed and
+    /// expire 24 hours after issue.
+    /// </remarks>
+    /// <param name="sessionId">Stripe Checkout Session id from the success redirect.</param>
+    /// <param name="fulfillment">Issuer shared with the background webhook worker.</param>
+    /// <param name="loggerFactory">Factory used to report Stripe failures.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    private static async Task<IResult> GetSessionDownloadsAsync(
+        string sessionId,
+        IDigitalFulfillmentService fulfillment,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId))
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Missing session",
+                detail: "A Checkout Session id is required.");
+        }
+
+        try
+        {
+            var delivery = await fulfillment.IssueAsync(sessionId, cancellationToken);
+            if (delivery is null)
+            {
+                // Delayed payment methods: the redirect can arrive before the money does.
+                return TypedResults.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Payment not confirmed",
+                    detail: "This order has not been paid yet. Downloads become available once payment settles.");
+            }
+
+            var downloads = delivery.Downloads
+                .Select(download => new SessionDownloadResponse(
+                    download.Product.Id,
+                    download.Product.Name,
+                    download.Url,
+                    download.ExpiresAt))
+                .ToArray();
+
+            return TypedResults.Ok(new SessionDownloadsResponse(delivery.SessionId, downloads));
+        }
+        catch (StripeException exception) when (exception.StripeError?.Code == "resource_missing")
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Session not found",
+                detail: "No checkout session matches that id.");
+        }
+        catch (StripeException exception)
+        {
+            loggerFactory
+                .CreateLogger(typeof(CheckoutEndpoints))
+                .LogError(exception, "Could not read Stripe session {SessionId} to issue downloads.", sessionId);
+
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status502BadGateway,
+                title: "Downloads unavailable",
+                detail: "We could not prepare your downloads right now. Please try again in a moment.");
+        }
+    }
+
+    /// <summary>
     /// Creates a read-only, 24-hour pre-signed download link for a digital product.
     /// </summary>
     private static async Task<IResult> CreatePdfDownloadLinkAsync(
@@ -308,6 +386,28 @@ public sealed record CheckoutSessionItem(Guid ProductId, int Quantity);
 /// <param name="SessionId">Stripe Checkout Session identifier.</param>
 /// <param name="Url">Stripe-hosted checkout URL to redirect the buyer to.</param>
 public sealed record CheckoutSessionResponse(string SessionId, string? Url);
+
+/// <summary>
+/// Downloads available for a paid Checkout Session, returned to the success page.
+/// </summary>
+/// <param name="SessionId">Stripe Checkout Session identifier.</param>
+/// <param name="Downloads">One entry per digital product; empty for merchandise-only orders.</param>
+public sealed record SessionDownloadsResponse(
+    string SessionId,
+    IReadOnlyList<SessionDownloadResponse> Downloads);
+
+/// <summary>
+/// A single freshly signed download link for a paid order.
+/// </summary>
+/// <param name="ProductId">Identifier of the purchased product.</param>
+/// <param name="Name">Display name of the product.</param>
+/// <param name="Url">Read-only Azure Blob Storage SAS URL valid for 24 hours.</param>
+/// <param name="ExpiresAt">Moment the link stops working.</param>
+public sealed record SessionDownloadResponse(
+    Guid ProductId,
+    string Name,
+    Uri Url,
+    DateTimeOffset ExpiresAt);
 
 /// <summary>
 /// Request body for creating a PDF download link.

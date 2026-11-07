@@ -64,8 +64,37 @@ public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
 
+        var delivery = await IssueAsync(sessionId, cancellationToken).ConfigureAwait(false);
+        if (delivery is null)
+        {
+            // Unpaid sessions are logged by IssueAsync; nothing to hand off.
+            return;
+        }
+
+        if (delivery.Downloads.Count == 0)
+        {
+            _logger.LogInformation(
+                "Session {SessionId} contains no digital products; nothing to deliver.",
+                delivery.SessionId);
+            return;
+        }
+
+        await _delivery.DeliverAsync(delivery, cancellationToken).ConfigureAwait(false);
+
+        _logger.LogInformation(
+            "Fulfilled {ProductCount} digital product(s) for Stripe session {SessionId}.",
+            delivery.Downloads.Count,
+            delivery.SessionId);
+    }
+
+    /// <inheritdoc />
+    public async Task<PdfDelivery?> IssueAsync(string sessionId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+
         // Expand line items so fulfillment works from authoritative Stripe data rather than
-        // from metadata supplied by the browser.
+        // from metadata supplied by the browser. This is also what makes the success-page
+        // downloads endpoint safe: an unpaid or unknown session never yields a link.
         var session = await _stripeClient.V1.Checkout.Sessions
             .GetAsync(
                 sessionId,
@@ -76,22 +105,15 @@ public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
         if (!string.Equals(session.PaymentStatus, PaidStatus, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogInformation(
-                "Skipping fulfillment for session {SessionId}: payment status is '{PaymentStatus}'.",
+                "Session {SessionId} is not paid (payment status '{PaymentStatus}'); no downloads are available.",
                 session.Id,
                 session.PaymentStatus);
-            return;
+            return null;
         }
 
         var digitalProducts = ResolveDigitalProducts(session);
-        if (digitalProducts.Count == 0)
-        {
-            _logger.LogInformation(
-                "Session {SessionId} contains no digital products; nothing to deliver.",
-                session.Id);
-            return;
-        }
-
         var downloads = new List<PdfDownload>(digitalProducts.Count);
+
         foreach (var product in digitalProducts.Values)
         {
             var url = await _pdfStorage.CreateDownloadUrlAsync(product, cancellationToken).ConfigureAwait(false);
@@ -99,14 +121,7 @@ public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
         }
 
         var customerEmail = session.CustomerDetails?.Email ?? session.CustomerEmail;
-        await _delivery
-            .DeliverAsync(new PdfDelivery(session.Id, customerEmail, downloads), cancellationToken)
-            .ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "Fulfilled {ProductCount} digital product(s) for Stripe session {SessionId}.",
-            downloads.Count,
-            session.Id);
+        return new PdfDelivery(session.Id, customerEmail, downloads);
     }
 
     /// <summary>
