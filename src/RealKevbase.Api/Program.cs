@@ -1,33 +1,51 @@
+using Microsoft.AspNetCore.HttpOverrides;
+using RealKevbase.Api.Cors;
 using RealKevbase.Api.Endpoints;
+using RealKevbase.Api.Services;
 using RealKevbase.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Register CORS service
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicies.SpaPolicyName, policy =>
+    {
+        // Apex domain, *.pages.dev previews and http://localhost:5173 (see CorsPolicies).
+        policy.SetIsOriginAllowed(CorsPolicies.IsAllowedOrigin)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddOpenApi();
-
-// Azure Blob Storage-backed PDF download links (24-hour SAS URLs), configured from the
-// "AzureStorage" section or environment variables. No secrets are stored in source.
 builder.Services.AddAzureBlobPdfStorage(builder.Configuration);
-
-// Product catalog used to validate carts and resolve authoritative prices server-side.
 builder.Services.AddSingleton<IProductCatalog, InMemoryProductCatalog>();
-
-// Stripe Checkout sessions. The secret key comes from configuration, environment
-// variables or user secrets; payment fulfillment happens in the async webhook.
 builder.Services.AddStripeCheckout(builder.Configuration);
+
+// Queued PDF fulfillment for paid Stripe sessions; the webhook only enqueues work.
+builder.Services.AddCheckoutFulfillment();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure Forwarded Headers and clear proxy restrictions for Azure proxy
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwardedHeadersOptions.KnownIPNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// REMOVED app.UseHttpsRedirection() -> Azure App Service handles SSL termination
 
+app.UseCors(CorsPolicies.SpaPolicyName);
 app.MapCheckoutEndpoints();
 
 var summaries = new[]
@@ -37,7 +55,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

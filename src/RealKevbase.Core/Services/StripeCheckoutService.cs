@@ -47,6 +47,18 @@ public sealed class StripeOptions
     public string? CancelUrl { get; set; }
 
     /// <summary>
+    /// Gets or sets the endpoint secret used to verify Stripe webhook signatures.
+    /// Required by <c>POST /api/checkout/webhook</c>; never committed to source.
+    /// </summary>
+    public string? WebhookSecret { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum accepted age of a webhook signature, in seconds.
+    /// Defaults to 300 seconds, matching Stripe's recommendation.
+    /// </summary>
+    public long WebhookToleranceSeconds { get; set; } = 300;
+
+    /// <summary>
     /// Gets or sets the ISO 4217 currency code used for every line item. Defaults to <c>usd</c>.
     /// </summary>
     public string Currency { get; set; } = "usd";
@@ -328,6 +340,14 @@ public static class StripeCheckoutServiceCollectionExtensions
         {
             SecretKey = section[nameof(StripeOptions.SecretKey)],
             ApiBase = section[nameof(StripeOptions.ApiBase)],
+            WebhookSecret = section[nameof(StripeOptions.WebhookSecret)],
+            WebhookToleranceSeconds = long.TryParse(
+                section[nameof(StripeOptions.WebhookToleranceSeconds)],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var webhookTolerance) && webhookTolerance > 0
+                ? webhookTolerance
+                : 300,
             SuccessUrl = section[nameof(StripeOptions.SuccessUrl)],
             CancelUrl = section[nameof(StripeOptions.CancelUrl)],
             Currency = section[nameof(StripeOptions.Currency)] is { Length: > 0 } currency ? currency : "usd",

@@ -155,7 +155,10 @@ public static class PdfStorageServiceCollectionExtensions
         var section = configuration.GetSection(AzurePdfStorageOptions.SectionName);
         var options = new AzurePdfStorageOptions
         {
-            ConnectionString = section[nameof(AzurePdfStorageOptions.ConnectionString)],
+            // App Service commonly stores this as a connection string named "AzureStorage"
+            // (ConnectionStrings__AzureStorage); accept both forms.
+            ConnectionString = section[nameof(AzurePdfStorageOptions.ConnectionString)]
+                ?? configuration.GetConnectionString("AzureStorage"),
             AccountName = section[nameof(AzurePdfStorageOptions.AccountName)],
             PdfContainerName = section[nameof(AzurePdfStorageOptions.PdfContainerName)] is { Length: > 0 } container
                 ? container

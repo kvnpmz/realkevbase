@@ -1,9 +1,13 @@
+using System.Text;
+
 using Microsoft.Extensions.Logging;
 
+using RealKevbase.Api.Services;
 using RealKevbase.Core.Models;
 using RealKevbase.Core.Services;
 
 using Stripe;
+using Stripe.Checkout;
 
 namespace RealKevbase.Api.Endpoints;
 
@@ -12,6 +16,11 @@ namespace RealKevbase.Api.Endpoints;
 /// </summary>
 public static class CheckoutEndpoints
 {
+    /// <summary>
+    /// Stripe event emitted once a Checkout Session's payment has succeeded.
+    /// </summary>
+    private const string CheckoutSessionCompletedEvent = "checkout.session.completed";
+
     /// <summary>
     /// Maps the checkout route group onto the application.
     /// </summary>
@@ -30,6 +39,13 @@ public static class CheckoutEndpoints
             .Produces<CheckoutSessionResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status502BadGateway);
+
+        group.MapPost("/webhook", HandleStripeWebhookAsync)
+            .WithName("StripeWebhook")
+            .WithSummary("Verifies and queues Stripe payment events for asynchronous fulfillment.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         group.MapPost("/downloads/pdf", CreatePdfDownloadLinkAsync)
             .WithName("CreatePdfDownloadLink")
@@ -131,6 +147,112 @@ public static class CheckoutEndpoints
                 title: "Checkout unavailable",
                 detail: "We could not start checkout right now. Please try again in a moment.");
         }
+    }
+
+    /// <summary>
+    /// Receives Stripe webhook events, verifies the signature and queues paid sessions for
+    /// background fulfillment. The request does no link generation or emailing, so Stripe
+    /// is acknowledged immediately.
+    /// </summary>
+    /// <remarks>
+    /// Stripe retries any non-2xx response. A 400 means the signature did not verify; a 503
+    /// means the in-process queue is saturated and the event should be retried.
+    /// </remarks>
+    private static async Task<IResult> HandleStripeWebhookAsync(
+        HttpRequest request,
+        StripeOptions stripeOptions,
+        ICheckoutFulfillmentQueue fulfillmentQueue,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var logger = loggerFactory.CreateLogger(typeof(CheckoutEndpoints));
+
+        if (string.IsNullOrWhiteSpace(stripeOptions.WebhookSecret))
+        {
+            logger.LogError(
+                "Stripe webhook received but '{Section}:{Setting}' is not configured.",
+                StripeOptions.SectionName,
+                nameof(StripeOptions.WebhookSecret));
+
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Webhook not configured",
+                detail: "Stripe webhook handling is not available.");
+        }
+
+        var signature = request.Headers["Stripe-Signature"].ToString();
+        if (string.IsNullOrWhiteSpace(signature))
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Missing signature",
+                detail: "The Stripe-Signature header is required.");
+        }
+
+        string json;
+        using (var reader = new StreamReader(request.Body, Encoding.UTF8))
+        {
+            json = await reader.ReadToEndAsync(cancellationToken);
+        }
+
+        Event stripeEvent;
+        try
+        {
+            stripeEvent = EventUtility.ConstructEvent(
+                json,
+                signature,
+                stripeOptions.WebhookSecret,
+                stripeOptions.WebhookToleranceSeconds,
+                throwOnApiVersionMismatch: false);
+        }
+        catch (StripeException exception)
+        {
+            logger.LogWarning(exception, "Rejected a Stripe webhook whose signature did not verify.");
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Invalid signature",
+                detail: "The Stripe signature could not be verified.");
+        }
+
+        if (!string.Equals(stripeEvent.Type, CheckoutSessionCompletedEvent, StringComparison.Ordinal))
+        {
+            // Acknowledge unhandled event types so Stripe stops retrying them.
+            logger.LogDebug("Ignoring Stripe event {EventId} of type '{EventType}'.", stripeEvent.Id, stripeEvent.Type);
+            return TypedResults.Ok();
+        }
+
+        if (stripeEvent.Data.Object is not Session session)
+        {
+            logger.LogWarning("Stripe event {EventId} did not contain a Checkout Session.", stripeEvent.Id);
+            return TypedResults.Ok();
+        }
+
+        if (!string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
+        {
+            // Delayed payment methods complete the session before the money arrives; the
+            // later checkout.session.async_payment_succeeded event will trigger fulfillment.
+            logger.LogInformation(
+                "Session {SessionId} completed with payment status '{PaymentStatus}'; fulfillment is deferred.",
+                session.Id,
+                session.PaymentStatus);
+
+            return TypedResults.Ok();
+        }
+
+        if (!fulfillmentQueue.TryEnqueue(session.Id))
+        {
+            logger.LogWarning(
+                "Fulfillment queue is full; returning 503 so Stripe retries session {SessionId}.",
+                session.Id);
+
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Fulfillment queue unavailable",
+                detail: "The webhook could not be queued. Please retry.");
+        }
+
+        logger.LogInformation("Queued Stripe session {SessionId} for PDF fulfillment.", session.Id);
+        return TypedResults.Ok();
     }
 
     /// <summary>
