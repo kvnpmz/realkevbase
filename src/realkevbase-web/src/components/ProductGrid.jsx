@@ -13,6 +13,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
 } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded'
@@ -24,13 +25,11 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import { useCartContext } from '../cart/cartContext.js'
 import { FULFILLMENT } from '../cart/cartReducer.js'
 import { formatMoney } from '../cart/formatMoney.js'
+import { CATEGORIES } from '../data/products.js'
 
-/** Filter values used by the grid's segmented control. */
-const FILTERS = [
-  { value: 'all', label: 'All' },
-  { value: FULFILLMENT.DIGITAL_PDF, label: 'Digital PDFs' },
-  { value: FULFILLMENT.PHYSICAL_MERCH, label: 'Merch' },
-]
+/** Cards rendered per page. Phones get a shorter first page so the grid stays scannable. */
+const PAGE_SIZE_MOBILE = 6
+const PAGE_SIZE_DESKTOP = 12
 
 /**
  * A single product card. Digital PDFs and physical merchandise share the layout but
@@ -179,23 +178,36 @@ function ProductCard({ product }) {
 }
 
 /**
- * Responsive product section showing digital PDFs and physical merchandise in one grid,
- * with a segmented filter for each fulfillment type.
+ * Responsive product section showing the whole catalog in browseable categories, with a
+ * page of cards at a time and a `Show more` control for the rest.
  *
  * @param {{ products?: import('../data/products.js').CatalogProduct[] }} props Component props.
  * @returns {React.JSX.Element} The product section.
  */
 export function ProductGrid({ products = [] }) {
-  const [filter, setFilter] = useState('all')
+  const isDesktop = useMediaQuery('(min-width:600px)')
+  const pageSize = isDesktop ? PAGE_SIZE_DESKTOP : PAGE_SIZE_MOBILE
 
-  const visibleProducts = useMemo(
-    () => (filter === 'all' ? products : products.filter((product) => product.fulfillment === filter)),
-    [filter, products],
-  )
+  const [category, setCategory] = useState('all')
+  const [extraPages, setExtraPages] = useState(0)
 
-  const handleFilterChange = (_event, nextFilter) => {
-    // Keep the current filter when the active toggle is clicked again.
-    if (nextFilter !== null) setFilter(nextFilter)
+  const filteredProducts = useMemo(() => {
+    if (category === 'all') return products
+    if (category === 'merch') {
+      return products.filter((product) => product.fulfillment === FULFILLMENT.PHYSICAL_MERCH)
+    }
+    return products.filter((product) => product.category === category)
+  }, [category, products])
+
+  // Keeping extra pages rather than a raw count lets the page size follow the breakpoint.
+  const visibleProducts = filteredProducts.slice(0, pageSize * (extraPages + 1))
+  const hasMore = filteredProducts.length > visibleProducts.length
+
+  const handleCategoryChange = (_event, nextCategory) => {
+    // Keep the current category when the active toggle is clicked again.
+    if (nextCategory === null) return
+    setCategory(nextCategory)
+    setExtraPages(0)
   }
 
   return (
@@ -205,58 +217,60 @@ export function ProductGrid({ products = [] }) {
       sx={{ py: { xs: 7, md: 10 }, scrollMarginTop: { xs: '72px', md: '88px' } }}
     >
       <Container maxWidth="lg">
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
-          sx={{
-            mb: { xs: 4, md: 5 },
-            alignItems: { xs: 'flex-start', md: 'flex-end' },
-            justifyContent: 'space-between',
-          }}
-        >
+        <Stack spacing={{ xs: 2.5, md: 3 }} sx={{ mb: { xs: 4, md: 5 } }}>
           <Stack spacing={1} sx={{ maxWidth: 560 }}>
             <Typography variant="overline" color="secondary.main">
-              The catalog
+              The SaveSimple collection
             </Typography>
-            <Typography variant="h2">Two ways to buy. One cart.</Typography>
+            <Typography variant="h2">Find your next checklist.</Typography>
             <Typography variant="body1" color="text.secondary">
-              Download a guide the second you pay, or add merch to the same order. Totals
-              update instantly across both.
+              65 PDFs across Moving Out, Healthy Living, Money & Budgeting and Guides — $5 each,
+              delivered the moment you pay. Add merch to the same cart.
             </Typography>
           </Stack>
 
-          <ToggleButtonGroup
-            value={filter}
-            exclusive
-            onChange={handleFilterChange}
-            aria-label="Filter products by fulfillment type"
-            size="small"
+          <Box
             sx={{
-              alignSelf: { xs: 'stretch', md: 'auto' },
-              bgcolor: 'background.paper',
-              borderRadius: 999,
-              p: 0.5,
-              border: '1px solid',
-              borderColor: 'divider',
-              '& .MuiToggleButton-root': {
-                border: 0,
-                borderRadius: '999px !important',
-                flex: { xs: 1, md: 'initial' },
-                px: { xs: 1.25, md: 2 },
-                py: 0.75,
-                fontSize: { xs: 13, md: 14 },
-                fontWeight: 600,
-                textTransform: 'none',
-                whiteSpace: 'nowrap',
-              },
+              overflowX: 'auto',
+              mx: { xs: -2, md: 0 },
+              px: { xs: 2, md: 0 },
+              pb: 0.5,
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
             }}
           >
-            {FILTERS.map((option) => (
-              <ToggleButton key={option.value} value={option.value} aria-label={option.label}>
-                {option.label}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
+            <ToggleButtonGroup
+              value={category}
+              exclusive
+              onChange={handleCategoryChange}
+              aria-label="Filter products by category"
+              size="small"
+              sx={{
+                width: { xs: 'max-content', md: 'auto' },
+                bgcolor: 'background.paper',
+                borderRadius: 999,
+                p: 0.5,
+                border: '1px solid',
+                borderColor: 'divider',
+                '& .MuiToggleButton-root': {
+                  border: 0,
+                  borderRadius: '999px !important',
+                  px: { xs: 1.5, md: 2 },
+                  py: 0.75,
+                  fontSize: { xs: 13, md: 14 },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  whiteSpace: 'nowrap',
+                },
+              }}
+            >
+              {CATEGORIES.map((option) => (
+                <ToggleButton key={option.value} value={option.value} aria-label={option.label}>
+                  {option.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
         </Stack>
 
         <Grid container spacing={{ xs: 2, md: 3 }}>
@@ -267,10 +281,23 @@ export function ProductGrid({ products = [] }) {
           ))}
         </Grid>
 
-        {visibleProducts.length === 0 && (
+        {filteredProducts.length === 0 && (
           <Typography color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
-            Nothing in this collection yet. Check back soon.
+            Nothing in this category yet. Check back soon.
           </Typography>
+        )}
+
+        {filteredProducts.length > 0 && (
+          <Stack spacing={1.5} sx={{ alignItems: 'center', mt: { xs: 4, md: 5 } }}>
+            {hasMore && (
+              <Button variant="outlined" onClick={() => setExtraPages((pages) => pages + 1)}>
+                Show more
+              </Button>
+            )}
+            <Typography variant="caption" color="text.secondary" aria-live="polite">
+              Showing {visibleProducts.length} of {filteredProducts.length}
+            </Typography>
+          </Stack>
         )}
       </Container>
     </Box>
