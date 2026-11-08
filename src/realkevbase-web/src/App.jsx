@@ -8,6 +8,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 import { CartProvider } from './cart/CartProvider.jsx'
 import { CartDrawer } from './components/CartDrawer.jsx'
+import { CheckoutSuccess } from './components/CheckoutSuccess.jsx'
 import { Navbar } from './components/Navbar.jsx'
 import { ProductGrid } from './components/ProductGrid.jsx'
 import { demoProducts } from './data/products.js'
@@ -47,6 +48,8 @@ function App() {
           <Navbar />
 
           <Box component="main">
+            <CheckoutSuccess />
+
             <Box sx={{ position: 'relative', overflow: 'hidden' }}>
               <Box
                 aria-hidden="true"

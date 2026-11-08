@@ -6,8 +6,9 @@
  * redirected to Stripe's hosted payment page. No secret keys ever reach this code.
  *
  * Routes used (all under the backend `/api/checkout` route group):
- *   POST /api/checkout/sessions        -> create a Stripe Checkout Session
- *   POST /api/checkout/downloads/pdf   -> 24-hour pre-signed PDF download link
+ *   POST /api/checkout/sessions                       -> create a Stripe Checkout Session
+ *   GET  /api/checkout/sessions/{id}/downloads        -> links for a paid session
+ *   POST /api/checkout/downloads/pdf                  -> 24-hour pre-signed PDF download link
  */
 
 /** Default API origin. Empty means "same origin", which is what the Vite dev proxy serves. */
@@ -17,6 +18,7 @@ const ENV_BASE_URL =
 /** Backend routes this client talks to. */
 export const CHECKOUT_ROUTES = Object.freeze({
   createSession: '/api/checkout/sessions',
+  sessionDownloads: '/api/checkout/sessions/{sessionId}/downloads',
   pdfDownload: '/api/checkout/downloads/pdf',
 })
 
@@ -51,6 +53,20 @@ export class CheckoutApiError extends Error {
  * @typedef {Object} PdfDownloadLink
  * @property {string} url Pre-signed Azure Blob Storage URL.
  * @property {string | null} expiresAt ISO timestamp (24 hours after issuance), when returned.
+ */
+
+/**
+ * @typedef {Object} SessionDownload
+ * @property {string} productId Identifier of the purchased product.
+ * @property {string} name Display name of the product.
+ * @property {string} url Pre-signed Azure Blob Storage URL, valid for 24 hours.
+ * @property {string | null} expiresAt ISO timestamp the link stops working.
+ */
+
+/**
+ * @typedef {Object} SessionDownloads
+ * @property {string} sessionId Stripe Checkout Session the downloads belong to.
+ * @property {SessionDownload[]} downloads One entry per digital product; empty for merch-only orders.
  */
 
 /**
@@ -102,10 +118,11 @@ function problemMessage(response, payload) {
  * @param {{
  *   baseUrl?: string,
  *   fetchImpl?: typeof fetch,
- *   routes?: { createSession: string, pdfDownload: string },
+ *   routes?: { createSession: string, sessionDownloads: string, pdfDownload: string },
  * }} [options] Overrides, mainly for tests.
  * @returns {{
  *   createCheckoutSession: (items: import('../cart/cartReducer').CartItem[], options?: { signal?: AbortSignal }) => Promise<CheckoutSession>,
+ *   getSessionDownloads: (sessionId: string, options?: { signal?: AbortSignal }) => Promise<SessionDownloads>,
  *   getPdfDownloadLink: (productId: string, options?: { signal?: AbortSignal }) => Promise<PdfDownloadLink>,
  * }} The configured client.
  */
@@ -121,14 +138,14 @@ export function createCheckoutApi({
   /**
    * Sends a JSON request and maps failures to CheckoutApiError.
    * @param {string} path Route to call.
-   * @param {{ body?: unknown, signal?: AbortSignal }} [options] Request options.
+   * @param {{ body?: unknown, signal?: AbortSignal, method?: string }} [options] Request options.
    * @returns {Promise<unknown>} Parsed response body.
    */
-  async function requestJson(path, { body, signal } = {}) {
+  async function requestJson(path, { body, signal, method = 'POST' } = {}) {
     let response
     try {
       response = await fetchImpl(joinUrl(baseUrl, path), {
-        method: 'POST',
+        method,
         headers: {
           Accept: 'application/json',
           ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
@@ -202,6 +219,46 @@ export function createCheckoutApi({
       }
 
       return { sessionId, url }
+    },
+
+    /**
+     * Fetches the download links for a paid Checkout Session (the success page).
+     *
+     * The backend re-verifies payment with Stripe on every call, so an unpaid session never
+     * yields links. A 409 means the payment has not settled yet (delayed methods) and the
+     * caller should offer a retry.
+     *
+     * @param {string} sessionId Stripe Checkout Session id from the success redirect.
+     * @param {{ signal?: AbortSignal }} [options] Abort support.
+     * @returns {Promise<SessionDownloads>} Session id and its download links.
+     * @throws {CheckoutApiError} When the backend rejects the request or is unreachable.
+     */
+    async getSessionDownloads(sessionId, { signal } = {}) {
+      if (typeof sessionId !== 'string' || !sessionId.trim()) {
+        throw new CheckoutApiError('A session id is required to fetch downloads.', { status: 400 })
+      }
+
+      const path = routes.sessionDownloads.replace('{sessionId}', encodeURIComponent(sessionId.trim()))
+      const payload = await requestJson(path, { method: 'GET', signal })
+
+      const record = payload && typeof payload === 'object' ? /** @type {Record<string, unknown>} */ (payload) : {}
+      const raw = Array.isArray(record.downloads) ? record.downloads : []
+
+      const downloads = raw
+        .filter((entry) => entry && typeof entry === 'object')
+        .map((entry) => /** @type {Record<string, unknown>} */ (entry))
+        .map((entry) => ({
+          productId: typeof entry.productId === 'string' ? entry.productId : '',
+          name: typeof entry.name === 'string' ? entry.name : 'Download',
+          url: typeof entry.url === 'string' ? entry.url : '',
+          expiresAt: typeof entry.expiresAt === 'string' ? entry.expiresAt : null,
+        }))
+        .filter((entry) => entry.url)
+
+      return {
+        sessionId: typeof record.sessionId === 'string' ? record.sessionId : sessionId,
+        downloads,
+      }
     },
 
     /**
