@@ -5,6 +5,8 @@ obj/
 [Rr]elease/
 *.user
 *.suo
+publish/
+TestResults/
 
 # Node
 node_modules/
