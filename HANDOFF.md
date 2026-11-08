@@ -36,7 +36,7 @@ Status snapshot: **2026-11-08**. Repo root: `~/realkevbase-platform`, branch `ma
 | Custom domain | `api.realkevbase.com` (Verified, SNI binding) |
 | TLS | Azure managed certificate, thumbprint `55D28D01DACA6DDDAAE6004932070E39F33D56B6`, issuer GeoTrust TLS RSA CA G1, valid to **2027-05-08** |
 | Deployed revision | `23be2bc` (zip deploy of `dotnet publish -c Release`) |
-| Platform CORS | **empty** (deliberately — see §7) |
+| Platform CORS | **empty** (deliberately — see section 7) |
 | `alwaysOn` | `true` |
 
 ✅ **Verified working**: `https://api.realkevbase.com/api/checkout/sessions/cs_test_x/downloads` → `404 application/problem+json` over valid TLS (`subject=CN=api.realkevbase.com`); unsigned `POST /api/checkout/webhook` → `400`; preflight from `https://realkevbase.com` → `204` with `Access-Control-Allow-Origin`; a live session POST from that origin → `200` + Stripe URL.
@@ -48,7 +48,7 @@ Status snapshot: **2026-11-08**. Repo root: `~/realkevbase-platform`, branch `ma
 | Storage account | `realkevbasestorage` (Standard_LRS) |
 | Container | `pdfs` |
 | Blob layout | `guides/<hyphen-slug>.pdf` — 65 objects, one per catalog product |
-| App Insights | `realkevbase-platform202611071211` (the component the app writes to — see §7 trap) |
+| App Insights | `realkevbase-platform202611071211` (the component the app writes to — see the trap in section 7) |
 | ACS resource | `realkevbase-acs` (location `global`, data location **United States**) |
 | Email service | `realkevbase-email` |
 | Email domain | `realkevbase.com`, `CustomerManaged` — **Domain / SPF / DKIM / DKIM2 = Verified**, DMARC = `NotStarted` |
@@ -167,7 +167,7 @@ Not set, deliberately: `Stripe__ApiBase` (unset ⇒ real Stripe), `Stripe:ApiKey
 | `@` TXT `v=spf1 include:spf.protection.outlook.com -all` | SPF (**only one SPF record at apex**) | n/a |
 | `selector1-azurecomm-prod-net._domainkey` CNAME → `….azurecomm.net` | DKIM | **DNS only** |
 | `selector2-azurecomm-prod-net._domainkey` CNAME → `….azurecomm.net` | DKIM2 | **DNS only** |
-| `_dmarc` TXT | DMARC — **not currently published**, see §6 | n/a |
+| `_dmarc` TXT | DMARC — **not currently published**, see section 6 | n/a |
 
 ---
 
@@ -184,7 +184,7 @@ az monitor app-insights query -g realkevbase-rg -a realkevbase-platform202611071
   --analytics-query "requests | where timestamp > ago(30m) | where name contains 'webhook' | project timestamp, resultCode, success | order by timestamp desc | take 5" -o json
 ```
 
-Expected: `HTTP 200 success=True`. Template sessions carry no catalog products, so the trace then says `contains no digital products` — that is correct, not a bug. For a *real* order, resend a paid event (note the flag, see §7):
+Expected: `HTTP 200 success=True`. Template sessions carry no catalog products, so the trace then says `contains no digital products` — that is correct, not a bug. For a *real* order, resend a paid event (note the flag, see section 7):
 
 ```bash
 stripe events resend <evt_id> --webhook-endpoint we_1UZaFtPm53HdvLrDANzYFURI
