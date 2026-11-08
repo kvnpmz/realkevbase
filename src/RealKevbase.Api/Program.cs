@@ -25,7 +25,7 @@ builder.Services.AddSingleton<IProductCatalog, InMemoryProductCatalog>();
 builder.Services.AddStripeCheckout(builder.Configuration);
 
 // Queued PDF fulfillment for paid Stripe sessions; the webhook only enqueues work.
-builder.Services.AddCheckoutFulfillment();
+builder.Services.AddCheckoutFulfillment(builder.Configuration);
 
 var app = builder.Build();
 
