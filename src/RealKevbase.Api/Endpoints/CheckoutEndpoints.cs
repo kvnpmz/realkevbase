@@ -17,9 +17,21 @@ namespace RealKevbase.Api.Endpoints;
 public static class CheckoutEndpoints
 {
     /// <summary>
-    /// Stripe event emitted once a Checkout Session's payment has succeeded.
+    /// Stripe events that make a paid Checkout Session eligible for fulfillment.
     /// </summary>
-    private const string CheckoutSessionCompletedEvent = "checkout.session.completed";
+    /// <remarks>
+    /// <c>checkout.session.completed</c> covers cards and wallets, which arrive already paid.
+    /// Delayed methods (Klarna, Cash App, bank debits) complete the session before the money
+    /// moves, so their paid signal only arrives later as
+    /// <c>checkout.session.async_payment_succeeded</c>; without it those buyers would pay and
+    /// never receive their files.
+    /// </remarks>
+    private static readonly HashSet<string> FulfillmentEventTypes =
+        new(StringComparer.Ordinal)
+        {
+            "checkout.session.completed",
+            "checkout.session.async_payment_succeeded"
+        };
 
     /// <summary>
     /// Maps the checkout route group onto the application.
@@ -222,7 +234,7 @@ public static class CheckoutEndpoints
                 detail: "The Stripe signature could not be verified.");
         }
 
-        if (!string.Equals(stripeEvent.Type, CheckoutSessionCompletedEvent, StringComparison.Ordinal))
+        if (!FulfillmentEventTypes.Contains(stripeEvent.Type))
         {
             // Acknowledge unhandled event types so Stripe stops retrying them.
             logger.LogDebug("Ignoring Stripe event {EventId} of type '{EventType}'.", stripeEvent.Id, stripeEvent.Type);
@@ -237,8 +249,9 @@ public static class CheckoutEndpoints
 
         if (!string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
         {
-            // Delayed payment methods complete the session before the money arrives; the
-            // later checkout.session.async_payment_succeeded event will trigger fulfillment.
+            // Delayed payment methods complete the session before the money arrives. Nothing
+            // more happens on this event; checkout.session.async_payment_succeeded re-reads the
+            // session once the funds settle and enqueues fulfillment then.
             logger.LogInformation(
                 "Session {SessionId} completed with payment status '{PaymentStatus}'; fulfillment is deferred.",
                 session.Id,
