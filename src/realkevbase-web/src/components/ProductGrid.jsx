@@ -220,7 +220,7 @@ export function ProductGrid({ products = [] }) {
         <Stack spacing={{ xs: 2.5, md: 3 }} sx={{ mb: { xs: 4, md: 5 } }}>
           <Stack spacing={1} sx={{ maxWidth: 560 }}>
             <Typography variant="overline" color="secondary.main">
-              The SaveSimple collection
+              Browse the collection
             </Typography>
             <Typography variant="h2">Find your next checklist.</Typography>
             <Typography variant="body1" color="text.secondary">
