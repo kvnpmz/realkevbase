@@ -63,18 +63,18 @@ function App() {
               <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 5 } }}>
                 <Stack spacing={3} sx={{ maxWidth: 720 }}>
                   <Typography variant="overline" color="secondary.main">
-                    Digital PDFs + physical merch
+                    The SaveSimple collection
                   </Typography>
-                  <Typography variant="h1">Tools for people who ship.</Typography>
+                  <Typography variant="h1">Organization, made effortless.</Typography>
                   <Typography
                     variant="h5"
                     component="p"
                     color="text.secondary"
                     sx={{ maxWidth: 620 }}
                   >
-                    Practical guides that land in your inbox seconds after checkout, and
-                    small-run merch built to survive daily use. One cart, mixed orders, no
-                    friction.
+                    Streamlined checklists, planners, and printables that make staying organized
+                    easy and effortless. Instant PDFs from RealKevbase — with small-run merch in
+                    the same cart.
                   </Typography>
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                     <Button
@@ -83,7 +83,7 @@ function App() {
                       href="#products"
                       endIcon={<ArrowForwardRoundedIcon />}
                     >
-                      Shop the catalog
+                      Shop the collection
                     </Button>
                     <Button size="large" variant="outlined" href="#how-it-works">
                       How it works
