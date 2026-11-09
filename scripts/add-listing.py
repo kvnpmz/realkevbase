@@ -46,6 +46,8 @@ import subprocess
 import sys
 import uuid
 
+from storage_auth import storage_arguments
+
 VARIANTS = ("_a4", "_ipad", "_zoom")
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # REALKEVBASE_DB lets tests point at a copy instead of the shipped database.
@@ -57,7 +59,6 @@ OUTPUT = os.path.join(REPO_ROOT, "zz_tp", "output")
 DOCUMENTS = os.path.join(REPO_ROOT, "zz_tp", "documents")
 CONTAINER = "pdfs"
 BLOB_PREFIX = "guides"
-ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT", "realkevbasestorage")
 
 CATEGORIES = ("moving-out", "healthy-living", "money-budgeting", "guides")
 
@@ -161,10 +162,9 @@ def fail(message: str) -> int:
 def upload_pdf(pdf: str, blob_name: str) -> bool:
     """Upload a product PDF to blob storage, returning whether it succeeded.
 
-    Authentication uses ``AZURE_STORAGE_CONNECTION_STRING`` when present. Managed-identity
-    style login (``--auth-mode login``) is offered as a fallback, but it needs the
-    *Storage Blob Data Contributor* role, which a typical subscription owner does not have —
-    so the failure message explains how to obtain the connection string instead.
+    Credentials are resolved automatically by :mod:`storage_auth` — from an exported
+    ``AZURE_STORAGE_CONNECTION_STRING`` or straight from the live App Service settings —
+    so no secret is ever stored in a file or typed in by hand.
 
     Args:
         pdf: Local path of the PDF to upload.
@@ -173,6 +173,8 @@ def upload_pdf(pdf: str, blob_name: str) -> bool:
     Returns:
         True when the upload succeeded.
     """
+    arguments, source = storage_arguments()
+
     command = [
         "az", "storage", "blob", "upload",
         "--container-name", CONTAINER,
@@ -183,25 +185,18 @@ def upload_pdf(pdf: str, blob_name: str) -> bool:
         "--no-progress",
         "--output", "none",
     ]
+    command += arguments
 
-    connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
-    if connection_string:
-        # Appended, not spliced in: inserting into the middle of an az command list
-        # makes the CLI read the value as a subcommand name.
-        command += ["--connection-string", connection_string]
-    else:
-        command += ["--account-name", ACCOUNT_NAME, "--auth-mode", "login"]
-
-    print(f"uploading to {CONTAINER}/{blob_name}")
+    print(f"uploading to {CONTAINER}/{blob_name} (credentials: {source})")
     if subprocess.call(command) == 0:
         return True
 
     print(
         "\ncould not authenticate to blob storage.\n"
-        "Export the storage connection string for this shell and retry:\n"
-        "  export AZURE_STORAGE_CONNECTION_STRING=\"$(\n"
-        "    az webapp config appsettings list -g realkevbase-rg -n realkevbase-platform \\\n"
-        "      --query \"[?name=='ConnectionStrings__AzureStorage'].value\" -o tsv)\"",
+        "The script reads the connection string from App Service settings, which needs\n"
+        "az to be logged in with permission to read them. Check with:\n"
+        "  az webapp config appsettings list -g realkevbase-rg -n realkevbase-platform \\\n"
+        "    --query \"[?name=='ConnectionStrings__AzureStorage'].value\" -o tsv",
         file=sys.stderr,
     )
     return False

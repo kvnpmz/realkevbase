@@ -38,6 +38,8 @@ import os
 import subprocess
 import sys
 
+from storage_auth import storage_arguments
+
 DEFAULT_SOURCE = "zz_tp/output"
 DEFAULT_OUT = "/tmp/realkevbase-thumbs"
 DEFAULT_WIDTH = 500
@@ -166,19 +168,12 @@ def main() -> int:
 
     print(f"\nuploading to {args.container}/{args.prefix}")
 
-    def storage_args() -> list[str]:
-        """Authentication arguments for the az storage commands."""
-        connection = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
-        if connection:
-            # Appended, not spliced in: an argument inserted mid-command makes the CLI
-            # read the connection string as a subcommand name.
-            return ["--connection-string", connection]
-        return ["--auth-mode", "login"]
-
     # Only upload thumbnails that have a published PDF. The output folder also holds
     # generator scratch folders with no product, and those must not be published as
     # artwork — nothing would ever request them and they linger in storage.
-    stems = published_pdf_stems(args.container, args.prefix, storage_args())
+    auth, source = storage_arguments()
+    print(f"credentials: {source}")
+    stems = published_pdf_stems(args.container, args.prefix, auth)
     if stems is None:
         print("  could not list published PDFs; uploading every built thumbnail")
     else:
@@ -199,7 +194,7 @@ def main() -> int:
         "--overwrite",
         "--no-progress",
     ]
-    command += storage_args()
+    command += auth
 
     return subprocess.call(command)
 
