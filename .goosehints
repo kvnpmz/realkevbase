@@ -13,3 +13,24 @@
 ## Frontend Rules (realkevbase-web)
 - Use Material UI components (`Grid`, `Card`, `Drawer`) for the layout.
 - Cart state must handle mixed orders (PDFs + Merch) seamlessly.
+
+# Repository Intelligence (repo-intel)
+
+This repository ships a deterministic local symbol index at `scripts/repo-intel.lua`
+(Tree-sitter for C#/JS/JSX/Python, PageRank ranking, hash-incremental cache in
+`.repo-intel/`). Use it to avoid re-reading files and burning tokens.
+
+- At session start, before searching files manually:
+  `lua scripts/repo-intel.lua overview`
+- Before reading a large source file, look up the symbol first:
+  `lua scripts/repo-intel.lua symbol <Name>`
+  `lua scripts/repo-intel.lua deps <Name-or-Module>`
+- For a token-budgeted architectural symbol map (default 1024 tokens):
+  `lua scripts/repo-intel.lua map`
+  `lua scripts/repo-intel.lua map --budget 800`
+- After editing source files:
+  `lua scripts/repo-intel.lua update`
+
+Read commands auto-refresh only files whose content hash changed; add
+`--no-refresh` to use the cache without touching the filesystem. If the cache or
+grammars are missing, run `lua scripts/repo-intel.lua setup`.
