@@ -33,6 +33,13 @@ public static class CatalogEndpoints
             .WithSummary("Returns every purchasable product, without storage details.")
             .Produces<IReadOnlyList<ProductResponse>>();
 
+        group.MapGet("/products/{id:guid}/thumbnail", GetProductThumbnailAsync)
+            .WithName("GetProductThumbnail")
+            .WithSummary("Streams the artwork for a digital product.")
+            .Produces(StatusCodes.Status200OK, contentType: "image/webp")
+            .Produces(StatusCodes.Status304NotModified)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         group.MapGet("/listings", GetListings)
             .WithName("GetListings")
             .WithSummary("Returns the listing rows behind the catalog's digital products.")
@@ -85,6 +92,53 @@ public static class CatalogEndpoints
 
         return Results.Ok(responses);
     }
+
+    /// <summary>
+    /// Streams the artwork that illustrates a digital product.
+    /// </summary>
+    /// <remarks>
+    /// The image is proxied rather than linked: the container stays private, no blob name or
+    /// SAS token reaches the browser, and the response is cacheable by the browser for a day.
+    /// A missing image is a normal state, not an error — the storefront falls back to its
+    /// generated artwork.
+    /// </remarks>
+    /// <param name="id">Product whose artwork should be returned.</param>
+    /// <param name="request">Current request, used for conditional revalidation.</param>
+    /// <param name="response">Current response, used to set caching headers.</param>
+    /// <param name="catalog">Catalog used to resolve the product.</param>
+    /// <param name="images">Storage-backed source of the artwork.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    private static async Task<IResult> GetProductThumbnailAsync(
+        Guid id,
+        HttpRequest request,
+        HttpResponse response,
+        IProductCatalog catalog,
+        IProductImageService images,
+        CancellationToken cancellationToken)
+    {
+        if (!catalog.TryGetProduct(id, out var product) || !product.IsDigitalPdf)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var image = await images.OpenThumbnailAsync(product, cancellationToken);
+        if (image is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var ifNoneMatch = request.Headers.IfNoneMatch.ToString();
+        if (ifNoneMatch.Length > 0 && ifNoneMatch.Contains(image.ETag, StringComparison.Ordinal))
+        {
+            await image.Content.DisposeAsync().ConfigureAwait(false);
+            return TypedResults.StatusCode(StatusCodes.Status304NotModified);
+        }
+
+        response.Headers.CacheControl = "public, max-age=86400";
+        response.Headers.ETag = image.ETag;
+
+        return Results.Stream(image.Content, image.ContentType);
+    }
 }
 
 /// <summary>
@@ -97,6 +151,7 @@ public static class CatalogEndpoints
 /// <param name="Fulfillment">Fulfillment type: <c>DigitalPdf</c> or <c>PhysicalMerch</c>.</param>
 /// <param name="Category">Browse category, or <see langword="null"/> for merchandise.</param>
 /// <param name="ListingId">Listing that backs the PDF, or <see langword="null"/> for merchandise.</param>
+/// <param name="ThumbnailUrl">Relative URL of the product artwork, or <see langword="null"/> when there is none.</param>
 /// <param name="Accent">Card artwork colours.</param>
 public sealed record ProductResponse(
     Guid Id,
@@ -106,6 +161,7 @@ public sealed record ProductResponse(
     string Fulfillment,
     string? Category,
     string? ListingId,
+    string? ThumbnailUrl,
     ProductAccentResponse? Accent)
 {
     /// <summary>
@@ -126,6 +182,7 @@ public sealed record ProductResponse(
             product.Fulfillment.ToString(),
             product.Category,
             product.ListingId,
+            product.IsDigitalPdf ? $"/api/products/{product.Id}/thumbnail" : null,
             product.Accent is null
                 ? null
                 : new ProductAccentResponse(product.Accent.From, product.Accent.To, product.Accent.Ink));

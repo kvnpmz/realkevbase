@@ -41,6 +41,7 @@ const PAGE_SIZE_DESKTOP = 12
 function ProductCard({ product }) {
   const { addItem } = useCartContext()
   const [justAdded, setJustAdded] = useState(false)
+  const [thumbnailFailed, setThumbnailFailed] = useState(false)
   const resetTimer = useRef(null)
 
   useEffect(
@@ -89,28 +90,49 @@ function ProductCard({ product }) {
             position: 'absolute',
             top: 12,
             left: 12,
+            zIndex: 2,
             bgcolor: 'rgba(255, 255, 255, 0.86)',
             backdropFilter: 'blur(4px)',
           }}
         />
-        <Box
-          aria-hidden="true"
-          sx={{
-            width: 64,
-            height: 64,
-            borderRadius: '18px',
-            display: 'grid',
-            placeItems: 'center',
-            bgcolor: 'rgba(255, 255, 255, 0.72)',
-            color: ink,
-          }}
-        >
-          {isDigital ? (
-            <MenuBookRoundedIcon sx={{ fontSize: 34 }} />
-          ) : (
-            <CheckroomRoundedIcon sx={{ fontSize: 34 }} />
-          )}
-        </Box>
+        {product.thumbnailUrl && !thumbnailFailed ? (
+          <Box
+            component="img"
+            src={product.thumbnailUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            onError={() => setThumbnailFailed(true)}
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              p: 1.5,
+              filter: 'drop-shadow(0 8px 18px rgba(20, 22, 26, 0.18))',
+            }}
+          />
+        ) : (
+          <Box
+            aria-hidden="true"
+            sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '18px',
+              display: 'grid',
+              placeItems: 'center',
+              bgcolor: 'rgba(255, 255, 255, 0.72)',
+              color: ink,
+            }}
+          >
+            {isDigital ? (
+              <MenuBookRoundedIcon sx={{ fontSize: 34 }} />
+            ) : (
+              <CheckroomRoundedIcon sx={{ fontSize: 34 }} />
+            )}
+          </Box>
+        )}
       </Box>
 
       <CardContent

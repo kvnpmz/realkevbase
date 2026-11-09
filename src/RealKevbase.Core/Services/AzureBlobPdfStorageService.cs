@@ -179,6 +179,7 @@ public static class PdfStorageServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddSingleton(_ => CreateBlobServiceClient(options));
         services.AddSingleton<IPdfStorageService, AzureBlobPdfStorageService>();
+        services.AddSingleton<IProductImageService, AzureBlobProductImageService>();
 
         return services;
     }

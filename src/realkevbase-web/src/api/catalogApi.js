@@ -154,6 +154,12 @@ export function createCatalogApi({
             category: typeof record.category === 'string' ? record.category : null,
             listingId,
             listing: listingId ? (listingsById.get(listingId) ?? null) : null,
+            // The API returns a relative path so the bundle stays portable; resolve it
+            // against the same origin the catalog came from.
+            thumbnailUrl:
+              typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
+                ? joinUrl(baseUrl, record.thumbnailUrl)
+                : null,
             badge: DELIVERY_COPY[fulfillment].badge,
             feature: DELIVERY_COPY[fulfillment].feature,
             accent: {
