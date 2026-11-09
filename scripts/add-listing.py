@@ -57,6 +57,7 @@ OUTPUT = os.path.join(REPO_ROOT, "zz_tp", "output")
 DOCUMENTS = os.path.join(REPO_ROOT, "zz_tp", "documents")
 CONTAINER = "pdfs"
 BLOB_PREFIX = "guides"
+ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT", "realkevbasestorage")
 
 CATEGORIES = ("moving-out", "healthy-living", "money-budgeting", "guides")
 
@@ -157,6 +158,55 @@ def fail(message: str) -> int:
     return 1
 
 
+def upload_pdf(pdf: str, blob_name: str) -> bool:
+    """Upload a product PDF to blob storage, returning whether it succeeded.
+
+    Authentication uses ``AZURE_STORAGE_CONNECTION_STRING`` when present. Managed-identity
+    style login (``--auth-mode login``) is offered as a fallback, but it needs the
+    *Storage Blob Data Contributor* role, which a typical subscription owner does not have —
+    so the failure message explains how to obtain the connection string instead.
+
+    Args:
+        pdf: Local path of the PDF to upload.
+        blob_name: Destination blob name inside the products container.
+
+    Returns:
+        True when the upload succeeded.
+    """
+    command = [
+        "az", "storage", "blob", "upload",
+        "--container-name", CONTAINER,
+        "--name", blob_name,
+        "--file", pdf,
+        "--content-type", "application/pdf",
+        "--overwrite",
+        "--no-progress",
+        "--output", "none",
+    ]
+
+    connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+    if connection_string:
+        # Appended, not spliced in: inserting into the middle of an az command list
+        # makes the CLI read the value as a subcommand name.
+        command += ["--connection-string", connection_string]
+    else:
+        command += ["--account-name", ACCOUNT_NAME, "--auth-mode", "login"]
+
+    print(f"uploading to {CONTAINER}/{blob_name}")
+    if subprocess.call(command) == 0:
+        return True
+
+    print(
+        "\ncould not authenticate to blob storage.\n"
+        "Export the storage connection string for this shell and retry:\n"
+        "  export AZURE_STORAGE_CONNECTION_STRING=\"$(\n"
+        "    az webapp config appsettings list -g realkevbase-rg -n realkevbase-platform \\\n"
+        "      --query \"[?name=='ConnectionStrings__AzureStorage'].value\" -o tsv)\"",
+        file=sys.stderr,
+    )
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Register a new PDF listing from zz_tp/output/<folder>.",
@@ -227,6 +277,8 @@ def main() -> int:
         if not args.apply:
             print("\npreview only. Re-run with --apply to write the row and upload the PDF.")
         else:
+            # The row is written first but only committed once the upload succeeds, so a
+            # failed upload cannot leave a product that sells a PDF that is not in storage.
             connection.execute(
                 "INSERT INTO Projects "
                 "(id, folder_path, completed_date, overrides, output_name, is_editable, template, title) "
@@ -242,34 +294,18 @@ def main() -> int:
                     title,
                 ),
             )
-            connection.commit()
-            print(f"\ninserted listing row '{listing_id}'")
 
             if args.no_upload:
-                print("skipped blob upload (--no-upload)")
+                connection.commit()
+                print(f"\ninserted listing row '{listing_id}'")
+                print("skipped blob upload (--no-upload); the row points at a PDF that is not in storage")
             else:
-                command = [
-                    "az", "storage", "blob", "upload",
-                    "--container-name", CONTAINER,
-                    "--name", blob_name,
-                    "--file", pdf,
-                    "--content-type", "application/pdf",
-                    "--overwrite",
-                    "--no-progress",
-                    "--output", "none",
-                ]
-                connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
-                if connection_string:
-                    command[2:2] = ["--connection-string", connection_string]
-                else:
-                    command[2:2] = ["--auth-mode", "login"]
-
-                print(f"uploading to {CONTAINER}/{blob_name}")
-                if subprocess.call(command) != 0:
-                    return fail(
-                        "upload failed; the database row was written. Either re-run the upload "
-                        "or delete the row before trying again."
-                    )
+                if not upload_pdf(pdf, blob_name):
+                    connection.rollback()
+                    return fail("upload failed; the listing row was rolled back. Nothing was changed.")
+                connection.commit()
+                print(f"\ninserted listing row '{listing_id}'")
+                print(f"uploaded {CONTAINER}/{blob_name}")
     finally:
         connection.close()
 

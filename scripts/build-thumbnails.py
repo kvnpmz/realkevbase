@@ -165,6 +165,30 @@ def main() -> int:
         return 0
 
     print(f"\nuploading to {args.container}/{args.prefix}")
+
+    def storage_args() -> list[str]:
+        """Authentication arguments for the az storage commands."""
+        connection = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+        if connection:
+            # Appended, not spliced in: an argument inserted mid-command makes the CLI
+            # read the connection string as a subcommand name.
+            return ["--connection-string", connection]
+        return ["--auth-mode", "login"]
+
+    # Only upload thumbnails that have a published PDF. The output folder also holds
+    # generator scratch folders with no product, and those must not be published as
+    # artwork — nothing would ever request them and they linger in storage.
+    stems = published_pdf_stems(args.container, args.prefix, storage_args())
+    if stems is None:
+        print("  could not list published PDFs; uploading every built thumbnail")
+    else:
+        pruned = 0
+        for name in sorted(os.listdir(args.out)):
+            if name.endswith(".webp") and name[: -len(".webp")] not in stems:
+                os.remove(os.path.join(args.out, name))
+                pruned += 1
+        print(f"  {len(stems)} published PDFs; skipped {pruned} thumbnail(s) with no product")
+
     command = [
         "az", "storage", "blob", "upload-batch",
         "--destination", f"{args.container}/{args.prefix}",
@@ -175,13 +199,49 @@ def main() -> int:
         "--overwrite",
         "--no-progress",
     ]
-    connection = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
-    if connection:
-        command[1:1] = ["--connection-string", connection]
-    else:
-        command[1:1] = ["--auth-mode", "login"]
+    command += storage_args()
 
     return subprocess.call(command)
+
+
+def published_pdf_stems(container: str, prefix: str, auth: list[str]) -> set[str] | None:
+    """List the file stems of every PDF already published under a blob prefix.
+
+    Args:
+        container: Blob container holding the products.
+        prefix: Blob prefix in front of the thumbnails (``guides/images``); its parent
+            is where the PDFs live.
+        auth: Authentication arguments for the az CLI.
+
+    Returns:
+        The stems, or ``None`` when the listing failed, in which case the caller
+        falls back to uploading everything.
+    """
+    folder = prefix.rsplit("/", 1)[0] if "/" in prefix else ""
+    lookup = f"{folder}/" if folder else ""
+
+    command = [
+        "az", "storage", "blob", "list",
+        "--container-name", container,
+        "--prefix", lookup,
+        "--query", "[].name",
+        "-o", "tsv",
+    ]
+    command += auth
+
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+    if result.returncode != 0:
+        return None
+
+    return {
+        os.path.basename(name)[: -len(".pdf")]
+        for name in result.stdout.split()
+        if name.endswith(".pdf")
+    }
 
 
 if __name__ == "__main__":
