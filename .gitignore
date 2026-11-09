@@ -30,3 +30,7 @@ secrets.json
 
 # Deployment artifacts
 *.zip
+
+# Local generator workspace (672 MB of PDF sources); the API ships its own
+# copy of Data/projects.db, so this never needs to be tracked.
+zz_tp/
