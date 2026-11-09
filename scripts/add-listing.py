@@ -14,7 +14,8 @@ What it does:
   5. Prints a ready-to-paste product entry, with a fresh stable GUID
 
 What it deliberately does not do:
-  - Choose a price, description, category or card colour (editorial decisions)
+  - Choose a description, category or card colour (editorial decisions). Price is
+    not asked for: every guide is $5, which is the default.
   - Edit InMemoryProductCatalog.cs (the entry is printed for you to paste)
   - Copy zz_tp/projects.db over the shipped database (see below)
   - Deploy; run ./scripts/deploy.sh afterwards
@@ -58,6 +59,10 @@ CONTAINER = "pdfs"
 BLOB_PREFIX = "guides"
 
 CATEGORIES = ("moving-out", "healthy-living", "money-budgeting", "guides")
+
+# Every digital PDF in the catalog is $5. Merch is priced individually, but this
+# script only registers PDFs, so the price is a constant rather than a decision.
+DEFAULT_PRICE = 5.0
 
 
 def is_variant(stem: str) -> bool:
@@ -160,6 +165,12 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true", help="write the row and upload (default: preview)")
     parser.add_argument("--no-upload", action="store_true", help="skip the blob upload with --apply")
     parser.add_argument("--title", help="override the title read from config.tl (numbered if taken)")
+    parser.add_argument(
+        "--price",
+        type=float,
+        default=DEFAULT_PRICE,
+        help=f"unit price for this PDF (default: {DEFAULT_PRICE}, the standard guide price)",
+    )
     args = parser.parse_args()
 
     listing_id = args.folder
@@ -268,9 +279,9 @@ def main() -> int:
     print(f'                Id = Guid.Parse("{product_id}"),')
     print(f'                Name = "{title}",')
     print('                Description = "TODO: one sentence for the card.",')
-    print("                Price = 5.0m,")
+    print(f"                Price = {args.price:.1f}m,")
     print("                Fulfillment = FulfillmentType.DigitalPdf,")
-    print(f'                Category = null,  // one of: {", ".join(CATEGORIES)}')
+    print(f'                Category = null,  // TODO: one of: {", ".join(CATEGORIES)}')
     print('                Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),  // TODO')
     print(f'                PdfBlobName = "{blob_name}"')
     print("            },")
