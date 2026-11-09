@@ -8,7 +8,6 @@
  * Routes used (all under the backend `/api/checkout` route group):
  *   POST /api/checkout/sessions                       -> create a Stripe Checkout Session
  *   GET  /api/checkout/sessions/{id}/downloads        -> links for a paid session
- *   POST /api/checkout/downloads/pdf                  -> 24-hour pre-signed PDF download link
  */
 
 /** Default API origin. Empty means "same origin", which is what the Vite dev proxy serves. */
@@ -19,7 +18,6 @@ const ENV_BASE_URL =
 export const CHECKOUT_ROUTES = Object.freeze({
   createSession: '/api/checkout/sessions',
   sessionDownloads: '/api/checkout/sessions/{sessionId}/downloads',
-  pdfDownload: '/api/checkout/downloads/pdf',
 })
 
 /**
@@ -47,12 +45,6 @@ export class CheckoutApiError extends Error {
  * @typedef {Object} CheckoutSession
  * @property {string | null} sessionId Stripe Checkout Session id, when returned.
  * @property {string | null} url Stripe-hosted checkout URL to redirect the browser to.
- */
-
-/**
- * @typedef {Object} PdfDownloadLink
- * @property {string} url Pre-signed Azure Blob Storage URL.
- * @property {string | null} expiresAt ISO timestamp (24 hours after issuance), when returned.
  */
 
 /**
@@ -118,12 +110,11 @@ function problemMessage(response, payload) {
  * @param {{
  *   baseUrl?: string,
  *   fetchImpl?: typeof fetch,
- *   routes?: { createSession: string, sessionDownloads: string, pdfDownload: string },
+ *   routes?: { createSession: string, sessionDownloads: string },
  * }} [options] Overrides, mainly for tests.
  * @returns {{
  *   createCheckoutSession: (items: import('../cart/cartReducer').CartItem[], options?: { signal?: AbortSignal }) => Promise<CheckoutSession>,
  *   getSessionDownloads: (sessionId: string, options?: { signal?: AbortSignal }) => Promise<SessionDownloads>,
- *   getPdfDownloadLink: (productId: string, options?: { signal?: AbortSignal }) => Promise<PdfDownloadLink>,
  * }} The configured client.
  */
 export function createCheckoutApi({
@@ -258,37 +249,6 @@ export function createCheckoutApi({
       return {
         sessionId: typeof record.sessionId === 'string' ? record.sessionId : sessionId,
         downloads,
-      }
-    },
-
-    /**
-     * Requests a 24-hour pre-signed download link for a purchased PDF.
-     *
-     * @param {string} productId Digital PDF product id.
-     * @param {{ signal?: AbortSignal }} [options] Abort support.
-     * @returns {Promise<PdfDownloadLink>} Pre-signed URL and its expiry.
-     * @throws {CheckoutApiError} When the backend rejects the request or is unreachable.
-     */
-    async getPdfDownloadLink(productId, { signal } = {}) {
-      if (typeof productId !== 'string' || !productId.trim()) {
-        throw new CheckoutApiError('A product id is required to create a PDF download link.', { status: 400 })
-      }
-
-      const payload = await requestJson(routes.pdfDownload, {
-        body: { productId },
-        signal,
-      })
-
-      const record = payload && typeof payload === 'object' ? /** @type {Record<string, unknown>} */ (payload) : {}
-      const url = typeof record.downloadUrl === 'string' ? record.downloadUrl : null
-
-      if (!url) {
-        throw new CheckoutApiError('The checkout service did not return a download URL.', { status: 200 })
-      }
-
-      return {
-        url,
-        expiresAt: typeof record.expiresAt === 'string' ? record.expiresAt : null,
       }
     },
   }

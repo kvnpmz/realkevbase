@@ -34,6 +34,15 @@ public static class CheckoutEndpoints
         };
 
     /// <summary>
+    /// Largest quantity a single product may have in one cart.
+    /// </summary>
+    /// <remarks>
+    /// A hard cap keeps a hostile or buggy client from pushing an absurd line item into Stripe,
+    /// which would otherwise fail as an upstream 502 rather than a clear rejection.
+    /// </remarks>
+    private const int MaxQuantityPerProduct = 20;
+
+    /// <summary>
     /// Maps the checkout route group onto the application.
     /// </summary>
     /// <param name="endpoints">The endpoint route builder to extend.</param>
@@ -66,13 +75,6 @@ public static class CheckoutEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status502BadGateway);
-
-        group.MapPost("/downloads/pdf", CreatePdfDownloadLinkAsync)
-            .WithName("CreatePdfDownloadLink")
-            .WithSummary("Creates a 24-hour pre-signed download link for a PDF product.")
-            .Produces<PdfDownloadLinkResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;
     }
@@ -115,6 +117,16 @@ public static class CheckoutEndpoints
 
             requestedQuantities[item.ProductId] =
                 requestedQuantities.GetValueOrDefault(item.ProductId) + item.Quantity;
+
+            // Cap the aggregated quantity per product: an unbounded int would otherwise reach
+            // Stripe as an absurd line item and surface as a 502 instead of a rejected request.
+            if (requestedQuantities[item.ProductId] > MaxQuantityPerProduct)
+            {
+                return TypedResults.Problem(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Invalid quantity",
+                    detail: $"Quantity for product '{item.ProductId}' must not exceed {MaxQuantityPerProduct}.");
+            }
         }
 
         var lines = new List<CheckoutLine>(requestedQuantities.Count);
@@ -345,39 +357,6 @@ public static class CheckoutEndpoints
                 detail: "We could not prepare your downloads right now. Please try again in a moment.");
         }
     }
-
-    /// <summary>
-    /// Creates a read-only, 24-hour pre-signed download link for a digital product.
-    /// </summary>
-    private static async Task<IResult> CreatePdfDownloadLinkAsync(
-        PdfDownloadRequest request,
-        IProductCatalog catalog,
-        IPdfStorageService pdfStorage,
-        CancellationToken cancellationToken)
-    {
-        if (!catalog.TryGetProduct(request.ProductId, out var product))
-        {
-            return TypedResults.Problem(
-                statusCode: StatusCodes.Status404NotFound,
-                title: "Product not found",
-                detail: $"No product with id '{request.ProductId}' exists.");
-        }
-
-        if (!product.IsDigitalPdf)
-        {
-            return TypedResults.Problem(
-                statusCode: StatusCodes.Status400BadRequest,
-                title: "Product has no digital download",
-                detail: $"Product '{product.Id}' is fulfilled as {product.Fulfillment} and has no PDF download.");
-        }
-
-        var downloadUrl = await pdfStorage.CreateDownloadUrlAsync(product, cancellationToken);
-
-        return TypedResults.Ok(new PdfDownloadLinkResponse(
-            product.Id,
-            downloadUrl,
-            DateTimeOffset.UtcNow.Add(pdfStorage.LinkLifetime)));
-    }
 }
 
 /// <summary>
@@ -421,17 +400,3 @@ public sealed record SessionDownloadResponse(
     string Name,
     Uri Url,
     DateTimeOffset ExpiresAt);
-
-/// <summary>
-/// Request body for creating a PDF download link.
-/// </summary>
-/// <param name="ProductId">Identifier of the digital PDF product to download.</param>
-public sealed record PdfDownloadRequest(Guid ProductId);
-
-/// <summary>
-/// A pre-signed PDF download link.
-/// </summary>
-/// <param name="ProductId">Identifier of the product the link belongs to.</param>
-/// <param name="DownloadUrl">Read-only Azure Blob Storage SAS URL.</param>
-/// <param name="ExpiresAt">Moment the URL stops working (24 hours after it was issued).</param>
-public sealed record PdfDownloadLinkResponse(Guid ProductId, Uri DownloadUrl, DateTimeOffset ExpiresAt);
