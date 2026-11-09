@@ -37,6 +37,22 @@ public sealed record Product
     public required string Name { get; init; }
 
     /// <summary>
+    /// Gets the short sales copy shown on the product card.
+    /// </summary>
+    public string? Description { get; init; }
+
+    /// <summary>
+    /// Gets the storefront browse category, for example <c>moving-out</c>.
+    /// <see langword="null"/> for physical merchandise, which is not part of a category.
+    /// </summary>
+    public string? Category { get; init; }
+
+    /// <summary>
+    /// Gets the card artwork colours the storefront renders this product with.
+    /// </summary>
+    public ProductAccent? Accent { get; init; }
+
+    /// <summary>
     /// Gets the unit price in the store's checkout currency.
     /// </summary>
     public required decimal Price { get; init; }
@@ -60,6 +76,20 @@ public sealed record Product
     /// Gets a value indicating whether the product is fulfilled as a digital PDF download.
     /// </summary>
     public bool IsDigitalPdf => Fulfillment == FulfillmentType.DigitalPdf;
+
+    /// <summary>
+    /// Gets the identifier of the listing that produced this product's PDF, or
+    /// <see langword="null"/> for merchandise.
+    /// </summary>
+    /// <remarks>
+    /// The listing identifier is the blob file name without its extension, with hyphens
+    /// replaced by underscores, which matches the <c>Projects.id</c> column of the listing
+    /// database (for example <c>guides/first-apartment.pdf</c> becomes <c>first_apartment</c>).
+    /// </remarks>
+    public string? ListingId =>
+        string.IsNullOrWhiteSpace(PdfBlobName)
+            ? null
+            : Path.GetFileNameWithoutExtension(PdfBlobName).Replace('-', '_');
 
     /// <summary>
     /// Verifies that the product is internally consistent before it is used to create a

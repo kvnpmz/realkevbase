@@ -1,0 +1,175 @@
+using RealKevbase.Api.Listings;
+
+using RealKevbase.Core.Models;
+using RealKevbase.Core.Services;
+
+namespace RealKevbase.Api.Endpoints;
+
+/// <summary>
+/// Public catalog endpoints, grouped under <c>/api</c>.
+/// </summary>
+/// <remarks>
+/// These endpoints are the only way the storefront learns what is for sale. They deliberately
+/// never return <see cref="Product.PdfBlobName"/> or any other storage detail: a browser gets
+/// product ids, prices and presentation data, and download URLs are minted separately, after a
+/// paid Stripe session has been verified.
+/// </remarks>
+public static class CatalogEndpoints
+{
+    /// <summary>
+    /// Maps the catalog route group onto the application.
+    /// </summary>
+    /// <param name="endpoints">The endpoint route builder to extend.</param>
+    /// <returns>The same <paramref name="endpoints"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="endpoints"/> is <see langword="null"/>.</exception>
+    public static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        ArgumentNullException.ThrowIfNull(endpoints);
+
+        var group = endpoints.MapGroup("/api").WithTags("Catalog");
+
+        group.MapGet("/products", GetProducts)
+            .WithName("GetProducts")
+            .WithSummary("Returns every purchasable product, without storage details.")
+            .Produces<IReadOnlyList<ProductResponse>>();
+
+        group.MapGet("/listings", GetListings)
+            .WithName("GetListings")
+            .WithSummary("Returns the listing rows behind the catalog's digital products.")
+            .Produces<IReadOnlyList<ListingResponse>>();
+
+        return endpoints;
+    }
+
+    /// <summary>
+    /// Returns the purchasable catalog.
+    /// </summary>
+    /// <remarks>
+    /// A digital product is only offered when its listing exists, so the listing database stays
+    /// the record of which PDFs have actually been produced. Physical merchandise has no listing
+    /// and is always included. When the listing database cannot be read at all, every catalog
+    /// product is returned: a missing file must not empty the storefront.
+    /// </remarks>
+    private static IResult GetProducts(IProductCatalog catalog, IListingRepository listings)
+    {
+        var available = listings.GetAll();
+        var listingIds = available?.Select(listing => listing.Id).ToHashSet(StringComparer.Ordinal);
+
+        var products = catalog.Products
+            .Where(product => !product.IsDigitalPdf
+                              || listingIds is null
+                              || (product.ListingId is not null && listingIds.Contains(product.ListingId)))
+            .Select(ProductResponse.From)
+            .ToArray();
+
+        return Results.Ok(products);
+    }
+
+    /// <summary>
+    /// Returns the listings that back the catalog, excluding generator artifacts and rows that
+    /// have no purchasable product.
+    /// </summary>
+    private static IResult GetListings(IProductCatalog catalog, IListingRepository listings)
+    {
+        var available = listings.GetAll() ?? [];
+
+        var productListingIds = catalog.Products
+            .Where(product => product.IsDigitalPdf && product.ListingId is not null)
+            .Select(product => product.ListingId!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var responses = available
+            .Where(listing => productListingIds.Contains(listing.Id))
+            .Select(ListingResponse.From)
+            .ToArray();
+
+        return Results.Ok(responses);
+    }
+}
+
+/// <summary>
+/// A product as the storefront sees it. Never includes blob names or other storage details.
+/// </summary>
+/// <param name="Id">Stable product identifier used by checkout.</param>
+/// <param name="Name">Customer-facing name.</param>
+/// <param name="Description">Short sales copy for the product card.</param>
+/// <param name="Price">Unit price in the store currency.</param>
+/// <param name="Fulfillment">Fulfillment type: <c>DigitalPdf</c> or <c>PhysicalMerch</c>.</param>
+/// <param name="Category">Browse category, or <see langword="null"/> for merchandise.</param>
+/// <param name="ListingId">Listing that backs the PDF, or <see langword="null"/> for merchandise.</param>
+/// <param name="Accent">Card artwork colours.</param>
+public sealed record ProductResponse(
+    Guid Id,
+    string Name,
+    string? Description,
+    decimal Price,
+    string Fulfillment,
+    string? Category,
+    string? ListingId,
+    ProductAccentResponse? Accent)
+{
+    /// <summary>
+    /// Projects a catalog product onto the public response shape.
+    /// </summary>
+    /// <param name="product">The catalog product.</param>
+    /// <returns>The public representation of <paramref name="product"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    public static ProductResponse From(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        return new ProductResponse(
+            product.Id,
+            product.Name,
+            product.Description,
+            product.Price,
+            product.Fulfillment.ToString(),
+            product.Category,
+            product.ListingId,
+            product.Accent is null
+                ? null
+                : new ProductAccentResponse(product.Accent.From, product.Accent.To, product.Accent.Ink));
+    }
+}
+
+/// <summary>
+/// Card artwork colours for a product.
+/// </summary>
+/// <param name="From">Starting colour of the artwork gradient.</param>
+/// <param name="To">Ending colour of the artwork gradient.</param>
+/// <param name="Ink">Foreground colour for the icon.</param>
+public sealed record ProductAccentResponse(string From, string To, string Ink);
+
+/// <summary>
+/// A listing as the storefront sees it. Never includes the generator's folder path.
+/// </summary>
+/// <param name="Id">Listing identifier, matching <see cref="ProductResponse.ListingId"/>.</param>
+/// <param name="OutputName">Configured output file name, when one was recorded.</param>
+/// <param name="Template">Generator template that produced the PDF.</param>
+/// <param name="CompletedDate">Date the PDF was completed.</param>
+/// <param name="IsEditable">Whether the PDF has an editable text layer.</param>
+public sealed record ListingResponse(
+    string Id,
+    string? OutputName,
+    string? Template,
+    string? CompletedDate,
+    bool IsEditable)
+{
+    /// <summary>
+    /// Projects a listing row onto the public response shape.
+    /// </summary>
+    /// <param name="listing">The listing row.</param>
+    /// <returns>The public representation of <paramref name="listing"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="listing"/> is <see langword="null"/>.</exception>
+    public static ListingResponse From(Listing listing)
+    {
+        ArgumentNullException.ThrowIfNull(listing);
+
+        return new ListingResponse(
+            listing.Id,
+            listing.OutputName,
+            listing.Template,
+            listing.CompletedDate,
+            listing.IsEditable);
+    }
+}

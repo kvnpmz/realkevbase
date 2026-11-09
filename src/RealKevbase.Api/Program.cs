@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using RealKevbase.Api.Cors;
 using RealKevbase.Api.Endpoints;
+using RealKevbase.Api.Listings;
 using RealKevbase.Api.Services;
 using RealKevbase.Core.Services;
 
@@ -22,6 +23,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddAzureBlobPdfStorage(builder.Configuration);
 builder.Services.AddSingleton<IProductCatalog, InMemoryProductCatalog>();
+builder.Services.AddListings(builder.Configuration);
 builder.Services.AddStripeCheckout(builder.Configuration);
 
 // Queued PDF fulfillment for paid Stripe sessions; the webhook only enqueues work.
@@ -47,6 +49,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(CorsPolicies.SpaPolicyName);
 app.MapCheckoutEndpoints();
+app.MapCatalogEndpoints();
 
 var summaries = new[]
 {
