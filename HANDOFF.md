@@ -1,12 +1,38 @@
 # HANDOFF — realkevbase.com
 
-Status snapshot: **2026-11-08**. Repo root: `~/realkevbase-platform`, branch `main`, HEAD `23be2bc`.
+Status snapshot: **2026-11-09**. Branch `main`, HEAD `fb61b4f`.
+Repo root: `~/realkevbase-platform` on the owner's machine, `/workspace` in the build container.
+
+**Deployed code revision: `15b6149`** (product thumbnails). Everything after that —
+`1a19462`, `e10747f`, `203d76b`, `d92543e`, `ee7311a`, `a00ac08`, `fb61b4f` — changed only
+`scripts/`, which is not shipped to production. No redeploy is owed for them.
 
 ---
 
 ## 1. What this project is
 
-**realkevbase.com** is a two-host storefront that sells digital PDF guides for **$5 each** (65 of them) alongside a small line of physical merch. The storefront is a **React 19 + Material UI SPA** built with Vite and hosted on **Cloudflare Pages**; it talks to a **C# / .NET 10 Minimal API** on **Azure App Service (Linux, B1)** at `api.realkevbase.com`. Payments run through **Stripe Checkout** (hosted page): the SPA posts product ids to `POST /api/checkout/sessions`, the API validates them against an in-memory catalog and creates the session, and Stripe redirects the buyer back to the SPA with `?checkout=success&session_id=…`. Fulfilment is **asynchronous**: a signature-verified Stripe webhook enqueues the session id on a bounded `Channel`, a `BackgroundService` re-reads the paid session from Stripe, resolves the digital products, mints **24-hour Azure Blob Storage SAS links**, emails them via **Azure Communication Services Email**, and exposes the same links on the success page through `GET /api/checkout/sessions/{sessionId}/downloads`.
+**realkevbase.com** sells **65 digital PDF guides at $5 each** and a small line of physical
+merch. **RealKevbase** is the umbrella brand; **SaveSimple** is the product line, presented as
+"the SaveSimple collection".
+
+The storefront is a **React 19 + Material UI SPA** (Vite) on **Cloudflare Pages**. It talks to
+a **C# / .NET 10 Minimal API** on **Azure App Service (Linux, B1)** at `api.realkevbase.com`.
+
+The important architectural change since the last handoff: **the catalog is server-owned.**
+The SPA no longer contains product data or storage paths. It fetches `GET /api/products`
+(68 items: 65 PDFs + 3 merch) and `GET /api/listings` (65 rows from SQLite). The 860-line
+`src/realkevbase-web/src/data/products.js` was deleted, which removed every
+`guides/*.pdf` blob path from the bundle.
+
+Payments run through **Stripe Checkout** in **live mode**. Fulfilment is asynchronous: a
+signature-verified webhook enqueues the session id on a bounded `Channel`, a
+`BackgroundService` re-reads the paid session from Stripe, mints **24-hour Azure Blob SAS
+links**, emails them via **Azure Communication Services**, and exposes the same links on the
+success page via `GET /api/checkout/sessions/{sessionId}/downloads`.
+
+**Product artwork** is now real: 65 page renders are served as card thumbnails through
+`GET /api/products/{id}/thumbnail`, proxied from private storage (no SAS, no blob name in
+any payload).
 
 ---
 
@@ -18,338 +44,373 @@ Status snapshot: **2026-11-08**. Repo root: `~/realkevbase-platform`, branch `ma
 |---|---|
 | Pages project | `realkevbase-client` |
 | Custom domains | `realkevbase.com`, `www.realkevbase.com` |
-| Pages domain | `realkevbase-client.pages.dev` |
-| Last deployment id | `3f5c0e16.realkevbase-client.pages.dev` |
-| Live bundle | `/assets/index-Cy1YeSJw.js` (502 kB, 154 kB gzip) |
+| Live bundle | `/assets/index-o6-a42vm.js` (482.6 kB, 151 kB gzip) |
 | Bundled API base | `https://api.realkevbase.com` (inlined at build time) |
+| Catalog source | `GET /api/products` + `GET /api/listings` (no local product data) |
 
-✅ **Verified working**: `https://realkevbase.com/` → `200 text/html`; bundle inlined API base (`grep -c 'api.realkevbase.com'` → 1); 68 catalog cards render (65 PDF + 3 merch); success page renders two `Download PDF` anchors that serve `200 application/pdf`.
+✅ **Verified**: `https://realkevbase.com/` → `200`; live bundle matches the local build;
+68 cards render with thumbnails at 390 px and 1280 px; category pills (All / Moving Out /
+Healthy Living / Money & Budgeting / Guides / Merch) with 12-desktop / 6-mobile paging.
 
 ### Backend — Azure App Service
 
 | Item | Value |
 |---|---|
-| Resource group | `realkevbase-rg` (Central US; App Service itself is in **West US 2**) |
+| Resource group | `realkevbase-rg`; App Service in **West US 2** |
 | App Service | `realkevbase-platform` |
-| Default hostname | `realkevbase-platform-gkhed8h4dsadeyga.westus2-01.azurewebsites.net` |
-| Plan | `realkevbase-plan`, **B1**, Linux, .NET `DOTNETCORE|10.0` |
-| Custom domain | `api.realkevbase.com` (Verified, SNI binding) |
-| TLS | Azure managed certificate, thumbprint `55D28D01DACA6DDDAAE6004932070E39F33D56B6`, issuer GeoTrust TLS RSA CA G1, valid to **2027-05-08** |
-| Deployed revision | `23be2bc` (zip deploy of `dotnet publish -c Release`) |
-| Platform CORS | **empty** (deliberately — see section 7) |
-| `alwaysOn` | `true` |
+| Plan | `realkevbase-plan`, **B1**, Linux, capacity **1**, **no autoscale rules** |
+| Custom domain | `api.realkevbase.com` (SNI, Azure managed certificate, valid to 2027-05-08) |
+| `httpsOnly` | `true` |
+| `ASPNETCORE_ENVIRONMENT` | `Production` |
 
-✅ **Verified working**: `https://api.realkevbase.com/api/checkout/sessions/cs_test_x/downloads` → `404 application/problem+json` over valid TLS (`subject=CN=api.realkevbase.com`); unsigned `POST /api/checkout/webhook` → `400`; preflight from `https://realkevbase.com` → `204` with `Access-Control-Allow-Origin`; a live session POST from that origin → `200` + Stripe URL.
+✅ **Verified**: 12-check smoke test passes (section 5). Catalog serves 68 products / 65 PDFs
+with no storage details; all 65 thumbnails return `200 image/webp`; a live checkout session
+returns `cs_live_…`.
 
-### Data / email resources
+⚠️ **No autoscaling.** That is deliberate and is why a traffic flood **cannot** run up the
+compute bill — cost stays flat at roughly $13/month. Do not add scale-out rules without
+understanding that they convert a flood into a bill. The only abuse-scaled cost is
+**Application Insights ingestion** (no daily cap set).
 
-| Item | Value |
-|---|---|
-| Storage account | `realkevbasestorage` (Standard_LRS) |
-| Container | `pdfs` |
-| Blob layout | `guides/<hyphen-slug>.pdf` — 65 objects, one per catalog product |
-| App Insights | `realkevbase-platform202611071211` (the component the app writes to — see the trap in section 7) |
-| ACS resource | `realkevbase-acs` (location `global`, data location **United States**) |
-| Email service | `realkevbase-email` |
-| Email domain | `realkevbase.com`, `CustomerManaged` — **Domain / SPF / DKIM / DKIM2 = Verified**, DMARC = `NotStarted` |
-| Linked to ACS | yes (`linkedDomains` contains the domain resource id) |
-| Sender usernames | `DoNotReply` (provisioned with the domain), `noreply` (created — the configured sender) |
-
-### Stripe
+### Data / storage / email
 
 | Item | Value |
 |---|---|
-| **Sandbox account (in use)** | `acct_1UYhPSPm53HdvLrD` — "realkevbase sandbox", test mode |
-| Webhook endpoint | `we_1UZaFtPm53HdvLrDANzYFURI` → `https://api.realkevbase.com/api/checkout/webhook` |
+| Storage account | `realkevbasestorage` (Standard_LRS), container `pdfs` |
+| PDF blobs | `guides/<hyphen-slug>.pdf` — **65** |
+| Thumbnail blobs | `guides/images/<hyphen-slug>.webp` — **65**, `image/webp`, ~42 kB each |
+| Orphan blobs | none (verified) |
+| Listing database | `src/RealKevbase.Api/Data/projects.db` — 69 rows, 65 unique titles |
+| App Insights | app writes to `realkevbase-platform202611071211`; 5 components exist (see traps) |
+| ACS | `realkevbase-acs`, email service `realkevbase-email`, sender `noreply@realkevbase.com` |
+| Email domain | `realkevbase.com` `CustomerManaged` — Domain / SPF / DKIM / DKIM2 **Verified** |
+| DMARC | **published**: `v=DMARC1; p=none; rua=mailto:you@realkevbase.com` — the `rua` is a placeholder and reports go nowhere (section 6) |
+
+### Stripe — LIVE
+
+| Item | Value |
+|---|---|
+| **Live account (in use)** | `acct_1UZEkkBM39vAXdSW` — charges, payouts and details all enabled, US, USD |
+| Secret key | `sk_live_…` (107 chars) in App Service setting `Stripe__SecretKey` |
+| Webhook secret | `whsec_…` (38 chars — dashboard endpoint secret, **not** the 70-char `stripe listen` one) |
+| Webhook endpoint | `we_1UZjjeBM39vAXdSWD8mOFas9` → `https://api.realkevbase.com/api/checkout/webhook`, `livemode: true`, enabled |
 | Endpoint events | `checkout.session.completed`, `checkout.session.async_payment_succeeded` |
-| Endpoint API version | `2026-10-28.endive` (payload style *Snapshot*) — tolerated: `throwOnApiVersionMismatch: false` |
-| **Live account (NOT configured)** | `acct_1UZEkkBM39vAXdSW` — no keys, no endpoint, no live products yet |
+| Endpoint API version | `2026-10-28.endive` — tolerated (`throwOnApiVersionMismatch: false`) |
+| Sandbox (retired) | `acct_1UYhPSPm53HdvLrD`, endpoint `we_1UZaFtPm53HdvLrDANzYFURI` — no longer used |
 
-✅ **Verified working**: a real Stripe delivery returned `200`; a real paid two-PDF session was fulfilled (`Fulfilled 2 digital product(s)`) and emailed (`Emailed 2 PDF download link(s) … operation status Succeeded`).
+✅ **Verified**: session creation returns `cs_live_…`; the session reports `livemode: true`,
+`amount_total: 500 USD`; test cards are rejected by Stripe in live mode, so the
+"4242 → free PDF" hole is closed.
 
-⚠️ **Configured but NOT verified**: a purchase driven from the production domain through to an inbox. A real card payment has been completed against a session created by the API (earlier e2e), and each hop has been proven separately in production, but the single uninterrupted "buy on realkevbase.com → receive email → click link" run has **not** been executed yet.
-
-❌ **Missing**: live-mode Stripe configuration; DMARC record; email inbox-placement confirmation; real merch photography.
+❌ **Not yet done**: one real card purchase end to end on the live account (section 6, item 1).
 
 ---
 
-## 3. Architecture map — the money path
+## 3. Architecture map
+
+### Catalog path (new)
 
 ```
-browser (realkevbase.com, React SPA)
-  │  user clicks Checkout in CartDrawer
-  ▼
-POST https://api.realkevbase.com/api/checkout/sessions      { items: [{ productId, quantity }] }
-  │  Endpoints/CheckoutEndpoints.cs  → StripeCheckoutService.CreateSessionAsync
-  │  catalog validation (unknown id → 400 Unknown products), cent-safe money math,
-  │  line metadata product_id / fulfillment, currency usd, shipping for merch
-  ▼
-Stripe Checkout (hosted, checkout.stripe.com/c/pay/cs_test_…)
-  │  buyer pays (card / delayed methods)
-  ▼
-redirect → https://realkevbase.com/?checkout=success&session_id=cs_…
-  │                                    │
-  │ (A) SUCCESS PAGE PATH              │ (B) WEBHOOK PATH
-  ▼                                    ▼
-GET /api/checkout/sessions/{id}/downloads   POST /api/checkout/webhook
-  │  DigitalFulfillmentService.IssueAsync    │  EventUtility.ConstructEvent (HMAC-SHA256, t=,v1=, 300 s tolerance)
-  │  re-reads session from Stripe,           │  filter: completed | async_payment_succeeded
-  │  gates on payment_status == "paid",      │  gate: payment_status == "paid" (else 200 "deferred")
-  │  resolves products, mints SAS            │  enqueue session id → bounded Channel (cap 100, Wait, SingleReader)
-  ▼                                         ▼
- CheckoutFulfillmentWorker (BackgroundService, ReadAllAsync)
-  │  DigitalFulfillmentService.FulfillAsync → IssueAsync → IPdfDeliveryService.DeliverAsync
-  │  AzureBlobPdfStorageService.CreateDownloadUrlAsync  (BlobSasBuilder, Read, 24 h, 5 min backdate)
-  ▼                                         ▼
- React success view renders buttons      Azure Communication Services Email
- (2048-character SAS URLs, target=_blank) → buyer's session.customer_details.email
+zz_tp/output/<listing_id>/            ← generator output (gitignored, local only)
+  ├── <template>.pdf                   (full page; _a4/_ipad/_zoom are variants)
+  └── images/<template>.png            ← thumbnail source, 2550x3300
+
+zz_tp/projects.db → copied by hand once → src/RealKevbase.Api/Data/projects.db
+  Projects(id, folder_path, completed_date, overrides, output_name,
+           is_editable, template, title)      ← 'title' added; 65 unique values
+
+GET /api/products   → ProductResponse  (id, name, description, price, fulfillment,
+                                        category, listingId, thumbnailUrl, accent)
+                                        never PdfBlobName
+GET /api/listings   → ListingResponse  (id, title, outputName, template,
+                                        completedDate, isEditable)
+GET /api/products/{id}/thumbnail → streams image/webp from blob, Cache-Control 86400, ETag
+
+join key: Product.ListingId = blob filename with '-' → '_'
+          e.g. guides/150first-foods.pdf → 150first_foods
+A digital product is only offered when its listing row exists. If the DB is missing,
+GetAll() returns null and every product is served (a storage problem must not empty the store).
 ```
 
-**Commit SHAs making up the current state** (oldest → newest):
+### Money path (unchanged in shape, now live)
 
-| SHA | What it adds |
-|---|---|
-| `a7248c9` | `POST /api/checkout/sessions` with catalog validation and mixed orders |
-| `c604a83` | Storefront assembly, cart context, MUI polish |
-| `14c39da` | Webhook signature verification + background queue/worker + SAS issuance |
-| `43b0d3a` | `GET /api/checkout/sessions/{id}/downloads` (`IssueAsync` refactor) |
-| `8bc9027` | 65-PDF catalog at $5 in **both** API and SPA, uploaded blobs |
-| `a68621b` | SPA success view (`CheckoutSuccess.jsx`) |
-| `c184983` | `.gitignore`: `publish/`, `TestResults/` |
-| `a7a0584` | Fulfil on `checkout.session.async_payment_succeeded` too (delayed payment methods) |
-| `23be2bc` | Email delivery through Azure Communication Services (**deployed backend**) |
-
-Product ids are **deterministic UUIDv5** of `https://realkevbase.com/products/<slug>`, generated once and mirrored between `InMemoryProductCatalog.cs` and `src/realkevbase-web/src/data/products.js`, so storefront and API cannot drift.
+```
+POST /api/checkout/sessions  { items: [{ productId, quantity }] }
+  │  prices always come from IProductCatalog (client cannot influence price)
+  │  duplicate lines aggregated, quantity capped at 20
+  ▼
+Stripe Checkout (hosted, live)
+  ├── (A) redirect → realkevbase.com/?checkout=success&session_id=cs_live_…
+  │        GET /api/checkout/sessions/{id}/downloads  (re-reads session, gates on "paid")
+  └── (B) webhook → ConstructEvent (HMAC, 300 s tolerance) → enqueue → worker
+           → SAS links (Read, 24 h) → ACS email
+```
 
 ---
 
 ## 4. Key config and where it lives
 
-**Never paste values into a chat, a commit, a log or an issue.** Names only, below.
-
-### User secrets (local development only)
-
-`UserSecretsId` = `abdf585f-250d-4b93-9e62-18dd07061bed`, file `~/.microsoft/usersecrets/abdf585f-250d-4b93-9e62-18dd07061bed/secrets.json`.
-
-| Key | Purpose |
-|---|---|
-| `Stripe:SecretKey` | sandbox test secret key (`sk_test_…`) |
-| `Stripe:WebhookSecret` | signing secret of `we_1UZaFtPm53HdvLrDANzYFURI` (38 chars) |
-| `AzureStorage:ConnectionString` | blob account connection string |
-| `AzureEmail:ConnectionString` | ACS connection string (165 chars, endpoint `https://realkevbase-acs.unitedstates.communication.azure.com/`) |
-
-Note: the file is **UTF-8 with BOM** and keys are a **flat** `"Section:Name"` map — read it with `encoding='utf-8-sig'`.
+**Never paste values into chat, commits, logs or issues.** Names only.
 
 ### Azure App Service settings (production)
 
 | Name | Notes |
 |---|---|
-| `Stripe__SecretKey` | sandbox test key |
-| `Stripe__WebhookSecret` | must equal the *dashboard endpoint* secret, not the `stripe listen` secret |
-| `ConnectionStrings__AzureStorage` | blob connection string (companion key `AzureStorage__ConnectionString` is also accepted by the app) |
+| `Stripe__SecretKey` | **live** `sk_live_…` (107 chars) |
+| `Stripe__WebhookSecret` | **live dashboard endpoint** secret (38 chars) |
+| `ConnectionStrings__AzureStorage` | blob connection string |
 | `AzureEmail__ConnectionString` | ACS connection string |
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 | `WEBSITES_PORT` | `8080` |
 | `APPLICATIONINSIGHTS_CONNECTION_STRING` | set by the App Insights extension |
 
-Not set, deliberately: `Stripe__ApiBase` (unset ⇒ real Stripe), `Stripe:ApiKey` (older name).
+Non-secret config in `src/RealKevbase.Api/appsettings.json`: `AzureEmail:SenderAddress`,
+`Listings:DatabasePath` (`Data/projects.db`), Stripe currency / shipping countries.
+`appsettings.Production.json` overrides only the Stripe success/cancel URLs to
+`https://realkevbase.com/…`.
 
-`AzureEmail:SenderAddress` = `noreply@realkevbase.com` lives in **`src/RealKevbase.Api/appsettings.json`** (not a secret). `appsettings.Production.json` only overrides the Stripe success/cancel URLs to `https://realkevbase.com/?checkout=success&session_id={CHECKOUT_SESSION_ID}` and `…?checkout=cancelled`.
+### Local tooling
 
-### Cloudflare DNS (zone `realkevbase.com`, NS `tiffany.ns.cloudflare.com` / `donovan.ns.cloudflare.com`)
+| Thing | Where | Notes |
+|---|---|---|
+| `.venv/` | repo root | Pillow for the thumbnail script. **Gitignored, never commit.** |
+| `scripts/requirements.txt` | repo | `Pillow>=13,<14` |
+| Storage credentials | resolved at run time | `scripts/storage_auth.py` reads the App Service setting via `az` |
+| `zz_tp/` | repo root | 672 MB / 3,467 files of generator workspace. **Gitignored.** |
+
+### Cloudflare DNS
 
 | Record | Purpose | Proxy |
 |---|---|---|
-| `api` CNAME → `realkevbase-platform-gkhed8h4dsadeyga.westus2-01.azurewebsites.net` | App Service | **DNS only (grey)** — required for the managed cert |
-| `asuid.api` TXT → App Service `customDomainVerificationId` | domain ownership | n/a |
+| `api` CNAME → `realkevbase-platform-….azurewebsites.net` | App Service | **DNS only (grey)** — required for the managed certificate |
 | apex + `www` → Pages | storefront | proxied |
-| `@` TXT `ms-domain-verification=…` | ACS domain verification | n/a |
-| `@` TXT `v=spf1 include:spf.protection.outlook.com -all` | SPF (**only one SPF record at apex**) | n/a |
-| `selector1-azurecomm-prod-net._domainkey` CNAME → `….azurecomm.net` | DKIM | **DNS only** |
-| `selector2-azurecomm-prod-net._domainkey` CNAME → `….azurecomm.net` | DKIM2 | **DNS only** |
-| `_dmarc` TXT | DMARC — **not currently published**, see section 6 | n/a |
+| `_dmarc` TXT | `v=DMARC1; p=none; rua=mailto:you@realkevbase.com` | n/a |
 
 ---
 
-## 5. What is verified, and how to re-run each check
-
-All commands assume the Azure CLI, `stripe` CLI (sandbox), and `npx --no-install wrangler` are authenticated.
-
-**a) Webhook accepts a real Stripe delivery and fulfils**
+## 5. Verification: one command
 
 ```bash
-stripe trigger checkout.session.completed
-sleep 75
-az monitor app-insights query -g realkevbase-rg -a realkevbase-platform202611071211 \
-  --analytics-query "requests | where timestamp > ago(30m) | where name contains 'webhook' | project timestamp, resultCode, success | order by timestamp desc | take 5" -o json
+./scripts/deploy.sh verify          # read-only, safe to run against production any time
 ```
 
-Expected: `HTTP 200 success=True`. Template sessions carry no catalog products, so the trace then says `contains no digital products` — that is correct, not a bug. For a *real* order, resend a paid event (note the flag, see section 7):
+Twelve assertions, exit non-zero on any failure:
 
-```bash
-stripe events resend <evt_id> --webhook-endpoint we_1UZaFtPm53HdvLrDANzYFURI
+```
+paywall: unauthenticated link endpoint is gone (404)
+scaffold endpoint /weatherforecast is gone (404)
+catalog responds (200)
+catalog shape (68 products, 65 PDFs) and no storage details
+security headers present
+Server header suppressed
+quantity cap rejects 21 (400)
+product artwork serves (200)
+thumbnailUrl exposes no storage details
+storefront responds (200)
+live bundle is current (assets/index-…js)
+bundle asset is fetchable (200)
 ```
 
-Expected traces: `Queued Stripe session cs_…` → `Emailed N PDF download link(s) … (operation status Succeeded)` → `Fulfilled N digital product(s)`.
-
-**b) Success page serves real PDFs** (no Playwright installed; drive the cached Chromium directly)
-
-```bash
-SESS=cs_test_b1B53gEvyYwxmrM2hRdpFYYiUhKNN0abbuxnsBj9csZAWNXA8IYYU7w9cM
-~/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome --headless=new --no-sandbox \
-  --disable-gpu --virtual-time-budget=15000 --dump-dom \
-  "https://realkevbase.com/?checkout=success&session_id=$SESS" > /tmp/dom.html
-grep -o 'href="[^"]*blob\.core\.windows\.net[^"]*"' /tmp/dom.html   # expect 2 anchors
-```
-
-Expected: two `Download PDF` anchors; following each yields `200 application/pdf` and `%PDF-` magic bytes (measured: `apartment-checklist.pdf` 60,596 B, `baby-registrylist.pdf` 26,142 B).
-
-**c) API reachability, TLS and error contract**
-
-```bash
-curl -s -o /dev/null -w "%{http_code} %{content_type}\n" \
-  https://api.realkevbase.com/api/checkout/sessions/cs_test_x/downloads      # 404 application/problem+json
-curl -s -o /dev/null -w "%{http_code}\n" -X POST \
-  https://api.realkevbase.com/api/checkout/webhook -d '{}' -H 'Content-Type: application/json'   # 400
-echo | openssl s_client -connect api.realkevbase.com:443 -servername api.realkevbase.com 2>/dev/null \
-  | openssl x509 -noout -subject -enddate                                    # CN=api.realkevbase.com
-```
-
-**d) CORS from the live origin**
-
-```bash
-curl -s -o /dev/null -D - -X OPTIONS https://api.realkevbase.com/api/checkout/sessions \
-  -H "Origin: https://realkevbase.com" -H "Access-Control-Request-Method: POST" \
-  -H "Access-Control-Request-Headers: content-type" | grep -i "^HTTP\|allow-origin"
-```
-
-Expected `204` + `Access-Control-Allow-Origin: https://realkevbase.com`. `*.pages.dev` previews are allowed; `http://localhost:5173` is allowed; everything else gets `204` **without** the ACAO header (browser blocks).
-
-**e) Email path**
-
-```bash
-CS=$(az communication list-key --name realkevbase-acs --resource-group realkevbase-rg --query primaryConnectionString -o tsv)
-az communication email send --connection-string "$CS" --sender noreply@realkevbase.com \
-  --to <inbox> --subject "RealKevbase deliverability test" --text "test" --wait-until completed -o json
-unset CS
-```
-
-Expected `{"error": null, "id": "<guid>", "status": "Succeeded"}`. A send has already returned `Succeeded` (operation `3809fcf5-2e74-4300-aa07-afc6e0a7748c`); **inbox placement for that message was never confirmed by the recipient**. To re-run the application path rather than the CLI, resend a paid event as in (a).
-
-**f) ACS domain verification state**
-
-```bash
-az communication email domain show --domain-name realkevbase.com \
-  --email-service-name realkevbase-email -g realkevbase-rg --query verificationStates -o json
-dig +short TXT realkevbase.com; dig +short CNAME selector1-azurecomm-prod-net._domainkey.realkevbase.com
-```
+This exists because a successful build cannot see the class of bug that mattered most: the
+removed `/api/checkout/downloads/pdf` endpoint passed `dotnet build`, `eslint` and a green
+deploy while handing out free PDFs. If a check fails, do not ship.
 
 ---
 
 ## 6. Known open items, prioritized
 
-1. **End-to-end purchase on the production domain (highest value, costs $0).** Create a session with `POST /api/checkout/sessions`, pay it with `4242 4242 4242 4242`, put a real inbox in Stripe's email field, and confirm the webhook emails the links and the PDF downloads. Everything is proven hop-by-hop; this is the one uninterrupted run still owed. A session created on 2026-11-08 (`cs_test_a1aavUy6EMJJvgYDuAZjIKxD4EWnFHWSnDb1A50wJHdOKNuUPre20lBMgE`) was never paid and has expired.
-2. **DMARC record not published.** `verificationStates.DMARC` stays `NotStarted` (ACS only accepts `--verification-type Domain|SPF|DKIM|DKIM2`, so DMARC is never initiated and has no error code). Authoritative NS returns nothing for `_dmarc.realkevbase.com` while apex TXT resolves — the classic Cloudflare mistake is entering the FQDN in the **Name** field, which publishes `_dmarc.realkevbase.com.realkevbase.com`. Enter `_dmarc` only, type TXT, value `v=DMARC1; p=none; rua=mailto:<address>`.
-3. **Live-mode Stripe migration.** Account `acct_1UZEkkBM39vAXdSW` has nothing configured: needs live keys, a live webhook endpoint (`checkout.session.completed` + `checkout.session.async_payment_succeeded`) and its signing secret, live product/price review, `httpsOnly`, and a real end-to-end payment. Keep the sandbox path intact until live is proven.
-4. **Merch is placeholder.** Three `PhysicalMerch` entries (RealKevbase Logo Tee $24, Hoodie $59, Desk Mat $34) have no photography and no shipping/fulfilment process behind them. Either shoot real photos or drop the entries; note `Stripe:ShippingCountries` (22 countries) and a $0 shipping rate exist and are exercised by mixed carts.
-5. **Durability.** Catalog is `InMemoryProductCatalog` and the fulfilment queue is a bounded `Channel<string>` (capacity 100, `FullMode.Wait`, no persistence). A restart drops queued sessions, and a full queue makes the webhook return `503` so Stripe retries. Fine at launch volume; needs durable storage + idempotency before scale.
-6. **ACS connection string is an account key** in app settings — broader than "send email". A managed identity with a sender role on `realkevbase-acs` would remove the secret from config entirely.
-7. **No CI.** `.github/workflows/ci.yml` does not exist; deployments are manual. Backend `dotnet build` is currently 0 warnings / 0 errors; frontend `npm run build` passes with a 500 kB chunk advisory.
-8. **Cosmetic/cleanup.** `app.MapGet("/weatherforecast")`, a stray `Class1.cs`, unused starter assets, and a 502 kB single-chunk bundle worth code-splitting. The cart is intentionally **not** cleared after payment (a receipt link reopened in the same browser must not wipe a new cart).
+1. **One real card purchase on the live account.** Create a session, pay $5 with a real card,
+   confirm the webhook emails the link and the PDF downloads, then refund. Everything is
+   proven hop by hop and a live session has been created, but the uninterrupted
+   "buy → email → download" run has never been executed on the live key.
+2. **No test-mode guard.** Every protection above rests on `Stripe__SecretKey` staying
+   `sk_live_`. One `az` command reverts it and nothing in the code objects — free PDFs return
+   silently and the store still looks healthy. ~30 lines: return 503 on checkout and skip
+   fulfilment when the key starts with `sk_test_`. Highest value per line of anything left.
+3. **Merch takes money and ships nothing.** Tee $24, Hoodie $59, Desk Mat $34 are purchasable
+   live with no fulfilment process and no photography. A single real order costs a refund
+   plus a possible chargeback fee. Hide the three entries or build the process.
+4. **`api.realkevbase.com` is not behind Cloudflare** (DNS-only, resolves to
+   `20.115.232.11`). No WAF, no rate limiting, no DDoS absorption. This is an availability
+   risk, not a billing one. ⚠️ Proxying is **not** a simple toggle: the App Service managed
+   certificate is issued by DNS validation, so moving to the orange cloud needs a certificate
+   on the origin (or Cloudflare-only TLS) plus a re-verified custom domain.
+5. **Application Insights has no daily cap**, and there are **five** duplicate components from
+   repeated create attempts (`realkevbase-api`, `realkevbase-api20261106188`,
+   `realkevbase-api202611061812`, `realkevbase-platform`, `realkevbase-platform202611071211`).
+   Only the last is wired. Cap the workspace and delete the rest.
+6. **Secrets are plaintext app settings**, not Key Vault. The ACS connection string is an
+   account key — broader than "send email"; a managed identity with a sender role would remove
+   it entirely.
+7. **Durability.** Catalog is `InMemoryProductCatalog`; the fulfilment queue is a bounded
+   `Channel<string>` (100, `FullMode.Wait`, no persistence). A restart drops queued sessions;
+   a full queue returns `503` so Stripe retries. Fine at this volume.
+8. **No webhook idempotency.** A Stripe retry re-sends the download email. Re-signing is
+   idempotent so nothing breaks, but customers may get two emails.
+9. **No CI.** Deployments are manual via `scripts/deploy.sh`. The smoke test is the safety net.
+10. **DMARC `rua` is a placeholder** (`you@realkevbase.com`), so aggregate reports are
+    discarded. Set a real mailbox.
+11. **Descriptions and prices live in `InMemoryProductCatalog.cs`**, not the database. Copy or
+    price edits need a redeploy; only listings, titles and thumbnails are data-driven.
+12. **Cosmetic.** Single 482 kB chunk worth code-splitting. The cart is intentionally **not**
+    cleared after payment (a reopened receipt must not wipe a new cart).
 
 ---
 
 ## 7. Traps and gotchas
 
-- **App Service platform-level CORS shadows Kestrel.** If `az webapp cors show` lists origins, the platform answers preflights first and the app's predicate never runs — which produced a `400 The origin … is not allowed` for a `*.pages.dev` preview while the same code returned `204` locally. Platform CORS must stay empty (`az webapp cors remove … --allowed-origins …`, then restart; allow ~2 min).
-- **`stripe listen` secret ≠ dashboard endpoint secret.** The CLI's secret is 70 characters (`whsec_` + 64 hex) and only signs events forwarded to the local listener; a dashboard endpoint's secret is 38 characters. Deploying the listener secret to production yields `StripeException: The expected signature was not found in the Stripe-Signature header`.
-- **Test mode in the main account ≠ a sandbox account.** Stripe sandboxes are separate accounts with their own keys, products and endpoints. An endpoint in one account never receives events from another. Confirm which account a key belongs to with `curl https://api.stripe.com/v1/account -u "$KEY:"` (prints the `acct_…` id; never echo the key itself).
-- **`stripe events resend` needs `--webhook-endpoint`.** Without it the command reports success and delivers nothing.
-- **Signature failures are not in `traces`.** `logger.LogWarning(exception, …)` is emitted as `ExceptionTelemetry`, so query `exceptions | where type == 'Stripe.StripeException'`, not `traces | where message contains 'signature'`.
-- **The apex is Cloudflare Pages, never App Service.** `api.realkevbase.com` is the only App Service hostname; the `api` CNAME must stay **DNS only** or the managed certificate cannot be issued.
-- **`AzureEmail:SenderAddress` must exist as an ACS SenderUsername.** A `CustomerManaged` domain rejects any local part that was not created as a resource: `Invalid email sender username: 'noreply'`. Provisioned default is `DoNotReply`; `noreply` was created explicitly.
-- **DKIM CNAMEs must be grey-clouded** in Cloudflare, and the apex must carry **exactly one** SPF TXT record; merging is required if another provider is added later.
-- **`az webapp config ssl show|list` is broken in CLI 2.92** (`--name is only supported for Flex Consumption function apps`). Read the certificate with `az resource show --ids …/Microsoft.Web/certificates/<name>` and bind via the portal or `az webapp config ssl bind --certificate-thumbprint … --ssl-type SNI`.
-- **Always On does not make restarts instant.** `alwaysOn: true` prevents idle unload, but a deploy/restart still cold-starts the container (~35 s measured). Retried requests during that window return `000`/timeout — poll until `404`, don't conclude the app is broken.
-- **No `zip` binary on this machine.** Build deploy archives with Python's `zipfile`; `rm -rf` routes through a trash helper that errors on missing paths (wrap in `( … 2>/dev/null || true)`).
-- **Wrangler's OAuth token has `zone (read)` but no DNS write** — every Cloudflare DNS change is a dashboard action.
-- **App Insights component matters.** Several components exist in the resource group; the app writes to `realkevbase-platform202611071211` (match on `APPLICATIONINSIGHTS_CONNECTION_STRING`'s instrumentation key). Querying another component returns 0 rows and looks like "nothing is logged".
-- **Vite inlines `VITE_API_BASE_URL` at build time.** A build without it produces a bundle with no API origin at all, and checkout then posts to the Pages domain. Always rebuild with the variable set.
-- **User secrets load only in `Development`.** Running with `ASPNETCORE_ENVIRONMENT=Production` locally requires injected env vars (`Stripe__SecretKey`, `Stripe__WebhookSecret`, `AzureStorage__ConnectionString`, `AzureEmail__ConnectionString`).
+**Data and catalog**
+
+- **Never copy `zz_tp/projects.db` over `src/RealKevbase.Api/Data/projects.db`.** The source
+  has 7 columns; the shipped one has 8 because `title` was added and backfilled with 65 unique
+  values. A plain copy silently blanks every product name. `scripts/add-listing.py` inserts and
+  refuses to run if the `title` column is absent.
+- **Product GUIDs cannot be regenerated.** They are UUIDv5-looking but from a namespace that
+  is not reproducible; treat them as opaque constants. A new GUID for an existing product
+  breaks live carts and bookmarks. New listings get a fresh `uuid4`, which is fine.
+- **`ListingId` is derived, not stored.** `PdfBlobName` with `'-'`→`'_'`. A product whose
+  derived id is not in `Projects` is filtered out of `/api/products` **with no error**.
+- **The generator names renders after the template, not the folder.** `150first_foods/`
+  contains `baby_foods.pdf`; both `baby_registrylist*` variants render
+  `baby_registrylist.png`. Thumbnail upload renames to the PDF's unique slug.
+- **Skip the variants and the placeholders.** `images/` also holds `_a4`, `_ipad`, `_zoom`
+  and numbered page artifacts (`…-1.png`), and one folder has a 1×1 PNG.
+- **`zz_tp/` is 672 MB** across 3,467 files and is gitignored. Never `git add` it.
+
+**Deploy**
+
+- **`VITE_API_BASE_URL` is inlined at build time.** Build without it and the bundle falls back
+  to same-origin, so the SPA calls `realkevbase.com/api/products`, gets HTML back, and the
+  catalog silently fails. `deploy.sh` sets it and hard-fails if unset.
+- **Deploy the API before the frontend.** A new SPA against an old API shows an error banner;
+  the reverse is harmless.
+- **`--branch main`** on the Pages deploy is what aliases to `realkevbase.com`. Without it you
+  get a preview URL and the live site does not change.
+- **Cold start after deploy is ~10–35 s.** Poll until `200`; do not conclude the app is broken.
+- **Commit before deploying.** `projects.db` is a tracked binary; `deploy.sh` publishes from
+  the working tree, so an uncommitted edit goes live while `origin` lags.
+
+**Stripe**
+
+- **`stripe listen` secret ≠ dashboard endpoint secret** (70 vs 38 chars). Deploying the
+  listener secret yields `The expected signature was not found`.
+- **Sandboxes are separate accounts.** An endpoint in one account never receives another
+  account's events.
+- **Signature failures land in `exceptions`,** not `traces` — query
+  `exceptions | where type == 'Stripe.StripeException'`.
+- **Test cards are rejected in live mode**, which is the whole point; do not "fix" a declined
+  4242.
+
+**Tooling**
+
+- **`az` argument ordering matters.** Splicing `--connection-string` into the middle of an
+  `az storage` command makes the CLI read the value as a subcommand name — which also **prints
+  the secret into the error output**. Append arguments at the end.
+- **`az storage --auth-mode login` does not work here**: the signed-in identity lacks
+  *Storage Blob Data Contributor*. `scripts/storage_auth.py` reads the connection string from
+  App Service settings instead.
+- **Pillow needs `.venv`.** System Python is externally managed (PEP 668); `pip install` outside
+  a venv is refused. `add-listing.py` is stdlib-only and runs under plain `python3`.
+- **App Insights component matters.** Five exist; the app writes to
+  `realkevbase-platform202611071211`. Querying another returns 0 rows and looks like
+  "nothing is logged".
+- **No `zip` binary in the container** — build archives with Python's `zipfile`
+  (`deploy.sh` does).
 
 ---
 
 ## 8. What NOT to do
 
-- **Do not bind the apex (`realkevbase.com`) to App Service.** It belongs to Cloudflare Pages; binding it breaks the storefront and the managed certificate.
-- **Do not paste secret values into chat, logs, commits, issues or screenshots.** Refer to them by name and location. When a value must move between systems, pipe it inside a single shell command (`WH=$(…) && az … --settings "Stripe__WebhookSecret=$WH"`) and print only lengths, prefixes or hashes.
-- **Do not recreate the Stripe webhook in the wrong account, and do not create it via the API.** It is a dashboard action in `acct_1UYhPSPm53HdvLrD` (sandbox) — verify with `stripe webhook_endpoints list` before assuming a secret will work.
-- **Do not deploy without a rollback artifact.** App Service zip deploys have no git rollback: save the current `wwwroot` first (`https://realkevbase-platform-gkhed8h4dsadeyga.westus2-01.azurewebsites.net/api/zip/site/wwwroot`, authenticated with the publishing credentials) plus a dump of app settings, and note the current Pages deployment id for a one-click rollback in the Cloudflare dashboard.
-- **Do not set `Stripe__ApiBase` in production.** Unset means the real Stripe API.
-- **Do not reuse the `stripe listen` secret in production**, and do not "verify" a webhook by trusting a dashboard `200` alone — the handler returns `200` for any parseable event, so confirm with `requests` + `traces`/`exceptions`.
-- **Do not add a second SPF record at the apex, and do not proxy the DKIM CNAMEs.**
-- **Do not clear the buyer's cart after a successful payment** — a reopened receipt link would wipe a fresh cart.
+- **Do not bind the apex to App Service** — it belongs to Cloudflare Pages.
+- **Do not paste secret values** into chat, logs, commits or screenshots; refer to them by
+  name. When a value must move, pipe it inside one command and print only a length or a hash.
+- **Do not delete or recreate `POST /api/checkout/downloads/pdf`.** It minted a 24-hour SAS URL
+  from a public product id with no payment check — a full paywall bypass. The only legitimate
+  path is `GET /api/checkout/sessions/{id}/downloads`, which re-reads the session and gates on
+  `payment_status == "paid"`. `deploy.sh verify` asserts the removed endpoint stays 404.
+- **Do not expose `PdfBlobName`, blob paths or SAS URLs in any API response.** `ProductResponse`
+  is a field allowlist; keep it that way.
+- **Do not add autoscale** without deciding that a flood should become a bill.
+- **Do not regenerate existing product GUIDs.**
+- **Do not copy the source SQLite file over the shipped one.**
+- **Do not clear the buyer's cart after payment.**
+- **Do not widen CORS back to any `*.pages.dev`** — it is now scoped to
+  `realkevbase-client.pages.dev`; strangers can publish a Pages site in seconds.
+- **Do not trust `ForwardedHeaders` for anything security-relevant.** `KnownProxies` and
+  `KnownIPNetworks` are cleared, so `X-Forwarded-For` is client-controlled. Fix that before
+  adding any IP-based rate limiting.
 
 ---
 
 ## 9. Common operations
 
-**Local API** (user secrets apply, port from `src/RealKevbase.Api/Properties/launchSettings.json`):
+### Add a PDF listing
 
 ```bash
-dotnet run --project src/RealKevbase.Api --urls http://localhost:5283
+az login                                        # once per machine/session; no exports needed
+
+python3 scripts/add-listing.py new_thing             # preview, writes nothing
+python3 scripts/add-listing.py new_thing --apply     # insert row + upload PDF
+
+# paste the printed C# block into InMemoryProductCatalog.cs and fill in:
+#   Description, Category (moving-out|healthy-living|money-budgeting|guides), Accent
+# Price is already 5.0m.
+
+.venv/bin/python scripts/build-thumbnails.py --upload
+git add -A && git commit -m "feat(catalog): add new thing"
+./scripts/deploy.sh --yes
 ```
 
-**Local SPA** — CORS allows only `http://localhost:5173`, so keep Vite's default port:
+The folder must be `zz_tp/output/<listing_id>/` containing a full-page PDF and `images/`.
+Duplicate titles are auto-numbered ("Foo", "Foo 2"); a duplicate `listing_id` is refused.
+Uploads resolve credentials from App Service settings via `az` — nothing is exported or stored.
+
+### Deploy and verify
 
 ```bash
-cd src/realkevbase-web && VITE_API_BASE_URL=http://localhost:5283 npm run dev
+./scripts/deploy.sh            # API + web, then verify
+./scripts/deploy.sh api        # one target, then verify
+./scripts/deploy.sh verify     # assertions only, no deploy
 ```
 
-**Deploy backend**
+### Rotate the Stripe webhook secret
 
 ```bash
-cd ~/realkevbase-platform
-SHA=$(git rev-parse --short HEAD)
-dotnet publish src/RealKevbase.Api -c Release -o src/RealKevbase.Api/publish
-python3 - "$SHA" <<'PY'
-import sys, os, zipfile
-sha = sys.argv[1]
-os.chdir('src/RealKevbase.Api/publish')
-with zipfile.ZipFile(f'/tmp/deploy-{sha}.zip', 'w', zipfile.ZIP_DEFLATED) as z:
-    for root, _, files in os.walk('.'):
-        for f in files:
-            p = os.path.join(root, f)
-            z.write(p, os.path.relpath(p, '.'))
-PY
-az webapp deploy -g realkevbase-rg -n realkevbase-platform \
-  --src-path "/tmp/deploy-$SHA.zip" --type zip --timeout 600
-# then poll until the app answers (restart costs ~35 s)
-curl -s -o /dev/null -w "%{http_code}\n" https://api.realkevbase.com/api/checkout/sessions/cs_test_x/downloads
-```
-
-**Deploy frontend**
-
-```bash
-cd src/realkevbase-web
-VITE_API_BASE_URL=https://api.realkevbase.com npm run build
-npx --no-install wrangler pages deploy dist --project-name realkevbase-client --branch main
-# verify the origin made it into the live bundle
-curl -s https://realkevbase.com/ | grep -o 'assets/index-[A-Za-z0-9_-]*\.js'
-```
-
-**Rotate the webhook secret safely**
-
-```bash
-SID=abdf585f-250d-4b93-9e62-18dd07061bed
-WH=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1],encoding='utf-8-sig'))['Stripe:WebhookSecret'])" \
-     "$HOME/.microsoft/usersecrets/$SID/secrets.json")
-test ${#WH} -eq 38 || { echo "not a dashboard endpoint secret"; exit 1; }
+read -s -p "live webhook secret: " WH; echo
 az webapp config appsettings set -g realkevbase-rg -n realkevbase-platform \
   --settings "Stripe__WebhookSecret=$WH" -o none
 az webapp restart -g realkevbase-rg -n realkevbase-platform
-# prove the hand-off without printing the value
-printf '%s' "$(az webapp config appsettings list -g realkevbase-rg -n realkevbase-platform \
-  --query "[?name=='Stripe__WebhookSecret'].value" -o tsv)" | sha256sum
 unset WH
 ```
+
+Expect 38 characters. Verify by creating a live session (not by trusting a dashboard `200`).
+
+### Local development
+
+```bash
+dotnet run --project src/RealKevbase.Api --urls http://localhost:5283
+cd src/realkevbase-web && VITE_API_BASE_URL=http://localhost:5283 npm run dev
+```
+
+CORS allows `http://localhost:5173` only, so keep Vite's default port. User secrets load in
+`Development` only; `Production` locally needs the env vars injected.
+
+---
+
+## 10. Next session
+
+**Frontend UI polish — scope not yet decided.** Constraints and useful context:
+
+- **The visual design is approved and frozen.** Do not change the theme palette
+  (`#14161A` ink, `#2F6BFF` accent, `#FBFAF7` background, `#E7E4DC` divider), the typography
+  clamps, or the MUI component overrides in `src/realkevbase-web/src/theme.js`.
+- Copy is settled: "the SaveSimple collection", hero "Organization, made effortless.",
+  overline "Browse the collection". **RealKevbase stays capitalised everywhere.**
+- Layout facts: cards show a 172 px artwork strip (thumbnail `object-fit: contain` over the
+  accent gradient, badge chip at z-index 2); category pills scroll horizontally on mobile;
+  paging is 12 desktop / 6 mobile with a "Show more" button and an aria-live counter.
+- Merch cards fall back to an icon because there is no photography — that is intentional
+  until real photos exist.
+- Free wins if you want them: code-split the single 482 kB chunk; the cart is deliberately not
+  cleared after payment.
+- `./scripts/deploy.sh verify` must still pass after any UI change; run it before declaring done.
