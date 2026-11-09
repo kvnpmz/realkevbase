@@ -25,7 +25,7 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import { useCartContext } from '../cart/cartContext.js'
 import { FULFILLMENT } from '../cart/cartReducer.js'
 import { formatMoney } from '../cart/formatMoney.js'
-import { CATEGORIES } from '../data/products.js'
+import { CATEGORIES } from '../data/categories.js'
 
 /** Cards rendered per page. Phones get a shorter first page so the grid stays scannable. */
 const PAGE_SIZE_MOBILE = 6
@@ -35,7 +35,7 @@ const PAGE_SIZE_DESKTOP = 12
  * A single product card. Digital PDFs and physical merchandise share the layout but
  * differ in badge, artwork and delivery promise.
  *
- * @param {{ product: import('../data/products.js').CatalogProduct }} props Component props.
+ * @param {{ product: import('../hooks/useCatalog.js').CatalogProduct }} props Component props.
  * @returns {React.JSX.Element} The card.
  */
 function ProductCard({ product }) {
@@ -181,10 +181,14 @@ function ProductCard({ product }) {
  * Responsive product section showing the whole catalog in browseable categories, with a
  * page of cards at a time and a `Show more` control for the rest.
  *
- * @param {{ products?: import('../data/products.js').CatalogProduct[] }} props Component props.
+ * @param {Object} props Component props.
+ * @param {import('../hooks/useCatalog.js').CatalogProduct[]} [props.products] Products to render.
+ * @param {boolean} [props.loading] Whether the catalog request is still in flight.
+ * @param {Error | null} [props.error] Catalog load failure, when there is one.
+ * @param {() => void} [props.onRetry] Retries the catalog request.
  * @returns {React.JSX.Element} The product section.
  */
-export function ProductGrid({ products = [] }) {
+export function ProductGrid({ products = [], loading = false, error = null, onRetry }) {
   const isDesktop = useMediaQuery('(min-width:600px)')
   const pageSize = isDesktop ? PAGE_SIZE_DESKTOP : PAGE_SIZE_MOBILE
 
@@ -273,31 +277,54 @@ export function ProductGrid({ products = [] }) {
           </Box>
         </Stack>
 
-        <Grid container spacing={{ xs: 2, md: 3 }}>
-          {visibleProducts.map((product) => (
-            <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
-        </Grid>
-
-        {filteredProducts.length === 0 && (
+        {loading && (
           <Typography color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
-            Nothing in this category yet. Check back soon.
+            Loading the collection…
           </Typography>
         )}
 
-        {filteredProducts.length > 0 && (
-          <Stack spacing={1.5} sx={{ alignItems: 'center', mt: { xs: 4, md: 5 } }}>
-            {hasMore && (
-              <Button variant="outlined" onClick={() => setExtraPages((pages) => pages + 1)}>
-                Show more
+        {!loading && error && (
+          <Stack spacing={2} sx={{ py: 6, alignItems: 'center' }}>
+            <Typography color="text.secondary" sx={{ textAlign: 'center', maxWidth: 420 }}>
+              We couldn’t load the collection. Check your connection and try again.
+            </Typography>
+            {onRetry && (
+              <Button variant="outlined" onClick={onRetry}>
+                Try again
               </Button>
             )}
-            <Typography variant="caption" color="text.secondary" aria-live="polite">
-              Showing {visibleProducts.length} of {filteredProducts.length}
-            </Typography>
           </Stack>
+        )}
+
+        {!loading && !error && (
+          <>
+            <Grid container spacing={{ xs: 2, md: 3 }}>
+              {visibleProducts.map((product) => (
+                <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <ProductCard product={product} />
+                </Grid>
+              ))}
+            </Grid>
+
+            {filteredProducts.length === 0 && (
+              <Typography color="text.secondary" sx={{ py: 6, textAlign: 'center' }}>
+                Nothing in this category yet. Check back soon.
+              </Typography>
+            )}
+
+            {filteredProducts.length > 0 && (
+              <Stack spacing={1.5} sx={{ alignItems: 'center', mt: { xs: 4, md: 5 } }}>
+                {hasMore && (
+                  <Button variant="outlined" onClick={() => setExtraPages((pages) => pages + 1)}>
+                    Show more
+                  </Button>
+                )}
+                <Typography variant="caption" color="text.secondary" aria-live="polite">
+                  Showing {visibleProducts.length} of {filteredProducts.length}
+                </Typography>
+              </Stack>
+            )}
+          </>
         )}
       </Container>
     </Box>

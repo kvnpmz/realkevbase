@@ -11,8 +11,8 @@ import { CartDrawer } from './components/CartDrawer.jsx'
 import { CheckoutSuccess } from './components/CheckoutSuccess.jsx'
 import { Navbar } from './components/Navbar.jsx'
 import { ProductGrid } from './components/ProductGrid.jsx'
-import { demoProducts } from './data/products.js'
 import { theme } from './theme.js'
+import { useCatalog } from './hooks/useCatalog.js'
 
 /** Trust/reassurance points shown below the fold. */
 const VALUE_PROPS = [
@@ -40,6 +40,8 @@ const VALUE_PROPS = [
  * @returns {React.JSX.Element} The application.
  */
 function App() {
+  const { products, loading, error, reload } = useCatalog()
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -102,7 +104,7 @@ function App() {
               </Container>
             </Box>
 
-            <ProductGrid products={demoProducts} />
+            <ProductGrid products={products} loading={loading} error={error} onRetry={reload} />
 
             <Box
               component="section"
