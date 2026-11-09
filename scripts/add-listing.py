@@ -8,6 +8,7 @@ refuses to guess the editorial ones.
 What it does:
   1. Finds the folder's full-page PDF (ignoring the _a4/_ipad/_zoom renders)
   2. Reads the display title from the generator config (``header``, else ``title``)
+     and numbers it if that title is already taken ("Foo", then "Foo 2", "Foo 3")
   3. Inserts the listing row into the shipped SQLite database
   4. Uploads the PDF to Azure Blob Storage as ``guides/<slug>.pdf``
   5. Prints a ready-to-paste product entry, with a fresh stable GUID
@@ -113,6 +114,39 @@ def existing_titles(connection: sqlite3.Connection) -> dict[str, str]:
     return {(title or "").strip().lower(): row_id for row_id, title in rows}
 
 
+def unique_title(connection: sqlite3.Connection, base: str) -> tuple[str, str | None]:
+    """Return a title that is not already in use, numbering later duplicates.
+
+    Product cards are identified by title, so two identical titles read as the same
+    product. Rather than blocking on a decision, the first listing keeps the plain
+    title and subsequent ones are numbered — "Kidney Food List", then
+    "Kidney Food List 2", "Kidney Food List 3", and so on.
+
+    Args:
+        connection: Open database connection.
+        base: Desired title, usually from the generator config.
+
+    Returns:
+        A tuple of the title to use and, when numbering was applied, the title that
+        was already taken; otherwise ``None`` as the second element.
+
+    Raises:
+        RuntimeError: When every candidate up to 100 is taken.
+    """
+    base = base.strip()
+    existing = existing_titles(connection)
+
+    if base.lower() not in existing:
+        return base, None
+
+    for number in range(2, 101):
+        candidate = f"{base} {number}"
+        if candidate.lower() not in existing:
+            return candidate, base
+
+    raise RuntimeError(f"could not find a free number for '{base}' within 100 attempts")
+
+
 def fail(message: str) -> int:
     print(f"error: {message}", file=sys.stderr)
     return 1
@@ -125,7 +159,7 @@ def main() -> int:
     parser.add_argument("folder", help="folder name under zz_tp/output")
     parser.add_argument("--apply", action="store_true", help="write the row and upload (default: preview)")
     parser.add_argument("--no-upload", action="store_true", help="skip the blob upload with --apply")
-    parser.add_argument("--title", help="override the title read from config.tl")
+    parser.add_argument("--title", help="override the title read from config.tl (numbered if taken)")
     args = parser.parse_args()
 
     listing_id = args.folder
@@ -154,12 +188,10 @@ def main() -> int:
         if connection.execute("SELECT 1 FROM Projects WHERE id = ?", (listing_id,)).fetchone():
             return fail(f"listing '{listing_id}' already exists in the database")
 
-        clash = existing_titles(connection).get(title.lower())
-        if clash:
-            return fail(
-                f"title '{title}' is already used by '{clash}'. Titles must be unique — "
-                "pass --title with a distinguishing suffix, e.g. '... — Pink'."
-            )
+        try:
+            title, numbered_from = unique_title(connection, title)
+        except RuntimeError as error:
+            return fail(str(error))
 
         catalog_text = open(CATALOG, encoding="utf-8").read()
         if blob_name in catalog_text:
@@ -173,6 +205,8 @@ def main() -> int:
         print(f"pdf         : {os.path.basename(pdf)}  ({os.path.getsize(pdf) / 1024:.0f} KB)")
         print(f"listing id  : {listing_id}")
         print(f"title       : {title}")
+        if numbered_from:
+            print(f"              (auto-numbered: '{numbered_from}' was already taken)")
         print(f"template    : {template}")
         print(f"output_name : {output_name}")
         print(f"completed   : {config.get('completed_date', '') or '(none)'}")
