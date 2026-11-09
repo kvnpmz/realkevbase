@@ -17,8 +17,14 @@ Usage:
     python3 scripts/build-thumbnails.py --upload        # also push to Azure Blob Storage
     python3 scripts/build-thumbnails.py --check         # report coverage, write nothing
 
-Requires Pillow:  python3 -m venv /tmp/imgtool && /tmp/imgtool/bin/pip install Pillow
-Run with:         /tmp/imgtool/bin/python scripts/build-thumbnails.py ...
+Requires Pillow. Create the repo-local environment once:
+
+    python3 -m venv .venv
+    .venv/bin/pip install -r scripts/requirements.txt
+
+Then run it with that interpreter:
+
+    .venv/bin/python scripts/build-thumbnails.py --check
 
 The output file name must match what the API derives from the PDF blob name
 (``guides/150first-foods.pdf`` -> ``guides/images/150first-foods.webp``), so uploading
@@ -108,8 +114,9 @@ def main() -> int:
         from PIL import Image
     except ImportError:
         print(
-            "error: Pillow is required. Create a venv and install it:\n"
-            "  python3 -m venv /tmp/imgtool && /tmp/imgtool/bin/pip install Pillow",
+            "error: Pillow is required. Create the repo-local environment and install it:\n"
+            "  python3 -m venv .venv && .venv/bin/pip install -r scripts/requirements.txt\n"
+            "then run: .venv/bin/python scripts/build-thumbnails.py",
             file=sys.stderr,
         )
         return 1

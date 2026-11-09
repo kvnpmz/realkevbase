@@ -1,0 +1,10 @@
+# Tooling dependencies for scripts/build-thumbnails.py
+#
+# Create the environment once at the repo root, then run the script with it:
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r scripts/requirements.txt
+#   .venv/bin/python scripts/build-thumbnails.py --check
+#
+# .venv/ is gitignored: environments embed absolute paths and platform binaries and
+# must be recreated per machine, never committed.
+Pillow>=13,<14

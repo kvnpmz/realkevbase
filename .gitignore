@@ -14,6 +14,12 @@ dist/
 dist-ssr/
 *.local
 
+# Python tooling (scripts/thumbnail generation)
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
 # Secrets and local configuration overrides
 .env
 .env.*
