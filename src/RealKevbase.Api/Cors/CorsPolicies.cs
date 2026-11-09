@@ -12,15 +12,21 @@ public static class CorsPolicies
     public const string SpaPolicyName = "AllowCloudflareSpa";
 
     /// <summary>
+    /// Host suffix owned by the storefront's Cloudflare Pages project. Previews are published as
+    /// <c>&lt;hash&gt;.realkevbase-client.pages.dev</c>; matching this project only keeps any other
+    /// Pages deployment from being treated as a trusted origin.
+    /// </summary>
+    private const string PagesProjectHost = "realkevbase-client.pages.dev";
+
+    /// <summary>
     /// Determines whether a request origin may call the API from a browser.
     /// </summary>
     /// <param name="origin">Value of the request's <c>Origin</c> header.</param>
     /// <returns><see langword="true"/> when the origin is an allowed storefront origin.</returns>
     /// <remarks>
-    /// Cloudflare Pages assigns preview deployments hosts under <c>pages.dev</c>
-    /// (for example <c>main.realkevbase.pages.dev</c>), which cannot be listed with
-    /// <c>WithOrigins</c>, so the suffix is matched explicitly. Only HTTPS is accepted
-    /// outside local development.
+    /// Cloudflare Pages assigns preview deployments hosts under the project's own
+    /// <c>pages.dev</c> domain, which cannot be listed with <c>WithOrigins</c>, so the project
+    /// suffix is matched explicitly. Only HTTPS is accepted outside local development.
     /// </remarks>
     public static bool IsAllowedOrigin(string? origin)
     {
@@ -46,6 +52,7 @@ public static class CorsPolicies
             return true;
         }
 
-        return uri.Host.EndsWith(".pages.dev", StringComparison.OrdinalIgnoreCase);
+        return uri.Host.Equals(PagesProjectHost, StringComparison.OrdinalIgnoreCase) ||
+               uri.Host.EndsWith($".{PagesProjectHost}", StringComparison.OrdinalIgnoreCase);
     }
 }

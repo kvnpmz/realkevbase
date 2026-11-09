@@ -7,12 +7,15 @@ using RealKevbase.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Do not advertise the web server in responses.
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
+
 // Register CORS service
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CorsPolicies.SpaPolicyName, policy =>
     {
-        // Apex domain, *.pages.dev previews and http://localhost:5173 (see CorsPolicies).
+        // Apex domain, this project's pages.dev previews and http://localhost:5173 (see CorsPolicies).
         policy.SetIsOriginAllowed(CorsPolicies.IsAllowedOrigin)
               .AllowAnyHeader()
               .AllowAnyMethod()
@@ -40,6 +43,19 @@ forwardedHeadersOptions.KnownIPNetworks.Clear();
 forwardedHeadersOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeadersOptions);
 
+// Baseline hardening for a JSON API: no MIME sniffing, no framing, no referrer leakage,
+// and HSTS so browsers never fall back to plain HTTP for this host.
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "no-referrer";
+    headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+
+    await next();
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -51,28 +67,4 @@ app.UseCors(CorsPolicies.SpaPolicyName);
 app.MapCheckoutEndpoints();
 app.MapCatalogEndpoints();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
