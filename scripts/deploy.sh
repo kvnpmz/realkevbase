@@ -299,7 +299,30 @@ PY
     POST 400 "$API_BASE_URL/api/checkout/sessions" \
     '{"items":[{"productId":"00000000-0000-0000-0000-000000000000","quantity":21}]}'
 
-  # 7. The site serves the bundle that was just built.
+  # 7. Product artwork serves, and stays free of storage details.
+  local thumb
+  thumb=$(curl -s --max-time 60 "$API_BASE_URL/api/products" | python3 -c "
+import json, sys
+try:
+    products = json.load(sys.stdin)
+except Exception:
+    print('')
+    raise SystemExit(0)
+urls = [p.get('thumbnailUrl') for p in products if isinstance(p, dict) and p.get('thumbnailUrl')]
+print(urls[0] if urls else '')
+")
+  if [ -z "$thumb" ]; then
+    fail "no product exposes a thumbnailUrl"
+  else
+    check_status "product artwork serves" GET 200 "$API_BASE_URL$thumb"
+    if printf '%s' "$thumb" | grep -qiE 'blob\.core|sig=|sv='; then
+      fail "thumbnailUrl leaks storage details: $thumb"
+    else
+      pass "thumbnailUrl exposes no storage details"
+    fi
+  fi
+
+  # 8. The site serves the bundle that was just built.
   check_status "storefront responds" GET 200 "$SITE_URL/"
   local live_bundle built_bundle
   live_bundle=$(curl -s --max-time 60 "$SITE_URL/" | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1 || true)
