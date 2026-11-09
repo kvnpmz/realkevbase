@@ -40,7 +40,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("d0e1fe4f-9b25-52db-89ae-e971cb68ad07"),
-            Name = "New Apartment Checklist (Grid)",
+            Name = "New Apartment Checklist",
             Description = "A compact grid version of the new-apartment checklist, laid out for quick ticking off in the store.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -62,7 +62,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("f4c24033-d4db-571b-a703-5c5c2b9e615e"),
-            Name = "Baby Registry Checklist - Light Blue",
+            Name = "Baby Registry List — Light Blue",
             Description = "The baby registry checklist in a light blue edition, organised by room and priority.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -73,7 +73,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("f4d264d5-5e0a-559c-8635-396aac33e22d"),
-            Name = "Monthly Bill Tracker",
+            Name = "Bill Tracker",
             Description = "Track every recurring bill, due date and paid status on one page so nothing slips a month.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -128,7 +128,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("c1f641af-65f7-56e2-bfe3-507d4f733025"),
-            Name = "Cleaning Planner - Pink",
+            Name = "Cleaning Planner — Pink",
             Description = "The everyday and weekly cleaning schedule in a pink edition, ticked off room by room.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -150,7 +150,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("06d8772d-5948-51fe-9833-1291c654a20d"),
-            Name = "Diverticulitis Food Chart - Alternative",
+            Name = "Diverticulitis Food Chart — Alternative",
             Description = "The diverticulitis eat-and-avoid chart in an alternative layout for the fridge door.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -172,7 +172,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("a2e6b2c8-8501-581b-becc-2a67398563a8"),
-            Name = "Diverticulitis Flare-Up Food List - Regal",
+            Name = "Diverticulitis Flare-Up Food List — Regal",
             Description = "The diverticulitis flare-up food list in a regal colour edition, grouped by food type.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -194,7 +194,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("db2a2f20-31d9-5f7c-8538-e32a8d9e8074"),
-            Name = "College Dorm Checklist - Pink",
+            Name = "College Dorm Checklist — Pink",
             Description = "The college dorm checklist in a pink edition, covering every room you have to furnish.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -227,7 +227,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("0379d248-a229-5305-a47b-f4557fdafca5"),
-            Name = "Emergency Food List - Teal",
+            Name = "Emergency Food List — Teal",
             Description = "The shelf-stable emergency food list in a teal edition, covering pantry staples that keep.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -249,7 +249,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("4c104954-0a46-51db-8262-7f5db25c447d"),
-            Name = "Fatty Liver Food List - Eat / Limit",
+            Name = "Fatty Liver Food List — Eat / Limit",
             Description = "A fatty liver food list split into eat and limit columns for quick shopping decisions.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -260,7 +260,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("0f3ee9fc-9d76-5185-aed0-fa67817b91e8"),
-            Name = "Fatty Liver Food List - Alternative",
+            Name = "Fatty Liver Food List — Alternative",
             Description = "The eat-and-limit fatty liver food list in an alternative layout with larger type.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -282,7 +282,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("7738b126-7165-513d-a89e-33d6d3787790"),
-            Name = "First Apartment Essentials - Blue",
+            Name = "First Apartment Essentials — Blue",
             Description = "The first-apartment essentials checklist in a blue edition, organised room by room.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -293,7 +293,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("d42f1395-4b11-52d1-bb94-f3f045362ce9"),
-            Name = "First Apartment Essentials - Green",
+            Name = "First Apartment Essentials — Green",
             Description = "The first-apartment essentials checklist in a green edition, organised room by room.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -304,7 +304,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("52e548ae-fada-5a9e-a9a8-7b5b3dde39b9"),
-            Name = "First Apartment Essentials - Pink",
+            Name = "First Apartment Essentials — Pink",
             Description = "The first-apartment essentials checklist in a pink edition, organised room by room.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -315,7 +315,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("6e98d208-5bbe-5b72-8658-82103808b932"),
-            Name = "First Apartment Essentials - Plum",
+            Name = "First Apartment Essentials — Plum",
             Description = "The first-apartment essentials checklist in a plum edition, organised room by room.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -326,7 +326,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("e9d66e3e-bd43-5699-a955-3eae82709691"),
-            Name = "First Apartment Essentials - Purple",
+            Name = "First Apartment Essentials — Purple",
             Description = "The first-apartment essentials checklist in a purple edition, organised room by room.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -337,7 +337,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("f1910970-0875-507b-a3cf-aa1fb67ec983"),
-            Name = "Folic Acid Rich Food List - Blue",
+            Name = "Folic Acid Rich Food List — Blue",
             Description = "Folic acid rich vegetables, fruits, grains and proteins in a blue edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -348,7 +348,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("fccb3413-4fb2-53db-b846-e50a4138c627"),
-            Name = "Folic Acid Rich Food List - Green",
+            Name = "Folic Acid Rich Food List — Green",
             Description = "Folic acid rich vegetables, fruits, grains and proteins in a green edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -359,7 +359,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("4dad84a3-646a-5320-8199-9eddd4126280"),
-            Name = "Folic Acid Rich Food List - Pink",
+            Name = "Folic Acid Rich Food List — Pink",
             Description = "Folic acid rich vegetables, fruits, grains and proteins in a pink edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -381,7 +381,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("e7ef1371-59f2-50d3-a3e3-6f75f26902b2"),
-            Name = "GLP-1 Diet Food List - Green",
+            Name = "GLP-1 Diet Food List — Green",
             Description = "The GLP-1 eat, limit and avoid food list in a green edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -403,7 +403,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("c324e89c-6ffd-5a82-8765-72fe1ccf5578"),
-            Name = "Grocery Checklist - Blue",
+            Name = "Grocery Checklist — Blue",
             Description = "The aisle-by-aisle grocery checklist in a blue edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -414,7 +414,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("876fe1aa-b785-5013-a947-8bd3756946c9"),
-            Name = "Half-Hour Weekly Schedule",
+            Name = "Half Hour Weekly Schedule",
             Description = "A weekly schedule with half-hour slots from 6am, so every day is planned to the block.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -458,7 +458,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("c2633263-6c12-576e-bdca-0e9f1e4544ef"),
-            Name = "Household Essentials Checklist - Blue",
+            Name = "Household Essentials Checklist — Blue",
             Description = "The household essentials checklist in a blue edition, grouped by chore.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -469,7 +469,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("19e7d8d5-715d-59e4-9297-3443bbabaa29"),
-            Name = "Household Essentials Checklist - Pink",
+            Name = "Household Essentials Checklist — Pink",
             Description = "The household essentials checklist in a pink edition, grouped by chore.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -491,7 +491,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("e600d847-813c-58ec-b7db-65354afde0d3"),
-            Name = "Monthly Investment Goals Template - Pink",
+            Name = "Monthly Investment Goals Template — Pink",
             Description = "The monthly investment goals template in a pink edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -513,7 +513,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("b6408a1a-80a6-5a97-b89e-d817bd212140"),
-            Name = "Kidney Disease (CKD) Food List - Bullet",
+            Name = "Kidney Disease (CKD) Food List — Bullet",
             Description = "The CKD eat-and-limit food list in a bulleted layout for quick scanning.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -524,7 +524,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("ff53b218-d86a-56f5-8b29-ed17e9b91b0d"),
-            Name = "Kidney Grocery List (Tabbed)",
+            Name = "Kidney Grocery List — Tabbed",
             Description = "A tabbed kidney-friendly grocery list by category, from vegetables to pantry staples.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -535,7 +535,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("f05d66f0-b8b8-5345-bf38-32464fe1e542"),
-            Name = "Kidney Grocery List - Tabbed Dark",
+            Name = "Kidney Grocery List — Tabbed Dark",
             Description = "The tabbed kidney-friendly grocery list in a dark edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -557,7 +557,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("e5704908-8ec4-54ad-a8ba-54be874de3ee"),
-            Name = "Kidney Food List - Card Layout",
+            Name = "Kidney Food List — Card",
             Description = "The kidney food list in a card layout, splitting eat-freely from limit-and-avoid.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -579,7 +579,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("b9c377e0-ad3e-5d79-ba48-54d55af0fc75"),
-            Name = "Low Carb Food List - Alternative",
+            Name = "Low Carb Food List — Alternative",
             Description = "The traffic-light low carb list in an alternative layout with larger type.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -601,7 +601,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("44283e65-6790-5154-b6a1-da1d29651411"),
-            Name = "Low Potassium Diet Food List - Decorative",
+            Name = "Low Potassium Diet Food List — Decorative",
             Description = "The low potassium eat-and-avoid list in a decorative edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -623,7 +623,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("0108d445-c20a-57e3-82f7-526d7f35b092"),
-            Name = "Weekly Meal Plan - Plum",
+            Name = "Weekly Meal Plan — Plum",
             Description = "The seven-day meal plan in a plum edition, with a shopping list column.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -645,7 +645,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("bd0893a7-eb09-528a-966e-a9dc1b684301"),
-            Name = "Monthly Budget Template - Green",
+            Name = "Monthly Budget Template — Green",
             Description = "The monthly budget template in a green edition, covering income and spending.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -656,7 +656,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("1f498cd8-29be-589c-a25d-12135738a1a7"),
-            Name = "Monthly Budget Template - Pink",
+            Name = "Monthly Budget Template — Pink",
             Description = "The monthly budget template in a pink edition, covering income and spending.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -667,7 +667,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("36fe6431-5d6e-5eac-a8d7-5c968def6661"),
-            Name = "Paycheck Budget Planner",
+            Name = "Paycheck Budget",
             Description = "Budget by paycheck across twelve months, so each pay period gets its own plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -678,7 +678,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("07745ba1-0d00-5bf8-a6cb-76b3201ed725"),
-            Name = "Paycheck Budget Planner - Blue",
+            Name = "Paycheck Budget — Blue",
             Description = "The paycheck-by-paycheck budget planner in a blue edition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -711,7 +711,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("4a6453b4-d7e7-5fd0-8ffc-3eac5c979691"),
-            Name = "Travel Packing List - Blue",
+            Name = "Travel Packing List — Blue",
             Description = "The quantity-based packing list in a blue edition, covering every bag.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,

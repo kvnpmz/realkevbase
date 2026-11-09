@@ -144,12 +144,14 @@ public sealed record ProductAccentResponse(string From, string To, string Ink);
 /// A listing as the storefront sees it. Never includes the generator's folder path.
 /// </summary>
 /// <param name="Id">Listing identifier, matching <see cref="ProductResponse.ListingId"/>.</param>
+/// <param name="Title">Unique display title for the listing.</param>
 /// <param name="OutputName">Configured output file name, when one was recorded.</param>
 /// <param name="Template">Generator template that produced the PDF.</param>
 /// <param name="CompletedDate">Date the PDF was completed.</param>
 /// <param name="IsEditable">Whether the PDF has an editable text layer.</param>
 public sealed record ListingResponse(
     string Id,
+    string? Title,
     string? OutputName,
     string? Template,
     string? CompletedDate,
@@ -167,6 +169,7 @@ public sealed record ListingResponse(
 
         return new ListingResponse(
             listing.Id,
+            listing.Title,
             listing.OutputName,
             listing.Template,
             listing.CompletedDate,

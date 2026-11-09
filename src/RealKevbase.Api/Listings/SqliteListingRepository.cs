@@ -99,7 +99,7 @@ public sealed class SqliteListingRepository : IListingRepository
             using var command = connection.CreateCommand();
             command.CommandText =
                 """
-                SELECT id, output_name, template, completed_date, is_editable
+                SELECT id, title, output_name, template, completed_date, is_editable
                 FROM Projects
                 ORDER BY id
                 """;
@@ -112,10 +112,11 @@ public sealed class SqliteListingRepository : IListingRepository
                 listings.Add(new Listing
                 {
                     Id = reader.GetString(0),
-                    OutputName = reader.IsDBNull(1) ? null : reader.GetString(1),
-                    Template = reader.IsDBNull(2) ? null : reader.GetString(2),
-                    CompletedDate = reader.IsDBNull(3) ? null : reader.GetString(3),
-                    IsEditable = !reader.IsDBNull(4) && reader.GetInt64(4) != 0
+                    Title = reader.IsDBNull(1) ? null : reader.GetString(1),
+                    OutputName = reader.IsDBNull(2) ? null : reader.GetString(2),
+                    Template = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    CompletedDate = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    IsEditable = !reader.IsDBNull(5) && reader.GetInt64(5) != 0
                 });
             }
 

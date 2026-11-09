@@ -12,6 +12,11 @@ public sealed record Listing
     public required string Id { get; init; }
 
     /// <summary>
+    /// Gets the display title for the listing. Unique across the catalog.
+    /// </summary>
+    public string? Title { get; init; }
+
+    /// <summary>
     /// Gets the configured output file name for the listing, when the generator recorded one.
     /// </summary>
     public string? OutputName { get; init; }
