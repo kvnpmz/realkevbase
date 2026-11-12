@@ -93,6 +93,5 @@ else
 fi
 
 info "verifying inside the container"
-docker exec "$CONTAINER" sh -c 'az account show --query "user.name" -o tsv 2>/dev/null' \
-    | sed 's/^/  az: /' \
-    || warn "az is not authenticated inside the container yet - run ai-auth-check there"
+docker exec "$CONTAINER" ai-auth-check \
+    || warn "credentials were copied but the container cannot use them yet; run ai-auth-check there for detail"
