@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Container, Divider, Paper, Stack, Typography } from '@mui/material'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
@@ -8,6 +8,7 @@ import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded'
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 
 import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi.js'
+import { trackPurchase } from '../analytics/ga.js'
 
 /**
  * Stages the success panel can be in.
@@ -63,6 +64,18 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
 
   /** Bumped by the retry button to re-run the request. */
   const [attempt, setAttempt] = useState(0)
+
+  /** Ensures the purchase event is sent once even if the panel re-renders. */
+  const purchaseTracked = useRef(false)
+
+  useEffect(() => {
+    if (purchaseTracked.current) return
+    if (state.stage !== STAGE.READY && state.stage !== STAGE.MERCH_ONLY) return
+    if (!sessionId) return
+
+    purchaseTracked.current = true
+    trackPurchase(sessionId)
+  }, [sessionId, state.stage])
 
   useEffect(() => {
     if (!isSuccess || !sessionId) return undefined

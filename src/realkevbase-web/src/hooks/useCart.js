@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 
 import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi.js'
+import { trackBeginCheckout } from '../analytics/ga.js'
 import {
   initialCartState,
   normalizeCartItem,
@@ -178,6 +179,10 @@ export function useCart(options = {}) {
       try {
         const session = await api.createCheckoutSession(state.items, { signal })
 
+        // Funnel step 2 (after add_to_cart): records value and items, and stashes them so
+        // the post-redirect success page can emit a purchase event with the same value.
+        trackBeginCheckout(state.items, totals)
+
         if (session.url) {
           setCheckoutState({ status: CHECKOUT_STATUS.REDIRECTING, error: null, session })
           navigate(session.url)
@@ -201,7 +206,7 @@ export function useCart(options = {}) {
         submittingRef.current = false
       }
     },
-    [api, navigate, state.items],
+    [api, navigate, state.items, totals],
   )
 
   return {

@@ -19,6 +19,7 @@
 #   PAGES_BRANCH     pages production branch (default: main)
 #   API_BASE_URL     API origin, also baked into the bundle (default: https://api.realkevbase.com)
 #   SITE_URL         static site origin     (default: https://realkevbase.com)
+#   GA_MEASUREMENT_ID GA4 measurement id (G-...) baked into the bundle; optional
 #
 # The API is deployed before the web bundle on purpose: a new frontend calling an
 # endpoint that the old API does not serve yet shows an error in the storefront,
@@ -36,6 +37,7 @@ PAGES_PROJECT="${PAGES_PROJECT:-realkevbase-client}"
 PAGES_BRANCH="${PAGES_BRANCH:-main}"
 API_BASE_URL="${API_BASE_URL:-https://api.realkevbase.com}"
 SITE_URL="${SITE_URL:-https://realkevbase.com}"
+GA_MEASUREMENT_ID="${GA_MEASUREMENT_ID:-}"
 
 # A healthy catalog has 68 products (65 PDFs + 3 merch). The floor only has to catch
 # an empty or badly broken catalog, so adding products never breaks this script.
@@ -195,7 +197,16 @@ deploy_web() {
   [ -n "$API_BASE_URL" ] || die "API_BASE_URL must be set so it can be baked into the bundle"
 
   ( cd "$web_dir" && npm run lint ) || die "eslint failed; fix before deploying"
-  ( cd "$web_dir" && VITE_API_BASE_URL="$API_BASE_URL" npm run build ) || die "vite build failed"
+  ( cd "$web_dir" && VITE_API_BASE_URL="$API_BASE_URL" \
+      VITE_GA_ID="$GA_MEASUREMENT_ID" \
+      npm run build ) || die "vite build failed"
+
+  # Analytics is optional; when an id is supplied, prove it reached the bundle rather than
+  # silently shipping a storefront that reports nothing.
+  if [ -n "$GA_MEASUREMENT_ID" ]; then
+    grep -rq "$GA_MEASUREMENT_ID" "$web_dir/dist/assets" \
+      || die "GA_MEASUREMENT_ID=$GA_MEASUREMENT_ID was not baked into the bundle"
+  fi
 
   if grep -rq 'downloads/pdf' "$web_dir/dist/assets" 2>/dev/null; then
     die "the built bundle still references the removed /downloads/pdf endpoint"
