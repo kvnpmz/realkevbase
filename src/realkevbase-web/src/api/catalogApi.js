@@ -1,10 +1,9 @@
 /**
  * Client for the RealKevbase catalog API.
  *
- * The catalog is owned by the backend: this module asks `GET /api/products` what is for sale
- * and `GET /api/listings` for the listing metadata behind each PDF. Nothing here contains
- * product data, and the API deliberately never returns blob names or storage paths, so no
- * storage detail can leak into the browser bundle.
+ * The catalog is owned by the backend: this module asks `GET /api/products` what is for sale.
+ * Nothing here contains product data, and the API deliberately never returns blob names or
+ * storage paths, so no storage detail can leak into the browser bundle.
  */
 
 /** Default API origin. Empty means "same origin". */
@@ -14,7 +13,6 @@ const ENV_BASE_URL =
 /** Backend routes this client talks to. */
 export const CATALOG_ROUTES = Object.freeze({
   products: '/api/products',
-  listings: '/api/listings',
 })
 
 /**
@@ -58,12 +56,11 @@ function joinUrl(baseUrl, path) {
  * @param {{
  *   baseUrl?: string,
  *   fetchImpl?: typeof fetch,
- *   routes?: { products: string, listings: string },
+ *   routes?: { products: string },
  * }} [options] Overrides, mainly for tests.
  * @returns {{
  *   getCatalog: (options?: { signal?: AbortSignal }) => Promise<{
  *     products: import('../hooks/useCatalog.js').CatalogProduct[],
- *     listings: import('../hooks/useCatalog.js').CatalogListing[],
  *   }>,
  * }} The configured client.
  */
@@ -107,35 +104,16 @@ export function createCatalogApi({
 
   return {
     /**
-     * Fetches the products for sale and the listings that back them.
+     * Fetches the products for sale.
      *
      * @param {{ signal?: AbortSignal }} [options] Abort support for an unmounted component.
      * @returns {Promise<{
      *   products: import('../hooks/useCatalog.js').CatalogProduct[],
-     *   listings: import('../hooks/useCatalog.js').CatalogListing[],
-     * }>} Normalized products and listings.
+     * }>} Normalized products.
      * @throws {CatalogApiError} When the backend rejects the request or is unreachable.
      */
     async getCatalog({ signal } = {}) {
-      const [rawProducts, rawListings] = await Promise.all([
-        getArray(routes.products, { signal }),
-        getArray(routes.listings, { signal }),
-      ])
-
-      /** @type {Map<string, import('../hooks/useCatalog.js').CatalogListing>} */
-      const listingsById = new Map()
-      for (const entry of rawListings) {
-        if (!entry || typeof entry !== 'object') continue
-        const record = /** @type {Record<string, unknown>} */ (entry)
-        if (typeof record.id !== 'string' || !record.id) continue
-        listingsById.set(record.id, {
-          id: record.id,
-          outputName: typeof record.outputName === 'string' ? record.outputName : null,
-          template: typeof record.template === 'string' ? record.template : null,
-          completedDate: typeof record.completedDate === 'string' ? record.completedDate : null,
-          isEditable: record.isEditable === true,
-        })
-      }
+      const rawProducts = await getArray(routes.products, { signal })
 
       const products = rawProducts
         .filter((entry) => entry && typeof entry === 'object')
@@ -153,7 +131,6 @@ export function createCatalogApi({
             fulfillment,
             category: typeof record.category === 'string' ? record.category : null,
             listingId,
-            listing: listingId ? (listingsById.get(listingId) ?? null) : null,
             // The API returns a relative path so the bundle stays portable; resolve it
             // against the same origin the catalog came from.
             thumbnailUrl:
@@ -171,7 +148,7 @@ export function createCatalogApi({
         })
         .filter((product) => product.id && product.name)
 
-      return { products, listings: [...listingsById.values()] }
+      return { products }
     },
   }
 }

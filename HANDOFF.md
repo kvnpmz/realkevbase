@@ -20,7 +20,7 @@ a **C# / .NET 10 Minimal API** on **Azure App Service (Linux, B1)** at `api.real
 
 The important architectural change since the last handoff: **the catalog is server-owned.**
 The SPA no longer contains product data or storage paths. It fetches `GET /api/products`
-(68 items: 65 PDFs + 3 merch) and `GET /api/listings` (65 rows from SQLite). The 860-line
+(68 items: 65 PDFs + 3 merch). The 860-line
 `src/realkevbase-web/src/data/products.js` was deleted, which removed every
 `guides/*.pdf` blob path from the bundle.
 
@@ -46,7 +46,7 @@ any payload).
 | Custom domains | `realkevbase.com`, `www.realkevbase.com` |
 | Live bundle | `/assets/index-o6-a42vm.js` (482.6 kB, 151 kB gzip) |
 | Bundled API base | `https://api.realkevbase.com` (inlined at build time) |
-| Catalog source | `GET /api/products` + `GET /api/listings` (no local product data) |
+| Catalog source | `GET /api/products` (no local product data) |
 
 ✅ **Verified**: `https://realkevbase.com/` → `200`; live bundle matches the local build;
 68 cards render with thumbnails at 390 px and 1280 px; category pills (All / Moving Out /
@@ -122,8 +122,6 @@ zz_tp/projects.db → copied by hand once → src/RealKevbase.Api/Data/projects.
 GET /api/products   → ProductResponse  (id, name, description, price, fulfillment,
                                         category, listingId, thumbnailUrl, accent)
                                         never PdfBlobName
-GET /api/listings   → ListingResponse  (id, title, outputName, template,
-                                        completedDate, isEditable)
 GET /api/products/{id}/thumbnail → streams image/webp from blob, Cache-Control 86400, ETag
 
 join key: Product.ListingId = blob filename with '-' → '_'

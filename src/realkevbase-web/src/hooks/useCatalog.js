@@ -14,22 +14,10 @@ import { catalogApi } from '../api/catalogApi.js'
  * @property {'DigitalPdf' | 'PhysicalMerch'} fulfillment Delivery type.
  * @property {string | null} category Browse category, null for merch.
  * @property {string | null} listingId Listing that backs the PDF, null for merch.
- * @property {CatalogListing | null} listing Listing metadata, when the product has one.
  * @property {string | null} thumbnailUrl Absolute URL of the product artwork, when published.
  * @property {string} badge Short media-overlay label.
  * @property {string} feature Delivery promise shown on the card.
  * @property {{ from: string, to: string, ink: string }} accent Card artwork colors.
- */
-
-/**
- * A listing row from the generator database, as exposed by `GET /api/listings`.
- *
- * @typedef {Object} CatalogListing
- * @property {string} id Listing identifier.
- * @property {string | null} outputName Configured output file name.
- * @property {string | null} template Generator template.
- * @property {string | null} completedDate Date the PDF was completed.
- * @property {boolean} isEditable Whether the PDF has an editable text layer.
  */
 
 /**
@@ -40,7 +28,6 @@ import { catalogApi } from '../api/catalogApi.js'
  *
  * @returns {{
  *   products: CatalogProduct[],
- *   listings: CatalogListing[],
  *   loading: boolean,
  *   error: Error | null,
  *   reload: () => void,
@@ -49,7 +36,6 @@ import { catalogApi } from '../api/catalogApi.js'
 export function useCatalog() {
   const [state, setState] = useState({
     products: /** @type {CatalogProduct[]} */ ([]),
-    listings: /** @type {CatalogListing[]} */ ([]),
     loading: true,
     error: /** @type {Error | null} */ (null),
   })
@@ -60,14 +46,13 @@ export function useCatalog() {
 
     catalogApi
       .getCatalog({ signal: controller.signal })
-      .then(({ products, listings }) => {
-        setState({ products, listings, loading: false, error: null })
+      .then(({ products }) => {
+        setState({ products, loading: false, error: null })
       })
       .catch((error) => {
         if (error instanceof Error && error.name === 'AbortError') return
         setState({
           products: [],
-          listings: [],
           loading: false,
           error: error instanceof Error ? error : new Error('The catalog could not be loaded.'),
         })
@@ -77,7 +62,7 @@ export function useCatalog() {
   }, [reloadToken])
 
   const reload = useCallback(() => {
-    setState({ products: [], listings: [], loading: true, error: null })
+    setState({ products: [], loading: true, error: null })
     setReloadToken((token) => token + 1)
   }, [])
 

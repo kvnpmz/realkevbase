@@ -40,11 +40,6 @@ public static class CatalogEndpoints
             .Produces(StatusCodes.Status304NotModified)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapGet("/listings", GetListings)
-            .WithName("GetListings")
-            .WithSummary("Returns the listing rows behind the catalog's digital products.")
-            .Produces<IReadOnlyList<ListingResponse>>();
-
         return endpoints;
     }
 
@@ -70,27 +65,6 @@ public static class CatalogEndpoints
             .ToArray();
 
         return Results.Ok(products);
-    }
-
-    /// <summary>
-    /// Returns the listings that back the catalog, excluding generator artifacts and rows that
-    /// have no purchasable product.
-    /// </summary>
-    private static IResult GetListings(IProductCatalog catalog, IListingRepository listings)
-    {
-        var available = listings.GetAll() ?? [];
-
-        var productListingIds = catalog.Products
-            .Where(product => product.IsDigitalPdf && product.ListingId is not null)
-            .Select(product => product.ListingId!)
-            .ToHashSet(StringComparer.Ordinal);
-
-        var responses = available
-            .Where(listing => productListingIds.Contains(listing.Id))
-            .Select(ListingResponse.From)
-            .ToArray();
-
-        return Results.Ok(responses);
     }
 
     /// <summary>
@@ -196,40 +170,3 @@ public sealed record ProductResponse(
 /// <param name="To">Ending colour of the artwork gradient.</param>
 /// <param name="Ink">Foreground colour for the icon.</param>
 public sealed record ProductAccentResponse(string From, string To, string Ink);
-
-/// <summary>
-/// A listing as the storefront sees it. Never includes the generator's folder path.
-/// </summary>
-/// <param name="Id">Listing identifier, matching <see cref="ProductResponse.ListingId"/>.</param>
-/// <param name="Title">Unique display title for the listing.</param>
-/// <param name="OutputName">Configured output file name, when one was recorded.</param>
-/// <param name="Template">Generator template that produced the PDF.</param>
-/// <param name="CompletedDate">Date the PDF was completed.</param>
-/// <param name="IsEditable">Whether the PDF has an editable text layer.</param>
-public sealed record ListingResponse(
-    string Id,
-    string? Title,
-    string? OutputName,
-    string? Template,
-    string? CompletedDate,
-    bool IsEditable)
-{
-    /// <summary>
-    /// Projects a listing row onto the public response shape.
-    /// </summary>
-    /// <param name="listing">The listing row.</param>
-    /// <returns>The public representation of <paramref name="listing"/>.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="listing"/> is <see langword="null"/>.</exception>
-    public static ListingResponse From(Listing listing)
-    {
-        ArgumentNullException.ThrowIfNull(listing);
-
-        return new ListingResponse(
-            listing.Id,
-            listing.Title,
-            listing.OutputName,
-            listing.Template,
-            listing.CompletedDate,
-            listing.IsEditable);
-    }
-}

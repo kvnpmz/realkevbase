@@ -165,7 +165,8 @@ if not os.path.exists(archive):
     sys.exit(1)
 PY
 
-  # The listings database ships as content; without it /api/listings goes empty.
+  # The listings database ships as content; without it the API cannot tell which
+  # PDFs have actually been published, so catalog filtering silently stops.
   python3 - "$archive" <<'PY' || die "Data/projects.db missing from the deployment archive"
 import sys, zipfile
 with zipfile.ZipFile(sys.argv[1]) as z:
