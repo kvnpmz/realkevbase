@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using RealKevbase.Api.Auth;
 using RealKevbase.Api.Cors;
 using RealKevbase.Api.Endpoints;
 using RealKevbase.Api.Listings;
@@ -24,6 +25,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddOpenApi();
+
+// Optional bearer-token authentication for catalog and checkout. Off unless
+// ApiAuth:Enabled is set: the storefront must read the catalog anonymously.
+builder.Services.AddApiTokenAuth(builder.Configuration);
+var apiAuthEnabled = builder.Configuration.GetValue<bool>($"{ApiTokenOptions.SectionName}:Enabled");
 builder.Services.AddAzureBlobPdfStorage(builder.Configuration);
 builder.Services.AddSingleton<IProductCatalog, InMemoryProductCatalog>();
 builder.Services.AddListings(builder.Configuration);
@@ -64,7 +70,13 @@ if (app.Environment.IsDevelopment())
 // REMOVED app.UseHttpsRedirection() -> Azure App Service handles SSL termination
 
 app.UseCors(CorsPolicies.SpaPolicyName);
-app.MapCheckoutEndpoints();
-app.MapCatalogEndpoints();
+if (apiAuthEnabled)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+app.MapAuthEndpoints();
+app.MapCheckoutEndpoints(apiAuthEnabled);
+app.MapCatalogEndpoints(apiAuthEnabled);
 
 app.Run();

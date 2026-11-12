@@ -1,3 +1,5 @@
+import { authApi } from './authApi.js'
+
 /**
  * Client for the RealKevbase checkout API.
  *
@@ -111,6 +113,7 @@ function problemMessage(response, payload) {
  *   baseUrl?: string,
  *   fetchImpl?: typeof fetch,
  *   routes?: { createSession: string, sessionDownloads: string },
+ *   auth?: { getAccessToken: (options?: { signal?: AbortSignal }) => Promise<string | null> },
  * }} [options] Overrides, mainly for tests.
  * @returns {{
  *   createCheckoutSession: (items: import('../cart/cartReducer').CartItem[], options?: { signal?: AbortSignal }) => Promise<CheckoutSession>,
@@ -121,6 +124,7 @@ export function createCheckoutApi({
   baseUrl = ENV_BASE_URL,
   fetchImpl = globalThis.fetch,
   routes = CHECKOUT_ROUTES,
+  auth = authApi,
 } = {}) {
   if (typeof fetchImpl !== 'function') {
     throw new TypeError('A fetch implementation is required to create the checkout API client.')
@@ -133,12 +137,15 @@ export function createCheckoutApi({
    * @returns {Promise<unknown>} Parsed response body.
    */
   async function requestJson(path, { body, signal, method = 'POST' } = {}) {
+    const token = await auth.getAccessToken({ signal })
+
     let response
     try {
       response = await fetchImpl(joinUrl(baseUrl, path), {
         method,
         headers: {
           Accept: 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
         },
         body: body === undefined ? undefined : JSON.stringify(body),

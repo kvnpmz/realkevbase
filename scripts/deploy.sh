@@ -19,6 +19,12 @@
 #   PAGES_BRANCH     pages production branch (default: main)
 #   API_BASE_URL     API origin, also baked into the bundle (default: https://api.realkevbase.com)
 #   SITE_URL         static site origin     (default: https://realkevbase.com)
+#   API_CLIENT_ID    client id baked into the bundle when ApiAuth is enabled
+#   API_CLIENT_SECRET client secret baked into the bundle when ApiAuth is enabled
+#
+# When API_CLIENT_ID and API_CLIENT_SECRET are exported, the build bakes them into the
+# bundle and the smoke test authenticates with them. They are public in the bundle by
+# construction; see src/realkevbase-web/src/api/authApi.js.
 #
 # The API is deployed before the web bundle on purpose: a new frontend calling an
 # endpoint that the old API does not serve yet shows an error in the storefront,
@@ -36,6 +42,9 @@ PAGES_PROJECT="${PAGES_PROJECT:-realkevbase-client}"
 PAGES_BRANCH="${PAGES_BRANCH:-main}"
 API_BASE_URL="${API_BASE_URL:-https://api.realkevbase.com}"
 SITE_URL="${SITE_URL:-https://realkevbase.com}"
+API_CLIENT_ID="${API_CLIENT_ID:-}"
+API_CLIENT_SECRET="${API_CLIENT_SECRET:-}"
+API_TOKEN=""
 
 # A healthy catalog has 68 products (65 PDFs + 3 merch). The floor only has to catch
 # an empty or badly broken catalog, so adding products never breaks this script.
@@ -114,13 +123,36 @@ confirm() {
   case "$answer" in y|Y|yes|YES) return 0 ;; *) die "aborted" ;; esac
 }
 
+auth_header() {
+  [ -n "$API_TOKEN" ] && printf 'Authorization: Bearer %s' "$API_TOKEN"
+}
+
+# Exchanges the deploy credentials for a bearer token. No-op when they are not exported,
+# which is the anonymous-API case.
+fetch_api_token() {
+  [ -n "$API_CLIENT_ID" ] && [ -n "$API_CLIENT_SECRET" ] || return 0
+  API_TOKEN=$(printf '{"clientId":"%s","clientSecret":"%s"}' "$API_CLIENT_ID" "$API_CLIENT_SECRET" \
+    | curl -s --max-time 30 -X POST "$API_BASE_URL/api/auth/token" \
+        -H 'Content-Type: application/json' --data-binary @- 2>/dev/null \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("access_token",""))' 2>/dev/null) || API_TOKEN=""
+  [ -n "$API_TOKEN" ]
+}
+
 check_status() { # label method want_code url [json_body]
   local label="$1" method="$2" want="$3" url="$4"
-  local data="${5-}" got
+  local data="${5-}" got header
+  header="$(auth_header)"
   if [ "$method" = POST ]; then
     [ -n "$data" ] || data='{}'
-    got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -X POST "$url" \
-      -H 'Content-Type: application/json' -d "$data" 2>/dev/null) || got=000
+    if [ -n "$header" ]; then
+      got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -X POST "$url" \
+        -H 'Content-Type: application/json' -H "$header" -d "$data" 2>/dev/null) || got=000
+    else
+      got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -X POST "$url" \
+        -H 'Content-Type: application/json' -d "$data" 2>/dev/null) || got=000
+    fi
+  elif [ -n "$header" ]; then
+    got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -H "$header" "$url" 2>/dev/null) || got=000
   else
     got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$url" 2>/dev/null) || got=000
   fi
@@ -130,9 +162,15 @@ check_status() { # label method want_code url [json_body]
 
 wait_for_api() {
   info "waiting for $API_BASE_URL to answer"
-  local attempt code
+  local attempt code header
+  fetch_api_token || die "API is configured to require a token but the deploy credentials were rejected"
+  header="$(auth_header)"
   for attempt in $(seq 1 40); do
-    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$API_BASE_URL/api/products" 2>/dev/null || echo 000)
+    if [ -n "$header" ]; then
+      code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 -H "$header" "$API_BASE_URL/api/products" 2>/dev/null || echo 000)
+    else
+      code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$API_BASE_URL/api/products" 2>/dev/null || echo 000)
+    fi
     if [ "$code" = "200" ]; then
       printf '  up after ~%ss\n' "$((attempt * 5))"
       return 0
@@ -195,7 +233,13 @@ deploy_web() {
   [ -n "$API_BASE_URL" ] || die "API_BASE_URL must be set so it can be baked into the bundle"
 
   ( cd "$web_dir" && npm run lint ) || die "eslint failed; fix before deploying"
-  ( cd "$web_dir" && VITE_API_BASE_URL="$API_BASE_URL" npm run build ) || die "vite build failed"
+
+  # The client credentials are inlined into the bundle on purpose when ApiAuth is enabled;
+  # the API rejects anonymous callers only while the app setting is on, so ship them together.
+  ( cd "$web_dir" && VITE_API_BASE_URL="$API_BASE_URL" \
+      VITE_API_CLIENT_ID="$API_CLIENT_ID" \
+      VITE_API_CLIENT_SECRET="$API_CLIENT_SECRET" \
+      npm run build ) || die "vite build failed"
 
   if grep -rq 'downloads/pdf' "$web_dir/dist/assets" 2>/dev/null; then
     die "the built bundle still references the removed /downloads/pdf endpoint"
@@ -212,6 +256,28 @@ deploy_web() {
 verify() {
   FAILURES=0
   info "verifying $API_BASE_URL"
+
+  # When credentials are exported, the API is expected to challenge anonymous callers.
+  if [ -n "$API_CLIENT_ID" ] && [ -n "$API_CLIENT_SECRET" ]; then
+    fetch_api_token || die "could not obtain a token with API_CLIENT_ID/API_CLIENT_SECRET"
+
+    local anon bad
+    anon=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$API_BASE_URL/api/products" 2>/dev/null) || anon=000
+    if [ "$anon" = "401" ]; then
+      pass "catalog rejects anonymous callers (HTTP 401)"
+    else
+      fail "catalog should require a token (got HTTP $anon)"
+    fi
+
+    bad=$(printf '{"clientId":"wrong","clientSecret":"wrong"}' \
+      | curl -s -o /dev/null -w '%{http_code}' --max-time 30 -X POST "$API_BASE_URL/api/auth/token" \
+          -H 'Content-Type: application/json' --data-binary @- 2>/dev/null) || bad=000
+    if [ "$bad" = "401" ]; then
+      pass "token endpoint rejects bad credentials (HTTP 401)"
+    else
+      fail "token endpoint should reject bad credentials (got HTTP $bad)"
+    fi
+  fi
 
   # 1. The paywall invariant. This endpoint minted free download links and must never
   #    come back; a successful deploy cannot detect its return on its own.

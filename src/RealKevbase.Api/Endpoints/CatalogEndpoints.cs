@@ -20,18 +20,30 @@ public static class CatalogEndpoints
     /// Maps the catalog route group onto the application.
     /// </summary>
     /// <param name="endpoints">The endpoint route builder to extend.</param>
+    /// <param name="requireAuthorization">
+    /// When <see langword="true"/>, the catalog listing requires a bearer token from
+    /// <c>POST /api/auth/token</c>. Thumbnails stay anonymous: they are loaded by
+    /// <c>&lt;img&gt;</c> tags, which cannot carry an Authorization header.
+    /// </param>
     /// <returns>The same <paramref name="endpoints"/> instance for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="endpoints"/> is <see langword="null"/>.</exception>
-    public static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder endpoints)
+    public static IEndpointRouteBuilder MapCatalogEndpoints(
+        this IEndpointRouteBuilder endpoints,
+        bool requireAuthorization = false)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var group = endpoints.MapGroup("/api").WithTags("Catalog");
 
-        group.MapGet("/products", GetProducts)
+        var products = group.MapGet("/products", GetProducts)
             .WithName("GetProducts")
             .WithSummary("Returns every purchasable product, without storage details.")
             .Produces<IReadOnlyList<ProductResponse>>();
+
+        if (requireAuthorization)
+        {
+            products.RequireAuthorization();
+        }
 
         group.MapGet("/products/{id:guid}/thumbnail", GetProductThumbnailAsync)
             .WithName("GetProductThumbnail")
