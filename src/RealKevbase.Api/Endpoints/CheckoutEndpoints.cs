@@ -46,21 +46,15 @@ public static class CheckoutEndpoints
     /// Maps the checkout route group onto the application.
     /// </summary>
     /// <param name="endpoints">The endpoint route builder to extend.</param>
-    /// <param name="requireAuthorization">
-    /// When <see langword="true"/>, creating a session and reading download links require a
-    /// bearer token. The Stripe webhook stays anonymous: it authenticates with a signature.
-    /// </param>
     /// <returns>The same <paramref name="endpoints"/> instance for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="endpoints"/> is <see langword="null"/>.</exception>
-    public static IEndpointRouteBuilder MapCheckoutEndpoints(
-        this IEndpointRouteBuilder endpoints,
-        bool requireAuthorization = false)
+    public static IEndpointRouteBuilder MapCheckoutEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var group = endpoints.MapGroup("/api/checkout").WithTags("Checkout");
 
-        var createSession = group.MapPost("/sessions", CreateCheckoutSessionAsync)
+        group.MapPost("/sessions", CreateCheckoutSessionAsync)
             .WithName("CreateCheckoutSession")
             .WithSummary("Creates a Stripe Checkout Session for a cart.")
             .Produces<CheckoutSessionResponse>()
@@ -74,19 +68,13 @@ public static class CheckoutEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
-        var downloads = group.MapGet("/sessions/{sessionId}/downloads", GetSessionDownloadsAsync)
+        group.MapGet("/sessions/{sessionId}/downloads", GetSessionDownloadsAsync)
             .WithName("GetSessionDownloads")
             .WithSummary("Lists download links for a paid session, for the checkout success page.")
             .Produces<SessionDownloadsResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status502BadGateway);
-
-        if (requireAuthorization)
-        {
-            createSession.RequireAuthorization();
-            downloads.RequireAuthorization();
-        }
 
         return endpoints;
     }

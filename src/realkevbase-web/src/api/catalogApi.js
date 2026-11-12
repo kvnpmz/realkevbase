@@ -1,5 +1,3 @@
-import { authApi } from './authApi.js'
-
 /**
  * Client for the RealKevbase catalog API.
  *
@@ -59,7 +57,6 @@ function joinUrl(baseUrl, path) {
  *   baseUrl?: string,
  *   fetchImpl?: typeof fetch,
  *   routes?: { products: string },
- *   auth?: { getAccessToken: (options?: { signal?: AbortSignal }) => Promise<string | null> },
  * }} [options] Overrides, mainly for tests.
  * @returns {{
  *   getCatalog: (options?: { signal?: AbortSignal }) => Promise<{
@@ -71,7 +68,6 @@ export function createCatalogApi({
   baseUrl = ENV_BASE_URL,
   fetchImpl = globalThis.fetch,
   routes = CATALOG_ROUTES,
-  auth = authApi,
 } = {}) {
   if (typeof fetchImpl !== 'function') {
     throw new TypeError('A fetch implementation is required to create the catalog API client.')
@@ -80,18 +76,15 @@ export function createCatalogApi({
   /**
    * Performs a GET request and parses a JSON array response.
    * @param {string} path Route to call.
-   * @param {{ signal?: AbortSignal, token?: string | null }} [options] Abort and bearer support.
+   * @param {{ signal?: AbortSignal }} [options] Abort support.
    * @returns {Promise<unknown[]>} Parsed array.
    */
-  async function getArray(path, { signal, token } = {}) {
+  async function getArray(path, { signal } = {}) {
     let response
     try {
       response = await fetchImpl(joinUrl(baseUrl, path), {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { Accept: 'application/json' },
         signal,
       })
     } catch (cause) {
@@ -120,8 +113,7 @@ export function createCatalogApi({
      * @throws {CatalogApiError} When the backend rejects the request or is unreachable.
      */
     async getCatalog({ signal } = {}) {
-      const token = await auth.getAccessToken({ signal })
-      const rawProducts = await getArray(routes.products, { signal, token })
+      const rawProducts = await getArray(routes.products, { signal })
 
       const products = rawProducts
         .filter((entry) => entry && typeof entry === 'object')
