@@ -10,6 +10,7 @@
 # Flags:
 #   --yes          skip the production confirmation prompt (required when stdin is not a TTY)
 #   --skip-verify  deploy without running the smoke test
+#   --skip-catalog deploy without checking that the catalog matches zz_tp
 #   -h, --help     show this help
 #
 # Environment overrides:
@@ -45,6 +46,8 @@ readonly MIN_PRODUCTS=60
 
 ASSUME_YES=0
 SKIP_VERIFY=0
+SKIP_CATALOG=0
+FAILURES=0
 TARGET="all"
 
 if [ -t 1 ]; then
@@ -67,6 +70,7 @@ while [ $# -gt 0 ]; do
     -h|--help) usage; exit 0 ;;
     --yes|-y) ASSUME_YES=1 ;;
     --skip-verify) SKIP_VERIFY=1 ;;
+    --skip-catalog) SKIP_CATALOG=1 ;;
     api|web|all|verify) TARGET="$1" ;;
     *) die "unknown argument '$1' (try --help)" ;;
   esac
@@ -365,6 +369,42 @@ print(urls[0] if urls else '')
   return 1
 }
 
+# --- preflight: catalog ------------------------------------------------------
+#
+# A folder in zz_tp/output that is not in the database and the catalog is invisible on
+# the site, and adding it by hand is where listings get missed. The sync script knows
+# how to register one, so refuse to ship a catalog that is out of date instead of
+# discovering it after the deploy.
+
+preflight_catalog() {
+  info "checking the catalog matches zz_tp"
+  local report pending
+  report=$(mktemp)
+  if ! python3 "$REPO_ROOT/scripts/sync-catalog.py" --json >"$report"; then
+    rm -f "$report"
+    die "catalog sync check failed; run python3 scripts/sync-catalog.py for details"
+  fi
+
+  pending=$(python3 - "$report" <<'PY'
+import json
+import sys
+
+plan = json.load(open(sys.argv[1], encoding="utf-8"))
+changes = len(plan["new"]) + len(plan["renamed"]) + len(plan["redescribed"])
+if changes:
+    names = [f"register {item['slug']}" for item in plan["new"][:5]]
+    names += [f"rename {item['slug']}" for item in plan["renamed"][:5]]
+    print(f"{changes}|{'; '.join(names)}")
+PY
+)
+  rm -f "$report"
+
+  if [ -n "$pending" ]; then
+    die "catalog is out of date (${pending%%|*} change(s): ${pending#*|}); run python3 scripts/sync-catalog.py --apply"
+  fi
+  pass "catalog matches zz_tp"
+}
+
 # --- main -------------------------------------------------------------------
 
 case "$TARGET" in
@@ -372,6 +412,7 @@ case "$TARGET" in
   api|web|all)
     ( cd "$REPO_ROOT" && git diff --quiet && git diff --cached --quiet ) \
       || printf 'warning: working tree has uncommitted changes\n'
+    if [ "$SKIP_CATALOG" -eq 1 ]; then info "skipping the catalog check"; else preflight_catalog; fi
     confirm
     [ "$TARGET" = "web" ] || deploy_api
     [ "$TARGET" = "api" ] || deploy_web

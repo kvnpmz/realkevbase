@@ -171,7 +171,20 @@ function ProductCard({ product }) {
           )}
         </Typography>
 
-        <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
+        {/* Shop copy is longer than card copy, so clamp it and keep the full text on
+            the guide page. */}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          component="p"
+          sx={{
+            flexGrow: 1,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 5,
+            overflow: 'hidden',
+          }}
+        >
           {product.description}
         </Typography>
 

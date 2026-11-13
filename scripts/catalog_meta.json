@@ -1,0 +1,186 @@
+{
+  "budget_vs_actual": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  },
+  "budget_vs_actual_green": {
+    "category": "money-budgeting",
+    "accent": "green"
+  },
+  "budget_vs_actual_serif": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  },
+  "carryon_packing": {
+    "category": "guides",
+    "accent": "purple"
+  },
+  "dialysis_food_fluid": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "dorm_room_layout": {
+    "category": "moving-out",
+    "accent": "blue"
+  },
+  "emergency_gobag": {
+    "category": "guides",
+    "accent": "slate"
+  },
+  "emergency_gobag_green": {
+    "category": "guides",
+    "accent": "green"
+  },
+  "emergency_gobag_pink": {
+    "category": "guides",
+    "accent": "pink"
+  },
+  "emergency_gobag_plum": {
+    "category": "guides",
+    "accent": "purple"
+  },
+  "emergency_gobag_serif": {
+    "category": "guides",
+    "accent": "slate"
+  },
+  "emergency_stock_log": {
+    "category": "guides",
+    "accent": "slate"
+  },
+  "gout_food_list": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "grocery_mealplan": {
+    "category": "healthy-living",
+    "accent": "purple"
+  },
+  "grocery_mealplan_blue": {
+    "category": "healthy-living",
+    "accent": "blue"
+  },
+  "grocery_mealplan_mustard": {
+    "category": "healthy-living",
+    "accent": "amber"
+  },
+  "grocery_mealplan_pink": {
+    "category": "healthy-living",
+    "accent": "pink"
+  },
+  "grocery_mealplan_plum": {
+    "category": "healthy-living",
+    "accent": "purple"
+  },
+  "grocery_shopping_list": {
+    "category": "guides",
+    "accent": "green"
+  },
+  "kidney_grocery_list": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "kidney_lab_essential": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "kidney_lab_minimal": {
+    "category": "healthy-living",
+    "accent": "slate"
+  },
+  "kidney_lab_tracker": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "kidney_lab_tracker_pink": {
+    "category": "healthy-living",
+    "accent": "pink"
+  },
+  "kidney_lab_tracker_serif": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "lowpotassium_swap_chart": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "movein_budget": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  },
+  "power_outage_foodlist": {
+    "category": "guides",
+    "accent": "slate"
+  },
+  "power_outage_foodlist_blue": {
+    "category": "guides",
+    "accent": "blue"
+  },
+  "power_outage_foodlist_green": {
+    "category": "guides",
+    "accent": "green"
+  },
+  "power_outage_foodlist_lightblue": {
+    "category": "guides",
+    "accent": "blue"
+  },
+  "power_outage_foodlist_pink": {
+    "category": "guides",
+    "accent": "pink"
+  },
+  "renal_eating_out": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "renal_eating_out_babyblue": {
+    "category": "healthy-living",
+    "accent": "blue"
+  },
+  "renal_eating_out_blue": {
+    "category": "healthy-living",
+    "accent": "blue"
+  },
+  "renal_eating_out_pink": {
+    "category": "healthy-living",
+    "accent": "pink"
+  },
+  "renal_eating_out_serif": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "renal_meal_plan": {
+    "category": "healthy-living",
+    "accent": "green"
+  },
+  "split_budget": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  },
+  "split_budget_balanced": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  },
+  "split_budget_balanced_blue": {
+    "category": "money-budgeting",
+    "accent": "blue"
+  },
+  "split_budget_balanced_pink": {
+    "category": "money-budgeting",
+    "accent": "pink"
+  },
+  "split_budget_balanced_serif": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  },
+  "split_budget_minimal": {
+    "category": "money-budgeting",
+    "accent": "slate"
+  },
+  "warehouse_bulk_list": {
+    "category": "guides",
+    "accent": "green"
+  },
+  "yearly_budget": {
+    "category": "money-budgeting",
+    "accent": "amber"
+  }
+}

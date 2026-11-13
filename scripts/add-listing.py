@@ -40,15 +40,12 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 import sqlite3
-import subprocess
 import sys
 import uuid
 
-from storage_auth import storage_arguments
+from listing_files import display_title, find_source_pdf, read_config, upload_pdf
 
-VARIANTS = ("_a4", "_ipad", "_zoom")
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # REALKEVBASE_DB lets tests point at a copy instead of the shipped database.
 DATABASE = os.environ.get("REALKEVBASE_DB") or os.path.join(
@@ -65,54 +62,6 @@ CATEGORIES = ("moving-out", "healthy-living", "money-budgeting", "guides")
 # Every digital PDF in the catalog is $5. Merch is priced individually, but this
 # script only registers PDFs, so the price is a constant rather than a decision.
 DEFAULT_PRICE = 5.0
-
-
-def is_variant(stem: str) -> bool:
-    """True for a device/zoom render or a numbered page artifact."""
-    lowered = stem.lower()
-    if any(lowered.endswith(suffix) for suffix in VARIANTS):
-        return True
-    tail = lowered.rsplit("-", 1)
-    return len(tail) == 2 and tail[1].isdigit()
-
-
-def find_source_pdf(folder: str) -> str | None:
-    """Return the full-page PDF in an output folder, or None."""
-    candidates = []
-    for name in os.listdir(folder):
-        if not name.lower().endswith(".pdf"):
-            continue
-        if is_variant(name[: -len(".pdf")]):
-            continue
-        path = os.path.join(folder, name)
-        if os.path.getsize(path) < 1024:
-            continue
-        candidates.append(path)
-    if not candidates:
-        return None
-    return max(candidates, key=os.path.getsize)
-
-
-def read_config(path: str) -> dict[str, str]:
-    """Pull the simple string fields out of a generator config.tl."""
-    if not os.path.exists(path):
-        return {}
-
-    text = open(path, encoding="utf-8").read()
-    fields = {}
-    pattern = re.compile(r'^\s*(\w+)\s*=\s*"((?:[^"\\]|\\.)*)"', re.MULTILINE)
-    for match in pattern.finditer(text):
-        fields[match.group(1)] = match.group(2).replace('\\"', '"')
-    return fields
-
-
-def display_title(config: dict[str, str], listing_id: str) -> str:
-    """Prefer the config header, then its title, then a titleised identifier."""
-    for key in ("header", "title"):
-        value = config.get(key, "").strip()
-        if value:
-            return value
-    return listing_id.replace("_", " ").title()
 
 
 def existing_titles(connection: sqlite3.Connection) -> dict[str, str]:
@@ -157,49 +106,6 @@ def unique_title(connection: sqlite3.Connection, base: str) -> tuple[str, str | 
 def fail(message: str) -> int:
     print(f"error: {message}", file=sys.stderr)
     return 1
-
-
-def upload_pdf(pdf: str, blob_name: str) -> bool:
-    """Upload a product PDF to blob storage, returning whether it succeeded.
-
-    Credentials are resolved automatically by :mod:`storage_auth` — from an exported
-    ``AZURE_STORAGE_CONNECTION_STRING`` or straight from the live App Service settings —
-    so no secret is ever stored in a file or typed in by hand.
-
-    Args:
-        pdf: Local path of the PDF to upload.
-        blob_name: Destination blob name inside the products container.
-
-    Returns:
-        True when the upload succeeded.
-    """
-    arguments, source = storage_arguments()
-
-    command = [
-        "az", "storage", "blob", "upload",
-        "--container-name", CONTAINER,
-        "--name", blob_name,
-        "--file", pdf,
-        "--content-type", "application/pdf",
-        "--overwrite",
-        "--no-progress",
-        "--output", "none",
-    ]
-    command += arguments
-
-    print(f"uploading to {CONTAINER}/{blob_name} (credentials: {source})")
-    if subprocess.call(command) == 0:
-        return True
-
-    print(
-        "\ncould not authenticate to blob storage.\n"
-        "The script reads the connection string from App Service settings, which needs\n"
-        "az to be logged in with permission to read them. Check with:\n"
-        "  az webapp config appsettings list -g realkevbase-rg -n realkevbase-platform \\\n"
-        "    --query \"[?name=='ConnectionStrings__AzureStorage'].value\" -o tsv",
-        file=sys.stderr,
-    )
-    return False
 
 
 def main() -> int:
@@ -253,7 +159,7 @@ def main() -> int:
         if blob_name in catalog_text:
             return fail(f"the catalog already sells '{blob_name}'")
 
-        product_id = str(uuid.uuid4())
+        product_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"realkevbase/listing/{listing_id}"))
         template = config.get("template") or os.path.basename(pdf)[:-4]
         output_name = config.get("output_name") or template
 
