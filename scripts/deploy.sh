@@ -258,22 +258,32 @@ except Exception as exc:
     sys.exit(1)
 
 count = len(products)
-pdfs = sum(1 for p in products if p.get("fulfillment") == "DigitalPdf")
+digital = [p for p in products if p.get("fulfillment") == "DigitalPdf"]
 problems = []
 
 if count < minimum:
     problems.append(f"only {count} products (expected at least {minimum})")
-if pdfs == 0:
+if not digital:
     problems.append("no DigitalPdf products")
 for probe in ("blob.core.windows.net", "sig=", "sv=", "PdfBlobName", "pdfBlobName"):
     if probe in raw:
         problems.append(f"storage detail leaked: {probe!r}")
 
+# Paper sizes must come from the API, never from storefront copy. A null list is honest
+# (storage could not be listed), but a wrong shape means the deployed build is stale.
+for product in digital:
+    sizes = product.get("pageSizes")
+    if not isinstance(sizes, list) or sizes[:1] != ["US Letter"]:
+        problems.append(f"{product.get('name')!r} does not report page sizes like ['US Letter']")
+        break
+
 if problems:
     print("; ".join(problems))
     sys.exit(1)
 
-print(f"catalog shape ({count} products, {pdfs} PDFs) and no storage details")
+listed = sum(1 for p in digital if isinstance(p.get("gallerySlots"), list))
+print(f"catalog shape ({count} products, {len(digital)} PDFs, {listed} with a gallery manifest), "
+      "page sizes, and no storage details")
 PY
     ); then
       pass "$catalog_detail"

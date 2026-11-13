@@ -28,7 +28,7 @@ public static class CatalogEndpoints
 
         var group = endpoints.MapGroup("/api").WithTags("Catalog");
 
-        group.MapGet("/products", GetProducts)
+        group.MapGet("/products", GetProductsAsync)
             .WithName("GetProducts")
             .WithSummary("Returns every purchasable product, without storage details.")
             .Produces<IReadOnlyList<ProductResponse>>();
@@ -59,19 +59,30 @@ public static class CatalogEndpoints
     /// and is always included. When the listing database cannot be read at all, every catalog
     /// product is returned: a missing file must not empty the storefront.
     /// </remarks>
-    private static IResult GetProducts(
+    private static async Task<IResult> GetProductsAsync(
         HttpResponse response,
         IProductCatalog catalog,
-        IListingRepository listings)
+        IListingRepository listings,
+        IProductImageService images,
+        CancellationToken cancellationToken)
     {
         var available = listings.GetAll();
         var listingIds = available?.Select(listing => listing.Id).ToHashSet(StringComparer.Ordinal);
 
-        var products = catalog.Products
+        var offered = catalog.Products
             .Where(product => !product.IsDigitalPdf
                               || listingIds is null
                               || (product.ListingId is not null && listingIds.Contains(product.ListingId)))
-            .Select(ProductResponse.From)
+            .ToArray();
+
+        // One cached folder listing tells the storefront which renders and editions exist, so
+        // the detail page asks only for the images it will actually get.
+        var published = await images.DescribeArtworkAsync(offered, cancellationToken);
+
+        var products = offered
+            .Select(product => ProductResponse.From(
+                product,
+                published is not null && published.TryGetValue(product.Id, out var artwork) ? artwork : null))
             .ToArray();
 
         // The catalog only changes on deploy, so a short browser cache removes a round trip
@@ -186,6 +197,11 @@ public static class CatalogEndpoints
 /// <param name="Category">Browse category, or <see langword="null"/> for merchandise.</param>
 /// <param name="ListingId">Listing that backs the PDF, or <see langword="null"/> for merchandise.</param>
 /// <param name="ThumbnailUrl">Relative URL of the product artwork, or <see langword="null"/> when there is none.</param>
+/// <param name="GallerySlots">
+/// Gallery slots that can be served, or <see langword="null"/> when storage could not be
+/// listed; the storefront then requests every slot and drops the ones that answer 404.
+/// </param>
+/// <param name="PageSizes">Paper sizes the product is laid out for, or <see langword="null"/> for merchandise.</param>
 /// <param name="Accent">Card artwork colours.</param>
 public sealed record ProductResponse(
     Guid Id,
@@ -196,15 +212,20 @@ public sealed record ProductResponse(
     string? Category,
     string? ListingId,
     string? ThumbnailUrl,
+    IReadOnlyList<int>? GallerySlots,
+    IReadOnlyList<string>? PageSizes,
     ProductAccentResponse? Accent)
 {
     /// <summary>
     /// Projects a catalog product onto the public response shape.
     /// </summary>
     /// <param name="product">The catalog product.</param>
+    /// <param name="artwork">
+    /// What storage holds for the product, or <see langword="null"/> when that is unknown.
+    /// </param>
     /// <returns>The public representation of <paramref name="product"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
-    public static ProductResponse From(Product product)
+    public static ProductResponse From(Product product, PublishedArtwork? artwork)
     {
         ArgumentNullException.ThrowIfNull(product);
 
@@ -217,6 +238,8 @@ public sealed record ProductResponse(
             product.Category,
             product.ListingId,
             product.IsDigitalPdf ? $"/api/products/{product.Id}/thumbnail" : null,
+            product.IsDigitalPdf ? artwork?.GallerySlots : null,
+            product.IsDigitalPdf ? artwork?.PageSizes : null,
             product.Accent is null
                 ? null
                 : new ProductAccentResponse(product.Accent.From, product.Accent.To, product.Accent.Ink));

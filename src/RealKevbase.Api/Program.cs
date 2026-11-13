@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddOpenApi();
 
-// The catalog is ~28 KB of JSON (~6 KB gzipped). WebP images are already compressed and
+// The catalog is ~55 KB of JSON (~15 KB gzipped). WebP images are already compressed and
 // are not in the default MIME list, so this only shrinks text responses.
 builder.Services.AddResponseCompression(options => options.EnableForHttps = true);
 

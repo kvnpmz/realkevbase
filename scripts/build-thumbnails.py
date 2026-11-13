@@ -14,7 +14,7 @@ PDF's own file name, which is unique per product.
 The extra renders are published beside the thumbnail as the product gallery, which the
 storefront requests by slot: ``<stem>.webp`` (cover), ``<stem>-zoom.webp``,
 ``<stem>-ipad.webp`` and ``<stem>-a4.webp``. Variants a listing never rendered are simply
-not uploaded; the API reports those slots as missing and the gallery drops them.
+not uploaded; the API lists the slots it holds, so the gallery never asks for a missing one.
 
 Renders are incremental: an image is rebuilt only when its target is missing, older
 than the source PNG, or was produced at a different width. Uploads are incremental too —

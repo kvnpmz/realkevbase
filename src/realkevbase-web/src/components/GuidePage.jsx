@@ -19,10 +19,15 @@ import { SITE_TITLE } from '../data/site.js'
 /** Category value to its storefront label. */
 const CATEGORY_LABELS = new Map(CATEGORIES.map((option) => [option.value, option.label]))
 
-/** Promises shown under the price, all true of every digital guide. */
-const GUIDE_PROMISES = [
+/**
+ * Promises shown under the price, all of them true of the product being viewed.
+ *
+ * @param {readonly string[]} pageSizes Paper sizes the API says the listing is sold at.
+ * @returns {{ icon: typeof BoltRoundedIcon, copy: string }[]} Promise rows.
+ */
+const guidePromises = (pageSizes) => [
   { icon: BoltRoundedIcon, copy: 'Instant download the moment your payment clears' },
-  { icon: CheckRoundedIcon, copy: 'Prints on US Letter and A4 paper' },
+  { icon: CheckRoundedIcon, copy: `Prints on ${pageSizes.join(' and ')} paper` },
   { icon: CheckRoundedIcon, copy: 'Secure link stays live for 24 hours' },
 ]
 
@@ -66,6 +71,9 @@ function GuideDetail({ product }) {
   const [justAdded, setJustAdded] = useState(false)
   const addedTimer = useRef(null)
 
+  // The API states the paper sizes the listing is laid out for; fall back to the Letter
+  // edition, which every listing has.
+  const pageSizes = product.pageSizes ?? ['US Letter']
   const slots = product.galleryUrls ?? []
   const availableSlots = slots.map((_, slot) => slot).filter((slot) => !failedSlots.has(slot))
   const currentSlot = availableSlots.includes(activeSlot) ? activeSlot : (availableSlots[0] ?? null)
@@ -228,7 +236,7 @@ function GuideDetail({ product }) {
 
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
               <Chip label="Digital PDF" size="small" />
-              <Chip label="US Letter + A4" size="small" variant="outlined" />
+              <Chip label={pageSizes.join(' + ')} size="small" variant="outlined" />
               <Chip label="Instant download" size="small" variant="outlined" />
             </Stack>
 
@@ -244,7 +252,7 @@ function GuideDetail({ product }) {
                 </Typography>
               </Stack>
 
-              {GUIDE_PROMISES.map(({ icon: Icon, copy }) => (
+              {guidePromises(pageSizes).map(({ icon: Icon, copy }) => (
                 <Stack key={copy} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                   <Icon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Typography variant="body2" color="text.secondary">

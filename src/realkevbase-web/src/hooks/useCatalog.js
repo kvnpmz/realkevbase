@@ -16,7 +16,8 @@ import { catalogApi } from '../api/catalogApi.js'
  * @property {string | null} listingId Listing that backs the PDF, null for merch.
  * @property {string | null} slug URL-friendly product key used by the detail route.
  * @property {string | null} thumbnailUrl Absolute URL of the product artwork, when published.
- * @property {string[]} galleryUrls Absolute URLs of the detail gallery slots, empty for merch.
+ * @property {string[]} galleryUrls Absolute URLs of the published detail gallery slots, empty for merch.
+ * @property {string[] | null} pageSizes Paper sizes the listing is laid out for, null while unknown.
  * @property {string} badge Short media-overlay label.
  * @property {string} feature Delivery promise shown on the card.
  * @property {{ from: string, to: string, ink: string }} accent Card artwork colors.

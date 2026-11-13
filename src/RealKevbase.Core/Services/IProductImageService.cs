@@ -1,5 +1,10 @@
+using System.Collections.Concurrent;
+
 using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+
+using Microsoft.Extensions.Logging;
 
 using RealKevbase.Core.Models;
 
@@ -62,7 +67,33 @@ public interface IProductImageService
         Product product,
         int slot,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reports what storage actually holds for each product.
+    /// </summary>
+    /// <remarks>
+    /// One cached folder listing answers this for the whole catalog, so the storefront can build
+    /// only the image URLs that exist and can state the paper sizes the listing really covers,
+    /// instead of requesting every slot and dropping the 404s.
+    /// </remarks>
+    /// <param name="products">Products to describe; merchandise and products without a PDF are skipped.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// Product id to its published artwork, or <see langword="null"/> when storage could not be
+    /// listed — callers should then treat every slot as unknown rather than as missing.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="products"/> is <see langword="null"/>.</exception>
+    Task<IReadOnlyDictionary<Guid, PublishedArtwork>?> DescribeArtworkAsync(
+        IReadOnlyList<Product> products,
+        CancellationToken cancellationToken = default);
 }
+
+/// <summary>
+/// What a listing has actually published to storage.
+/// </summary>
+/// <param name="GallerySlots">Gallery slots that can be served, in display order.</param>
+/// <param name="PageSizes">Paper sizes the listing is laid out for, always starting with US Letter.</param>
+public sealed record PublishedArtwork(IReadOnlyList<int> GallerySlots, IReadOnlyList<string> PageSizes);
 
 /// <summary>
 /// Reads product thumbnails from the same private container that holds the PDFs.
@@ -91,20 +122,96 @@ public sealed class AzureBlobProductImageService : IProductImageService
     /// </summary>
     private static readonly string[] GallerySuffixes = ["", "-zoom", "-ipad", "-a4"];
 
+    /// <summary>
+    /// Extension of the deliverable documents.
+    /// </summary>
+    private const string PdfExtension = ".pdf";
+
+    /// <summary>
+    /// Marker that distinguishes the A4 edition from the Letter PDF it sits beside.
+    /// </summary>
+    private const string A4EditionSuffix = "-a4";
+
+    /// <summary>
+    /// Position of the A4 preview in <see cref="GallerySuffixes"/>.
+    /// </summary>
+    private const int A4PreviewSlot = 3;
+
+    /// <summary>
+    /// Paper size every listing is laid out for.
+    /// </summary>
+    private const string LetterPageSize = "US Letter";
+
+    /// <summary>
+    /// Paper size of the optional second edition.
+    /// </summary>
+    private const string A4PageSize = "A4";
+
+    /// <summary>
+    /// One folder listing, kept until <see cref="IndexLifetime"/> runs out.
+    /// </summary>
+    /// <param name="Names">Published blob names under the folder.</param>
+    /// <param name="ExpiresAt">Moment the listing should be read again.</param>
+    private sealed record PublishedNames(IReadOnlySet<string> Names, DateTimeOffset ExpiresAt);
+
+    /// <summary>
+    /// How long one folder listing is reused before storage is asked again.
+    /// </summary>
+    /// <remarks>
+    /// Artwork only changes when a listing is published, so a long window keeps the catalog
+    /// endpoint free of storage calls while a new listing still appears within minutes.
+    /// </remarks>
+    private static readonly TimeSpan IndexLifetime = TimeSpan.FromMinutes(10);
+
+    /// <summary>
+    /// How long a failed listing is remembered, so an unavailable storage account cannot turn
+    /// every catalog request into another attempt with the SDK's own retries on top.
+    /// </summary>
+    private static readonly TimeSpan FailureBackoff = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Ceiling on one listing call, so a storage outage costs the catalog a few seconds at most
+    /// rather than the SDK's full retry window.
+    /// </summary>
+    private static readonly TimeSpan ListingTimeout = TimeSpan.FromSeconds(3);
+
     private readonly BlobContainerClient _containerClient;
+
+    private readonly ILogger<AzureBlobProductImageService> _logger;
+
+    /// <summary>
+    /// Published blob names per artwork folder, replaced as a whole when refreshed.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, PublishedNames> _published = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Folder name to the moment listing it may be attempted again.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _retryAfter = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Serialises refreshes, so a burst of catalog requests triggers one listing at most.
+    /// </summary>
+    private readonly SemaphoreSlim _listingGate = new(1, 1);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureBlobProductImageService"/> class.
     /// </summary>
     /// <param name="blobServiceClient">Client for the storage account.</param>
     /// <param name="options">Container configuration shared with the PDF storage service.</param>
+    /// <param name="logger">Logger for storage failures that only degrade the gallery.</param>
     /// <exception cref="ArgumentNullException">Thrown when an argument is <see langword="null"/>.</exception>
-    public AzureBlobProductImageService(BlobServiceClient blobServiceClient, AzurePdfStorageOptions options)
+    public AzureBlobProductImageService(
+        BlobServiceClient blobServiceClient,
+        AzurePdfStorageOptions options,
+        ILogger<AzureBlobProductImageService> logger)
     {
         ArgumentNullException.ThrowIfNull(blobServiceClient);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _containerClient = blobServiceClient.GetBlobContainerClient(options.PdfContainerName);
+        _logger = logger;
     }
 
     /// <summary>
@@ -190,6 +297,188 @@ public sealed class AzureBlobProductImageService : IProductImageService
     {
         var blobName = GetGalleryBlobName(product, slot);
         return blobName is null ? Task.FromResult<ProductImage?>(null) : OpenAsync(blobName, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, PublishedArtwork>?> DescribeArtworkAsync(
+        IReadOnlyList<Product> products,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(products);
+
+        var digital = products
+            .Where(product => product.IsDigitalPdf && GetThumbnailBlobName(product) is not null)
+            .ToArray();
+
+        // Every listing publishes into the folder that holds its PDFs, so this is normally a
+        // single listing call for the whole catalog.
+        var folders = digital
+            .Select(product => GetPdfFolderName(product)!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        var published = new Dictionary<string, IReadOnlySet<string>>(folders.Length, StringComparer.Ordinal);
+        foreach (var folder in folders)
+        {
+            var names = await GetPublishedNamesAsync(folder, cancellationToken).ConfigureAwait(false);
+            if (names is null)
+            {
+                // Unknown beats wrong: the storefront falls back to asking slot by slot.
+                return null;
+            }
+
+            published[folder] = names;
+        }
+
+        var artwork = new Dictionary<Guid, PublishedArtwork>(digital.Length);
+        foreach (var product in digital)
+        {
+            var names = published[GetPdfFolderName(product)!];
+
+            var pageSizes = GetPublishedPageSizes(product, names);
+
+            var slots = Enumerable
+                .Range(0, IProductImageService.GallerySlotCount)
+                .Where(slot => names.Contains(GetGalleryBlobName(product, slot)!))
+                // The A4 preview illustrates an edition that is only offered once it is
+                // published, so it is withheld while the Letter PDF is all a buyer receives.
+                .Where(slot => slot != A4PreviewSlot || pageSizes.Contains(A4PageSize))
+                .ToArray();
+
+            artwork[product.Id] = new PublishedArtwork(slots, pageSizes);
+        }
+
+        return artwork;
+    }
+
+    /// <summary>
+    /// Reports the paper sizes a listing can actually be printed at.
+    /// </summary>
+    /// <param name="product">Product whose editions should be checked.</param>
+    /// <param name="names">Published blob names under the product's folder.</param>
+    /// <returns>
+    /// <c>US Letter</c> for every listing, plus <c>A4</c> only when the A4 edition is published
+    /// beside the Letter PDF — the extra version is never claimed from its preview alone.
+    /// </returns>
+    private static IReadOnlyList<string> GetPublishedPageSizes(Product product, IReadOnlySet<string> names)
+    {
+        var a4 = GetA4EditionBlobName(product);
+        return a4 is not null && names.Contains(a4) ? [LetterPageSize, A4PageSize] : [LetterPageSize];
+    }
+
+    /// <summary>
+    /// Derives the blob name of a listing's A4 edition.
+    /// </summary>
+    /// <param name="product">Product whose A4 edition should be located.</param>
+    /// <returns>
+    /// For example <c>guides/foo-a4.pdf</c> beside <c>guides/foo.pdf</c>, or <see langword="null"/>
+    /// when the product has no PDF blob.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    public static string? GetA4EditionBlobName(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        var pdf = product.PdfBlobName?.Replace('\\', '/');
+        if (string.IsNullOrWhiteSpace(pdf))
+        {
+            return null;
+        }
+
+        var stem = pdf.EndsWith(PdfExtension, StringComparison.OrdinalIgnoreCase)
+            ? pdf[..^PdfExtension.Length]
+            : pdf;
+
+        return $"{stem}{A4EditionSuffix}{PdfExtension}";
+    }
+
+    /// <summary>
+    /// Derives the folder a product publishes into, holding both its PDFs and its artwork.
+    /// </summary>
+    /// <param name="product">Product whose publication folder should be computed.</param>
+    /// <returns>
+    /// A blob-name prefix ending in a slash, for example <c>guides/</c>, or
+    /// <see langword="null"/> when the product has no PDF blob.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    public static string? GetPdfFolderName(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        var pdf = product.PdfBlobName?.Replace('\\', '/');
+        if (string.IsNullOrWhiteSpace(pdf))
+        {
+            return null;
+        }
+
+        var lastSlash = pdf.LastIndexOf('/');
+        return lastSlash < 0 ? string.Empty : pdf[..(lastSlash + 1)];
+    }
+
+    /// <summary>
+    /// Lists the blobs under one publication folder, reusing the previous answer while it is fresh.
+    /// </summary>
+    /// <param name="folder">Blob-name prefix ending in a slash.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The published blob names, or <see langword="null"/> when listing failed.</returns>
+    private async Task<IReadOnlySet<string>?> GetPublishedNamesAsync(
+        string folder,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (_published.TryGetValue(folder, out var cached) && cached.ExpiresAt > now)
+        {
+            return cached.Names;
+        }
+
+        if (_retryAfter.TryGetValue(folder, out var retryAt) && retryAt > now)
+        {
+            return null;
+        }
+
+        await _listingGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            now = DateTimeOffset.UtcNow;
+            if (_published.TryGetValue(folder, out cached) && cached.ExpiresAt > now)
+            {
+                return cached.Names;
+            }
+
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(ListingTimeout);
+
+                await foreach (var blob in _containerClient
+                    .GetBlobsAsync(BlobTraits.None, BlobStates.None, folder, timeout.Token)
+                    .ConfigureAwait(false))
+                {
+                    names.Add(blob.Name);
+                }
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException
+                                              || !cancellationToken.IsCancellationRequested)
+            {
+                // Storage being unreachable must not take the catalog down: report "unknown",
+                // give up quickly, and try again after a short pause.
+                _retryAfter[folder] = DateTimeOffset.UtcNow.Add(FailureBackoff);
+                _logger.LogWarning(
+                    exception,
+                    "Could not list published artwork under {Folder}; the catalog will leave gallery slots unknown for a moment.",
+                    folder);
+                return null;
+            }
+
+            _retryAfter.TryRemove(folder, out _);
+            _published[folder] = new PublishedNames(names, DateTimeOffset.UtcNow.Add(IndexLifetime));
+            return names;
+        }
+        finally
+        {
+            _listingGate.Release();
+        }
     }
 
     /// <summary>

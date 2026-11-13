@@ -135,16 +135,33 @@ export function createCatalogApi({
             typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
               ? joinUrl(baseUrl, record.thumbnailUrl)
               : null
+          // The API lists the slots it can actually serve, so the detail page no longer asks
+          // for renders a listing never made. A null list means storage could not be read;
+          // fall back to probing every slot and dropping the ones that answer 404.
+          const publishedSlots = Array.isArray(record.gallerySlots)
+            ? record.gallerySlots.filter(
+                (slot) => Number.isInteger(slot) && slot >= 0 && slot < GALLERY_SLOT_COUNT,
+              )
+            : null
+          const availableSlots =
+            publishedSlots ?? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) => slot)
+
           // Slot 0 renders the same bytes the card already fetched, so it reuses that exact
           // URL: the browser cache serves it and the detail page paints without a new request.
           const galleryUrls =
             fulfillment === 'DigitalPdf' && id
-              ? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) =>
+              ? availableSlots.map((slot) =>
                   slot === 0 && thumbnailUrl
                     ? thumbnailUrl
                     : joinUrl(baseUrl, `/api/products/${id}/images/${slot}`),
                 )
               : []
+
+          // Paper sizes are a product fact, not a guess: the API only adds A4 when that
+          // edition is published beside the Letter PDF.
+          const pageSizes = Array.isArray(record.pageSizes)
+            ? record.pageSizes.filter((size) => typeof size === 'string' && size.length > 0)
+            : []
 
           return {
             id,
@@ -161,6 +178,7 @@ export function createCatalogApi({
             // resolved against the same origin the catalog came from.
             thumbnailUrl,
             galleryUrls,
+            pageSizes: pageSizes.length > 0 ? pageSizes : null,
             badge: DELIVERY_COPY[fulfillment].badge,
             feature: DELIVERY_COPY[fulfillment].feature,
             accent: {
