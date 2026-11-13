@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Generate product thumbnails from the PDF generator's output folders.
 
-Each output folder contains an ``images/`` directory holding four renders of the same
-page: the full-page render (no suffix), plus ``_a4``, ``_ipad`` and ``_zoom`` variants.
-Some folders also contain numbered page artifacts (``foo-0.png``, ``foo-1.png``).
+Each output folder contains an ``images/`` directory holding up to four renders of the
+same page: the full-page render (no suffix), plus ``_zoom``, ``_ipad`` and ``_a4``
+variants. Some folders also contain numbered page artifacts (``foo-0.png``, ``foo-1.png``).
 
 The full-page render is the thumbnail source. Its file name follows the generator
 *template*, not the folder, so it can differ from the folder name and can repeat across
 folders (``baby_registrylist`` and ``baby_registrylist_lightblue`` both render
 ``baby_registrylist.png``). Thumbnails are therefore renamed on the way out, using the
 PDF's own file name, which is unique per product.
+
+The extra renders are published beside the thumbnail as the product gallery, which the
+storefront requests by slot: ``<stem>.webp`` (cover), ``<stem>-zoom.webp``,
+``<stem>-ipad.webp`` and ``<stem>-a4.webp``. Variants a listing never rendered are simply
+not uploaded; the API reports those slots as missing and the gallery drops them.
 
 Usage:
     python3 scripts/build-thumbnails.py                 # write to /tmp/realkevbase-thumbs
@@ -43,9 +48,17 @@ from storage_auth import storage_arguments
 DEFAULT_SOURCE = "zz_tp/output"
 DEFAULT_OUT = "/tmp/realkevbase-thumbs"
 DEFAULT_WIDTH = 500
+DEFAULT_VARIANT_WIDTH = 800
 DEFAULT_QUALITY = 82
 
 VARIANT_SUFFIXES = ("_a4", "_ipad", "_zoom")
+
+# Extra renders published as gallery images, in the order the API exposes them.
+# Slot 0 (the cover thumbnail) is handled separately because it is always required.
+GALLERY_VARIANTS = ("_zoom", "_ipad", "_a4")
+
+# How those variants appear in the published file name.
+GALLERY_SUFFIXES = tuple(variant.replace("_", "-") for variant in GALLERY_VARIANTS)
 
 
 def is_variant(stem: str) -> bool:
@@ -100,7 +113,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate product thumbnails.")
     parser.add_argument("--source", default=DEFAULT_SOURCE, help="generator output folder")
     parser.add_argument("--out", default=DEFAULT_OUT, help="destination for .webp files")
-    parser.add_argument("--width", type=int, default=DEFAULT_WIDTH, help="thumbnail width in px")
+    parser.add_argument("--width", type=int, default=DEFAULT_WIDTH, help="cover width in px")
+    parser.add_argument(
+        "--variant-width",
+        type=int,
+        default=DEFAULT_VARIANT_WIDTH,
+        help="gallery image width in px",
+    )
     parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="WebP quality")
     parser.add_argument("--upload", action="store_true", help="upload to Azure Blob Storage")
     parser.add_argument("--container", default="pdfs", help="blob container (default: pdfs)")
@@ -127,35 +146,51 @@ def main() -> int:
     if not args.check:
         os.makedirs(args.out, exist_ok=True)
 
-    built, skipped, total_bytes = 0, [], 0
+    built, covers, skipped, total_bytes = 0, 0, [], 0
 
-    for listing, stem in stems.items():
-        images_dir = os.path.join(args.source, listing, "images")
-        source_image = find_base_image(images_dir)
-        if source_image is None:
-            skipped.append(listing)
-            continue
-
-        target = os.path.join(args.out, f"{stem}.webp")
-        if args.check:
-            print(f"  {listing:42s} -> {stem}.webp  ({os.path.basename(source_image)})")
-            built += 1
-            continue
-
-        with Image.open(source_image) as image:
+    def write_webp(source: str, target: str, width: int) -> int:
+        """Resize a render to WebP and return the bytes written."""
+        with Image.open(source) as image:
             image = image.convert("RGB")
-            width = min(args.width, image.width)
+            width = min(width, image.width)
             height = round(image.height * width / image.width)
             image = image.resize((width, height), Image.LANCZOS)
             image.save(target, "WEBP", quality=args.quality, method=6)
+        return os.path.getsize(target)
 
-        size = os.path.getsize(target)
-        total_bytes += size
-        built += 1
-        print(f"  {stem}.webp  {width}x{height}  {size / 1024:.0f} KB")
+    for listing, stem in stems.items():
+        images_dir = os.path.join(args.source, listing, "images")
+        cover = find_base_image(images_dir)
+        if cover is None:
+            skipped.append(listing)
+            continue
+
+        # The renders share the template's stem, which is not always the folder name.
+        source_stem = os.path.basename(cover)[: -len(".png")]
+        renders = [(cover, "", args.width)]
+        for variant in GALLERY_VARIANTS:
+            variant_source = os.path.join(images_dir, f"{source_stem}{variant}.png")
+            if os.path.exists(variant_source):
+                renders.append((variant_source, variant.replace("_", "-"), args.variant_width))
+
+        for source, suffix, width in renders:
+            name = f"{stem}{suffix}.webp"
+            if args.check:
+                built += 1
+                continue
+
+            size = write_webp(source, os.path.join(args.out, name), width)
+            total_bytes += size
+            built += 1
+            print(f"  {name:52s} {width:4d}px  {size / 1024:5.0f} KB")
+
+        covers += 1
+        if args.check:
+            extra = ", ".join(suffix or "cover" for _, suffix, _ in renders)
+            print(f"  {listing:42s} -> {stem}.webp  ({extra})")
 
     label = "would build" if args.check else "built"
-    print(f"\n{label} {built} thumbnails", end="")
+    print(f"\n{label} {built} images: {covers} covers + {built - covers} gallery", end="")
     if total_bytes:
         print(f", {total_bytes / 1024 / 1024:.1f} MB total", end="")
     print()
@@ -179,10 +214,20 @@ def main() -> int:
     else:
         pruned = 0
         for name in sorted(os.listdir(args.out)):
-            if name.endswith(".webp") and name[: -len(".webp")] not in stems:
-                os.remove(os.path.join(args.out, name))
-                pruned += 1
-        print(f"  {len(stems)} published PDFs; skipped {pruned} thumbnail(s) with no product")
+            if not name.endswith(".webp"):
+                continue
+            # Gallery files carry a variant suffix on the PDF stem; strip it before
+            # comparing, or every gallery image would look unpublished and be deleted.
+            stem = name[: -len(".webp")]
+            for suffix in GALLERY_SUFFIXES:
+                if stem.endswith(suffix):
+                    stem = stem[: -len(suffix)]
+                    break
+            if stem in stems:
+                continue
+            os.remove(os.path.join(args.out, name))
+            pruned += 1
+        print(f"  {len(stems)} published PDFs; skipped {pruned} image(s) with no product")
 
     command = [
         "az", "storage", "blob", "upload-batch",

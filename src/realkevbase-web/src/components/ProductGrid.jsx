@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { Link } from 'react-router-dom'
+
 import {
   Box,
   Button,
@@ -53,6 +55,8 @@ function ProductCard({ product }) {
 
   const isDigital = product.fulfillment === FULFILLMENT.DIGITAL_PDF
   const { from, to, ink } = product.accent
+  // Merch has no detail page, so only a published guide becomes a link.
+  const detailPath = isDigital && product.slug ? `/guides/${product.slug}` : null
 
   const handleAdd = () => {
     addItem(product, 1)
@@ -75,11 +79,15 @@ function ProductCard({ product }) {
       }}
     >
       <Box
+        component={detailPath ? Link : 'div'}
+        {...(detailPath ? { to: detailPath, tabIndex: -1, 'aria-hidden': true } : {})}
         sx={{
           position: 'relative',
-          height: 172,
           display: 'grid',
           placeItems: 'center',
+          height: 172,
+          color: 'inherit',
+          textDecoration: 'none',
           background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
         }}
       >
@@ -146,7 +154,21 @@ function ProductCard({ product }) {
         </Typography>
 
         <Typography variant="h6" component="h3">
-          {product.name}
+          {detailPath ? (
+            <Box
+              component={Link}
+              to={detailPath}
+              sx={{
+                color: 'inherit',
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              {product.name}
+            </Box>
+          ) : (
+            product.name
+          )}
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>

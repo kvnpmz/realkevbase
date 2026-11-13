@@ -24,6 +24,16 @@ public sealed record ProductImage(Stream Content, string ContentType, string ETa
 public interface IProductImageService
 {
     /// <summary>
+    /// Number of gallery slots a product can expose, in display order.
+    /// </summary>
+    /// <remarks>
+    /// Slot 0 is the same artwork the storefront uses as the card thumbnail; slots 1 to 3 are
+    /// the detail zoom, the tablet mockup and the A4 preview that the generator renders beside
+    /// it. Not every listing has all four, so callers must treat a missing slot as normal.
+    /// </remarks>
+    const int GallerySlotCount = 4;
+
+    /// <summary>
     /// Opens the thumbnail for a digital product.
     /// </summary>
     /// <param name="product">Product whose artwork should be read.</param>
@@ -34,6 +44,23 @@ public interface IProductImageService
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
     Task<ProductImage?> OpenThumbnailAsync(Product product, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Opens one image of a digital product's gallery.
+    /// </summary>
+    /// <param name="product">Product whose artwork should be read.</param>
+    /// <param name="slot">Gallery slot, from 0 to <see cref="GallerySlotCount"/> - 1.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// The image, or <see langword="null"/> when the slot is out of range, the product has no
+    /// PDF, or that render was never published. A missing render is a normal state: the
+    /// gallery shows the ones that exist.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    Task<ProductImage?> OpenGalleryImageAsync(
+        Product product,
+        int slot,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -56,6 +83,12 @@ public sealed class AzureBlobProductImageService : IProductImageService
     /// File extension of the published thumbnails.
     /// </summary>
     public const string ThumbnailExtension = ".webp";
+
+    /// <summary>
+    /// File-name suffixes of the gallery renders, in the order the storefront shows them.
+    /// Mirrors the variants the PDF generator writes beside each page.
+    /// </summary>
+    private static readonly string[] GallerySuffixes = ["", "-zoom", "-ipad", "-a4"];
 
     private readonly BlobContainerClient _containerClient;
 
@@ -110,15 +143,62 @@ public sealed class AzureBlobProductImageService : IProductImageService
             : $"{folder}/{ThumbnailFolderName}/{thumbnail}";
     }
 
-    /// <inheritdoc />
-    public async Task<ProductImage?> OpenThumbnailAsync(Product product, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Derives the gallery blob name for a product and slot.
+    /// </summary>
+    /// <param name="product">Product whose artwork location should be computed.</param>
+    /// <param name="slot">Gallery slot, from 0 to <see cref="IProductImageService.GallerySlotCount"/> - 1.</param>
+    /// <returns>
+    /// The blob name, for example <c>guides/images/foo-zoom.webp</c> for slot 1, or
+    /// <see langword="null"/> when the slot is out of range or the product has no PDF blob.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    public static string? GetGalleryBlobName(Product product, int slot)
     {
-        var blobName = GetThumbnailBlobName(product);
-        if (blobName is null)
+        ArgumentNullException.ThrowIfNull(product);
+
+        if (slot < 0 || slot >= GallerySuffixes.Length)
         {
             return null;
         }
 
+        var thumbnail = GetThumbnailBlobName(product);
+        if (thumbnail is null)
+        {
+            return null;
+        }
+
+        // Thumbnail names always end in the published image extension, so the suffix can be
+        // inserted in front of it without re-deriving the folder and stem.
+        var stem = thumbnail[..^ThumbnailExtension.Length];
+        return $"{stem}{GallerySuffixes[slot]}{ThumbnailExtension}";
+    }
+
+    /// <inheritdoc />
+    public Task<ProductImage?> OpenThumbnailAsync(Product product, CancellationToken cancellationToken = default)
+    {
+        var blobName = GetThumbnailBlobName(product);
+        return blobName is null ? Task.FromResult<ProductImage?>(null) : OpenAsync(blobName, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<ProductImage?> OpenGalleryImageAsync(
+        Product product,
+        int slot,
+        CancellationToken cancellationToken = default)
+    {
+        var blobName = GetGalleryBlobName(product, slot);
+        return blobName is null ? Task.FromResult<ProductImage?>(null) : OpenAsync(blobName, cancellationToken);
+    }
+
+    /// <summary>
+    /// Streams an image blob.
+    /// </summary>
+    /// <param name="blobName">Blob name inside the shared container.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The image, or <see langword="null"/> when the blob does not exist.</returns>
+    private async Task<ProductImage?> OpenAsync(string blobName, CancellationToken cancellationToken)
+    {
         var blob = _containerClient.GetBlobClient(blobName);
         if (!await blob.ExistsAsync(cancellationToken).ConfigureAwait(false))
         {

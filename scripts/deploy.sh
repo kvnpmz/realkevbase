@@ -351,6 +351,11 @@ print(urls[0] if urls else '')
     check_status "bundle asset is fetchable" GET 200 "$SITE_URL/$live_bundle"
   fi
 
+  # 9. Client-side routes must serve the app, not the host's 404. This is the one way a
+  #    shared guide link can break while the storefront itself still looks healthy.
+  check_status "guide deep link serves the app" \
+    GET 200 "$SITE_URL/guides/apartment-checklist"
+
   echo
   if [ "$FAILURES" -eq 0 ]; then
     printf '%sAll checks passed.%s\n' "$C_PASS" "$C_OFF"

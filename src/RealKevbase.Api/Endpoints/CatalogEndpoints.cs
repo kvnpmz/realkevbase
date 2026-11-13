@@ -40,6 +40,13 @@ public static class CatalogEndpoints
             .Produces(StatusCodes.Status304NotModified)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapGet("/products/{id:guid}/images/{slot:int}", GetProductGalleryImageAsync)
+            .WithName("GetProductGalleryImage")
+            .WithSummary("Streams one gallery image for a digital product.")
+            .Produces(StatusCodes.Status200OK, contentType: "image/webp")
+            .Produces(StatusCodes.Status304NotModified)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return endpoints;
     }
 
@@ -96,11 +103,57 @@ public static class CatalogEndpoints
         }
 
         var image = await images.OpenThumbnailAsync(product, cancellationToken);
-        if (image is null)
+        return image is null ? TypedResults.NotFound() : await StreamImageAsync(image, request, response);
+    }
+
+    /// <summary>
+    /// Streams one image of a digital product's gallery.
+    /// </summary>
+    /// <remarks>
+    /// Slots are positional rather than named so the storefront never learns a blob name:
+    /// slot 0 is the card thumbnail, slots 1 to 3 are the extra renders the generator
+    /// produces. A slot the listing never rendered is a normal 404, so the detail page can
+    /// request every slot and simply drop the ones that are missing.
+    /// </remarks>
+    /// <param name="id">Product whose artwork should be returned.</param>
+    /// <param name="slot">Gallery slot, from 0 to <see cref="IProductImageService.GallerySlotCount"/> - 1.</param>
+    /// <param name="request">Current request, used for conditional revalidation.</param>
+    /// <param name="response">Current response, used to set caching headers.</param>
+    /// <param name="catalog">Catalog used to resolve the product.</param>
+    /// <param name="images">Storage-backed source of the artwork.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    private static async Task<IResult> GetProductGalleryImageAsync(
+        Guid id,
+        int slot,
+        HttpRequest request,
+        HttpResponse response,
+        IProductCatalog catalog,
+        IProductImageService images,
+        CancellationToken cancellationToken)
+    {
+        if (slot < 0
+            || slot >= IProductImageService.GallerySlotCount
+            || !catalog.TryGetProduct(id, out var product)
+            || !product.IsDigitalPdf)
         {
             return TypedResults.NotFound();
         }
 
+        var image = await images.OpenGalleryImageAsync(product, slot, cancellationToken);
+        return image is null ? TypedResults.NotFound() : await StreamImageAsync(image, request, response);
+    }
+
+    /// <summary>
+    /// Writes a product image with cache validators.
+    /// </summary>
+    /// <param name="image">Open image to stream.</param>
+    /// <param name="request">Current request, used for conditional revalidation.</param>
+    /// <param name="response">Current response, used to set caching headers.</param>
+    private static async Task<IResult> StreamImageAsync(
+        ProductImage image,
+        HttpRequest request,
+        HttpResponse response)
+    {
         var ifNoneMatch = request.Headers.IfNoneMatch.ToString();
         if (ifNoneMatch.Length > 0 && ifNoneMatch.Contains(image.ETag, StringComparison.Ordinal))
         {

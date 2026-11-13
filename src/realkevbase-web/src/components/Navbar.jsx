@@ -17,13 +17,15 @@ import {
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 
+import { Link } from 'react-router-dom'
+
 import { useCartContext } from '../cart/cartContext.js'
 import { formatMoney } from '../cart/formatMoney.js'
 
-/** Primary navigation targets. */
+/** Primary navigation targets, absolute so they also work from a guide page. */
 const NAV_LINKS = [
-  { label: 'Shop', href: '#products' },
-  { label: 'How it works', href: '#how-it-works' },
+  { label: 'Shop', to: '/#products' },
+  { label: 'How it works', to: '/#how-it-works' },
 ]
 
 /**
@@ -58,8 +60,8 @@ export function Navbar() {
           <Stack
             direction="row"
             spacing={1.25}
-            component="a"
-            href="#top"
+            component={Link}
+            to="/"
             sx={{
               alignItems: 'center',
               flexShrink: 0,
@@ -100,8 +102,9 @@ export function Navbar() {
           >
             {NAV_LINKS.map((link) => (
               <Button
-                key={link.href}
-                href={link.href}
+                key={link.to}
+                component={Link}
+                to={link.to}
                 color="inherit"
                 sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
               >
@@ -171,16 +174,16 @@ export function Navbar() {
       >
         {NAV_LINKS.map((link) => (
           <MenuItem
-            key={link.href}
-            component="a"
-            href={link.href}
+            key={link.to}
+            component={Link}
+            to={link.to}
             onClick={() => setMenuAnchor(null)}
           >
             {link.label}
           </MenuItem>
         ))}
         <Divider />
-        <MenuItem component="a" href="#products" onClick={() => setMenuAnchor(null)}>
+        <MenuItem component={Link} to="/#products" onClick={() => setMenuAnchor(null)}>
           Browse all products
         </MenuItem>
       </Menu>

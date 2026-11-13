@@ -25,6 +25,14 @@ const DELIVERY_COPY = Object.freeze({
 })
 
 /**
+ * Gallery slots the API exposes per digital product, mirroring
+ * `IProductImageService.GallerySlotCount` on the server. Slot 0 repeats the card
+ * thumbnail; the rest are the detail renders. A slot that was never published
+ * answers 404, which the gallery treats as "no such image".
+ */
+const GALLERY_SLOT_COUNT = 4
+
+/**
  * Error raised when the catalog API cannot complete a request.
  */
 export class CatalogApiError extends Error {
@@ -119,24 +127,34 @@ export function createCatalogApi({
         .filter((entry) => entry && typeof entry === 'object')
         .map((entry) => /** @type {Record<string, unknown>} */ (entry))
         .map((record) => {
+          const id = typeof record.id === 'string' ? record.id : ''
           const fulfillment = record.fulfillment === 'PhysicalMerch' ? 'PhysicalMerch' : 'DigitalPdf'
           const accent = /** @type {Record<string, unknown>} */ (record.accent ?? {})
           const listingId = typeof record.listingId === 'string' ? record.listingId : null
 
           return {
-            id: typeof record.id === 'string' ? record.id : '',
+            id,
             name: typeof record.name === 'string' ? record.name : '',
             description: typeof record.description === 'string' ? record.description : '',
             unitPrice: typeof record.price === 'number' ? record.price : Number(record.price) || 0,
             fulfillment,
             category: typeof record.category === 'string' ? record.category : null,
             listingId,
-            // The API returns a relative path so the bundle stays portable; resolve it
+            // The listing id is a stable, human-readable key taken from the PDF's file
+            // name, so it makes a better URL than the product GUID.
+            slug: listingId ? listingId.replaceAll('_', '-') : null,
+            // The API returns relative paths so the bundle stays portable; resolve them
             // against the same origin the catalog came from.
             thumbnailUrl:
               typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
                 ? joinUrl(baseUrl, record.thumbnailUrl)
                 : null,
+            galleryUrls:
+              fulfillment === 'DigitalPdf' && id
+                ? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) =>
+                    joinUrl(baseUrl, `/api/products/${id}/images/${slot}`),
+                  )
+                : [],
             badge: DELIVERY_COPY[fulfillment].badge,
             feature: DELIVERY_COPY[fulfillment].feature,
             accent: {
