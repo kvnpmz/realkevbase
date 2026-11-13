@@ -1,0 +1,12 @@
+# Security headers for the static storefront (Cloudflare Pages).
+#
+# The API sets the same baseline on JSON responses; the HTML bundle had none, so a
+# phishing page could frame the storefront and the browser would sniff content types.
+# A Content-Security-Policy is deliberately not set here: MUI injects styles at runtime
+# and GA adds two script origins, so it needs a browser-tested policy of its own.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains

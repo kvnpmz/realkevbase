@@ -136,6 +136,8 @@ function GuideDetail({ product }) {
                 component="img"
                 src={currentUrl}
                 alt={`${product.name}, preview ${currentSlot + 1} of ${availableSlots.length}`}
+                fetchPriority="high"
+                decoding="async"
                 onError={() => markFailed(currentSlot)}
                 sx={{
                   // Absolute positioning is what makes the percentage height resolve; as a

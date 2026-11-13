@@ -24,6 +24,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddOpenApi();
+
+// The catalog is ~28 KB of JSON (~6 KB gzipped). WebP images are already compressed and
+// are not in the default MIME list, so this only shrinks text responses.
+builder.Services.AddResponseCompression(options => options.EnableForHttps = true);
+
 builder.Services.AddAzureBlobPdfStorage(builder.Configuration);
 builder.Services.AddSingleton<IProductCatalog, InMemoryProductCatalog>();
 builder.Services.AddListings(builder.Configuration);
@@ -62,6 +67,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // REMOVED app.UseHttpsRedirection() -> Azure App Service handles SSL termination
+
+app.UseResponseCompression();
 
 app.UseCors(CorsPolicies.SpaPolicyName);
 app.MapCheckoutEndpoints();

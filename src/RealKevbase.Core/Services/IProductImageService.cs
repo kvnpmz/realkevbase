@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Storage.Blobs;
 
 using RealKevbase.Core.Models;
@@ -200,20 +201,27 @@ public sealed class AzureBlobProductImageService : IProductImageService
     private async Task<ProductImage?> OpenAsync(string blobName, CancellationToken cancellationToken)
     {
         var blob = _containerClient.GetBlobClient(blobName);
-        if (!await blob.ExistsAsync(cancellationToken).ConfigureAwait(false))
+
+        try
         {
+            // One round trip, not two: the download itself reports a missing blob, so no
+            // separate ExistsAsync probe is needed. A gallery view would otherwise double
+            // the storage calls made per detail page.
+            var download = await blob
+                .DownloadStreamingAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            var result = download.Value;
+
+            return new ProductImage(
+                result.Content,
+                string.IsNullOrWhiteSpace(result.Details.ContentType) ? "image/webp" : result.Details.ContentType,
+                result.Details.ETag.ToString());
+        }
+        catch (RequestFailedException exception) when (exception.Status == 404)
+        {
+            // A render the listing never produced is a normal state for gallery slots.
             return null;
         }
-
-        var download = await blob
-            .DownloadStreamingAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        var result = download.Value;
-
-        return new ProductImage(
-            result.Content,
-            string.IsNullOrWhiteSpace(result.Details.ContentType) ? "image/webp" : result.Details.ContentType,
-            result.Details.ETag.ToString());
     }
 }

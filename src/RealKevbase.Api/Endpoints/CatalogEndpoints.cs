@@ -59,7 +59,10 @@ public static class CatalogEndpoints
     /// and is always included. When the listing database cannot be read at all, every catalog
     /// product is returned: a missing file must not empty the storefront.
     /// </remarks>
-    private static IResult GetProducts(IProductCatalog catalog, IListingRepository listings)
+    private static IResult GetProducts(
+        HttpResponse response,
+        IProductCatalog catalog,
+        IListingRepository listings)
     {
         var available = listings.GetAll();
         var listingIds = available?.Select(listing => listing.Id).ToHashSet(StringComparer.Ordinal);
@@ -70,6 +73,10 @@ public static class CatalogEndpoints
                               || (product.ListingId is not null && listingIds.Contains(product.ListingId)))
             .Select(ProductResponse.From)
             .ToArray();
+
+        // The catalog only changes on deploy, so a short browser cache removes a round trip
+        // for a returning visitor without hiding a new product for long.
+        response.Headers.CacheControl = "public, max-age=60";
 
         return Results.Ok(products);
     }

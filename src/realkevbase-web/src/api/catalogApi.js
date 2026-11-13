@@ -131,6 +131,20 @@ export function createCatalogApi({
           const fulfillment = record.fulfillment === 'PhysicalMerch' ? 'PhysicalMerch' : 'DigitalPdf'
           const accent = /** @type {Record<string, unknown>} */ (record.accent ?? {})
           const listingId = typeof record.listingId === 'string' ? record.listingId : null
+          const thumbnailUrl =
+            typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
+              ? joinUrl(baseUrl, record.thumbnailUrl)
+              : null
+          // Slot 0 renders the same bytes the card already fetched, so it reuses that exact
+          // URL: the browser cache serves it and the detail page paints without a new request.
+          const galleryUrls =
+            fulfillment === 'DigitalPdf' && id
+              ? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) =>
+                  slot === 0 && thumbnailUrl
+                    ? thumbnailUrl
+                    : joinUrl(baseUrl, `/api/products/${id}/images/${slot}`),
+                )
+              : []
 
           return {
             id,
@@ -143,18 +157,10 @@ export function createCatalogApi({
             // The listing id is a stable, human-readable key taken from the PDF's file
             // name, so it makes a better URL than the product GUID.
             slug: listingId ? listingId.replaceAll('_', '-') : null,
-            // The API returns relative paths so the bundle stays portable; resolve them
-            // against the same origin the catalog came from.
-            thumbnailUrl:
-              typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
-                ? joinUrl(baseUrl, record.thumbnailUrl)
-                : null,
-            galleryUrls:
-              fulfillment === 'DigitalPdf' && id
-                ? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) =>
-                    joinUrl(baseUrl, `/api/products/${id}/images/${slot}`),
-                  )
-                : [],
+            // The API returns relative paths so the bundle stays portable; they were
+            // resolved against the same origin the catalog came from.
+            thumbnailUrl,
+            galleryUrls,
             badge: DELIVERY_COPY[fulfillment].badge,
             feature: DELIVERY_COPY[fulfillment].feature,
             accent: {
