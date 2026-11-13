@@ -27,9 +27,10 @@ commit, so a failed upload cannot leave a product selling a PDF that is not stor
 
 Usage:
     python3 scripts/sync-catalog.py                     # dry run, prints the diff
-    python3 scripts/sync-catalog.py --apply             # rows, uploads, catalog source
+    python3 scripts/sync-catalog.py --apply             # rows, uploads, catalog source, images
     python3 scripts/sync-catalog.py --apply --no-upload # when the PDFs are already up
-    python3 scripts/sync-catalog.py --apply --images    # also publish gallery renders
+    python3 scripts/sync-catalog.py --apply --no-images # skip thumbnail publishing
+    python3 scripts/sync-catalog.py --apply --images    # republish images for old listings too
     python3 scripts/sync-catalog.py --json              # machine-readable diff
 """
 
@@ -560,7 +561,16 @@ def main() -> int:
     )
     parser.add_argument("--apply", action="store_true", help="write rows, upload PDFs and update the catalog")
     parser.add_argument("--no-upload", action="store_true", help="skip PDF uploads with --apply")
-    parser.add_argument("--images", action="store_true", help="publish thumbnails and gallery renders with --apply")
+    parser.add_argument(
+        "--images",
+        action="store_true",
+        help="republish thumbnails and gallery renders even when no listing was added",
+    )
+    parser.add_argument(
+        "--no-images",
+        action="store_true",
+        help="skip thumbnail publishing with --apply",
+    )
     parser.add_argument("--json", action="store_true", help="print the diff as JSON")
     args = parser.parse_args()
 
@@ -640,7 +650,9 @@ def main() -> int:
     finally:
         connection.close()
 
-    if args.images:
+    # A listing that was just registered has no cover in storage yet, so publish the
+    # renders whenever one was added; --images forces a refresh of the rest too.
+    if not args.no_images and (plan["new"] or args.images):
         if not publish_images():
             print("error: thumbnail publishing failed", file=sys.stderr)
             return 1
