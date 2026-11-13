@@ -285,6 +285,7 @@ def main() -> int:
     print(f"  uploading {len(candidates)} of {len(local)} images")
 
     staging = tempfile.mkdtemp(prefix="realkevbase-thumbs-")
+    failed = False
     try:
         for name in candidates:
             shutil.copy2(os.path.join(args.out, name), os.path.join(staging, name))
@@ -301,9 +302,19 @@ def main() -> int:
         ]
         command += auth
 
-        return subprocess.call(command)
+        code = subprocess.call(command)
+        failed = code != 0
+        return code
     finally:
         shutil.rmtree(staging, ignore_errors=True)
+        if failed:
+            # Drop the files rebuilt in this run so a retry rebuilds and sends them.
+            # Without this, the retry would see them as current and skip the upload,
+            # leaving storage with the previous artwork.
+            for name in candidates:
+                if name in written:
+                    os.remove(os.path.join(args.out, name))
+            print("  upload failed; rebuilt files were dropped so a retry sends them again")
 
 
 def stem_of(name: str) -> str:
