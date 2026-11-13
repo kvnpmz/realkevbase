@@ -116,8 +116,20 @@ public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
 
         foreach (var product in digitalProducts.Values)
         {
-            var url = await _pdfStorage.CreateDownloadUrlAsync(product, cancellationToken).ConfigureAwait(false);
-            downloads.Add(new PdfDownload(product, url, DateTimeOffset.UtcNow.Add(_pdfStorage.LinkLifetime)));
+            // A guide with both editions yields one link per edition, so the buyer gets the
+            // A4 file the listing page promised instead of only the Letter one.
+            foreach (var edition in await _pdfStorage.GetEditionsAsync(product, cancellationToken).ConfigureAwait(false))
+            {
+                var url = await _pdfStorage
+                    .CreateDownloadUrlAsync(edition.BlobName, cancellationToken)
+                    .ConfigureAwait(false);
+
+                downloads.Add(new PdfDownload(
+                    product,
+                    edition,
+                    url,
+                    DateTimeOffset.UtcNow.Add(_pdfStorage.LinkLifetime)));
+            }
         }
 
         var customerEmail = session.CustomerDetails?.Email ?? session.CustomerEmail;

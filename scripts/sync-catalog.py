@@ -41,12 +41,17 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
+import tempfile
 import uuid
 
+from datetime import datetime
+
 from listing_files import (
+    CONTAINER,
     edition_name,
     find_source_pdf,
     parent_slug,
@@ -56,6 +61,7 @@ from listing_files import (
     upload_pdf,
     variant_words,
 )
+from storage_auth import storage_arguments
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # REALKEVBASE_DB lets tests point at a copy instead of the shipped database.
@@ -494,6 +500,165 @@ def write_database(plan, connection) -> int:
     return written
 
 
+def find_a4_pdf(listing: str, directory: str) -> str | None:
+    """Find the A4 edition render of one listing folder.
+
+    Renders were named after the template stem, so the file is not always
+    ``<listing>_a4.pdf``; the largest candidate wins when a folder holds several.
+
+    Args:
+        listing: Listing id, which is also the folder name.
+        directory: Absolute path of the listing's output folder.
+
+    Returns:
+        Path of the A4 PDF, or ``None`` when the listing was never rendered for A4.
+    """
+    candidates = [
+        name for name in os.listdir(directory)
+        if name.lower().endswith(".pdf") and "a4" in name.lower()
+    ]
+    if not candidates:
+        return None
+
+    preferred = f"{listing}_a4.pdf"
+    chosen = (
+        preferred
+        if preferred in candidates
+        else max(candidates, key=lambda name: os.path.getsize(os.path.join(directory, name)))
+    )
+    return os.path.join(directory, chosen)
+
+
+def local_a4_editions(source: str) -> dict[str, str]:
+    """Map listing id to the A4 edition render it has on disk.
+
+    Args:
+        source: Directory holding one folder per listing (``zz_tp/output``).
+
+    Returns:
+        Listing id to PDF path; folders without an A4 render are absent.
+    """
+    editions = {}
+    for listing in sorted(os.listdir(source)):
+        directory = os.path.join(source, listing)
+        if not os.path.isdir(directory):
+            continue
+        path = find_a4_pdf(listing, directory)
+        if path:
+            editions[listing] = path
+    return editions
+
+
+def published_pdfs(container: str) -> dict[str, float] | None:
+    """List published PDF blobs with their last-modified timestamp.
+
+    Args:
+        container: Blob container holding the products.
+
+    Returns:
+        Blob name to a POSIX timestamp, or ``None`` when the listing failed.
+    """
+    auth, _ = storage_arguments()
+    command = [
+        "az", "storage", "blob", "list",
+        "--container-name", container,
+        "--prefix", BLOB_PREFIX + "/",
+        "--query", "[].{name:name,modified:properties.lastModified}",
+        "-o", "json",
+    ]
+    command += auth
+
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=180)
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+    if result.returncode != 0:
+        return None
+
+    try:
+        entries = json.loads(result.stdout or "[]")
+    except json.JSONDecodeError:
+        return None
+
+    published = {}
+    for entry in entries:
+        name = entry.get("name")
+        if not name or not name.lower().endswith(".pdf"):
+            continue
+        modified = entry.get("modified")
+        try:
+            published[name] = datetime.fromisoformat(str(modified)).timestamp()
+        except ValueError:
+            published[name] = 0.0
+    return published
+
+
+def publish_a4_editions(source: str, container: str = CONTAINER) -> bool:
+    """Publish the A4 edition of every listing that has one.
+
+    A4 is legacy: no new listing gets one, but the older guides were rendered for
+    A4 paper and their buyers are promised that file. Uploading it is what makes the
+    ``US Letter + A4`` chip and the extra download link true, so this runs on every
+    apply and only sends what storage is missing or older than the local render.
+
+    Args:
+        source: Directory holding one folder per listing (``zz_tp/output``).
+        container: Blob container holding the products.
+
+    Returns:
+        True when storage already matched or every upload succeeded.
+    """
+    editions = local_a4_editions(source)
+    if not editions:
+        print("\nno A4 editions to publish")
+        return True
+
+    print(f"\nA4 editions: {len(editions)} listing(s) have one")
+    published = published_pdfs(container)
+    if published is None:
+        print("  could not list storage; every edition is a candidate")
+
+    pending = []
+    for listing, path in editions.items():
+        blob = f"{BLOB_PREFIX}/{listing.replace('_', '-')}-a4.pdf"
+        remote = None if published is None else published.get(blob)
+        if remote is not None and remote >= os.path.getmtime(path) - 1:
+            continue
+        pending.append((path, blob))
+
+    if not pending:
+        print("  storage already matches every A4 edition; nothing to upload")
+        return True
+
+    print(f"  uploading {len(pending)} of {len(editions)} editions")
+    auth, source_label = storage_arguments()
+    print(f"  credentials: {source_label}")
+
+    staging = tempfile.mkdtemp(prefix="realkevbase-a4-")
+    try:
+        for path, blob in pending:
+            shutil.copy2(path, os.path.join(staging, os.path.basename(blob)))
+
+        command = [
+            "az", "storage", "blob", "upload-batch",
+            "--destination", f"{container}/{BLOB_PREFIX}",
+            "--source", staging,
+            "--pattern", "*.pdf",
+            "--content-type", "application/pdf",
+            "--overwrite",
+        ]
+        command += auth
+        result = subprocess.run(command, capture_output=True, text=True, timeout=900)
+        if result.returncode != 0:
+            print(f"  upload failed: {result.stderr.strip()[:400]}", file=sys.stderr)
+            return False
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+    return True
+
+
 def publish_images(excluded=()) -> bool:
     """Publish covers and gallery renders, skipping the generator's probe folders."""
     script = os.path.join(REPO_ROOT, "scripts", "build-thumbnails.py")
@@ -652,6 +817,11 @@ def main() -> int:
         print(f"copy refreshed : {len(plan['edits'])}")
     finally:
         connection.close()
+
+    if not args.no_upload:
+        if not publish_a4_editions(OUTPUT):
+            print("error: A4 edition publishing failed", file=sys.stderr)
+            return 1
 
     # A listing that was just registered has no cover in storage yet, so publish the
     # renders whenever one was added; --images forces a refresh of the rest too.

@@ -9,11 +9,11 @@ RealKevbase is the personal brand store; SaveSimple is its printable-PDF collect
 - Never copy `zz_tp/projects.db` over the shipped database — it has titles on only 45 of 116 rows and would blank most names.
 - No secrets in the repo; the browser sees only `/api/...` (blob names and SAS links stay server-side). Public C# members keep XML docs.
 - Ids are derived from the folder name (`guides/<slug>.pdf`, `uuid5(...)`), so renaming a blob moves the guide. Endpoints live in `Api/Endpoints/`, routes in `App.jsx`.
-- Gallery and paper sizes are server facts: `/api/products` returns `gallerySlots` and `pageSizes` from one cached blob listing, so the SPA never hard-codes "US Letter + A4" nor requests an unpublished render. A4 is claimed only when `guides/<slug>-a4.pdf` is published.
+- Gallery and paper sizes are server facts: `/api/products` returns `gallerySlots` and `pageSizes` from one cached blob listing, so the SPA never hard-codes "US Letter + A4" nor requests an unpublished render. A4 is claimed only when `guides/<slug>-a4.pdf` is published, and that edition is then delivered beside the Letter PDF (A4 is legacy: 57 listings, no new ones).
 
 ## Ship a guide
 
-A guide is live only when its `zz_tp/output/<listing>/` folder, a database row and a catalog entry all exist. The sync creates the last two, uploads before committing, publishes renders, and is safe to re-run.
+A guide is live only when its `zz_tp/output/<listing>/` folder, a database row and a catalog entry all exist. The sync creates the last two, uploads before committing, publishes renders and any legacy A4 edition, and is safe to re-run.
 ```bash
 python3 scripts/sync-catalog.py            # preview
 python3 scripts/sync-catalog.py --apply    # register, upload, publish images

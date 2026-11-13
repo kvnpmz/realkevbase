@@ -332,6 +332,7 @@ public static class CheckoutEndpoints
                 .Select(download => new SessionDownloadResponse(
                     download.Product.Id,
                     download.Product.Name,
+                    download.Edition.Label,
                     download.Url,
                     download.ExpiresAt))
                 .ToArray();
@@ -393,10 +394,12 @@ public sealed record SessionDownloadsResponse(
 /// </summary>
 /// <param name="ProductId">Identifier of the purchased product.</param>
 /// <param name="Name">Display name of the product.</param>
+/// <param name="Edition">Paper edition this link serves, for example <c>US Letter</c>.</param>
 /// <param name="Url">Read-only Azure Blob Storage SAS URL valid for 24 hours.</param>
 /// <param name="ExpiresAt">Moment the link stops working.</param>
 public sealed record SessionDownloadResponse(
     Guid ProductId,
     string Name,
+    string Edition,
     Uri Url,
     DateTimeOffset ExpiresAt);

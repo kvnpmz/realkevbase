@@ -128,11 +128,6 @@ public sealed class AzureBlobProductImageService : IProductImageService
     private const string PdfExtension = ".pdf";
 
     /// <summary>
-    /// Marker that distinguishes the A4 edition from the Letter PDF it sits beside.
-    /// </summary>
-    private const string A4EditionSuffix = "-a4";
-
-    /// <summary>
     /// Position of the A4 preview in <see cref="GallerySuffixes"/>.
     /// </summary>
     private const int A4PreviewSlot = 3;
@@ -379,17 +374,7 @@ public sealed class AzureBlobProductImageService : IProductImageService
     {
         ArgumentNullException.ThrowIfNull(product);
 
-        var pdf = product.PdfBlobName?.Replace('\\', '/');
-        if (string.IsNullOrWhiteSpace(pdf))
-        {
-            return null;
-        }
-
-        var stem = pdf.EndsWith(PdfExtension, StringComparison.OrdinalIgnoreCase)
-            ? pdf[..^PdfExtension.Length]
-            : pdf;
-
-        return $"{stem}{A4EditionSuffix}{PdfExtension}";
+        return PdfEdition.A4BlobNameFor(product.PdfBlobName);
     }
 
     /// <summary>

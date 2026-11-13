@@ -38,4 +38,23 @@ public interface IPdfStorageService
     /// <returns>An absolute URL that is valid for <see cref="LinkLifetime"/>.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="blobName"/> is null, empty or whitespace.</exception>
     Task<Uri> CreateDownloadUrlAsync(string blobName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lists the editions a buyer of this product receives, Letter first.
+    /// </summary>
+    /// <remarks>
+    /// Only the Letter PDF is guaranteed; the A4 edition exists for older listings and is
+    /// included when its blob is published beside the Letter PDF. Nothing is inferred from a
+    /// preview render, so a link is never issued for a file that was never uploaded.
+    /// </remarks>
+    /// <param name="product">The digital PDF product whose editions should be listed.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// The editions that exist in storage. Empty when the product has no PDF blob, which
+    /// callers should treat as a broken listing rather than as a free product.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    Task<IReadOnlyList<PdfEdition>> GetEditionsAsync(
+        Product product,
+        CancellationToken cancellationToken = default);
 }

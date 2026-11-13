@@ -156,7 +156,9 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
                 .Append("<p style=\"margin:0 0 6px;\"><a href=\"")
                 .Append(Html(download.Url.AbsoluteUri))
                 .Append("\" style=\"display:inline-block;padding:11px 20px;border-radius:8px;background:#1d4ed8;color:#ffffff;")
-                .Append("text-decoration:none;font-size:14px;font-weight:600;\">Download PDF</a></p>")
+                .Append("text-decoration:none;font-size:14px;font-weight:600;\">Download ")
+                .Append(Html(download.Edition.Label))
+                .Append(" PDF</a></p>")
                 .Append("<p style=\"margin:0 0 20px;font-size:12px;color:#6b7280;\">Link valid until ")
                 .Append(Html(FormatExpiry(download.ExpiresAt)))
                 .Append("</p>");
@@ -181,7 +183,7 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
 
         foreach (var download in delivery.Downloads)
         {
-            builder.AppendLine(download.Product.Name)
+            builder.AppendLine($"{download.Product.Name} ({download.Edition.Label})")
                 .AppendLine(download.Url.AbsoluteUri)
                 .AppendLine($"Link valid until {FormatExpiry(download.ExpiresAt)}")
                 .AppendLine();

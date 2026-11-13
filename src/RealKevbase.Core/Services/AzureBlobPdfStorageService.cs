@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
@@ -97,6 +98,64 @@ public sealed class AzureBlobPdfStorageService : IPdfStorageService
         }
 
         return CreateDownloadUrlAsync(product.PdfBlobName!, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<PdfEdition>> GetEditionsAsync(
+        Product product,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        if (string.IsNullOrWhiteSpace(product.PdfBlobName))
+        {
+            return [];
+        }
+
+        var editions = new List<PdfEdition>(2)
+        {
+            new(PdfEdition.LetterLabel, product.PdfBlobName),
+        };
+
+        var a4BlobName = PdfEdition.A4BlobNameFor(product.PdfBlobName);
+        if (a4BlobName is not null)
+        {
+            // One existence check per purchase, not per page view: the catalog already told
+            // the storefront which editions exist, and this is the file being handed over.
+            var a4 = _containerClient.GetBlobClient(a4BlobName);
+            if (await ExistsIgnoringMissingAsync(a4, cancellationToken).ConfigureAwait(false))
+            {
+                editions.Add(new PdfEdition(PdfEdition.A4Label, a4BlobName));
+            }
+        }
+
+        return editions;
+    }
+
+    /// <summary>
+    /// Reports whether a blob exists, treating a 404 as absence.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="BlobBaseClient.ExistsAsync"/> normally folds a missing blob into
+    /// <see langword="false"/>, but it rethrows when the response carries no parseable error
+    /// code. A missing optional edition must never fail a paid order, so the 404 is caught
+    /// here as well.
+    /// </remarks>
+    /// <param name="blob">Blob to check.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns><see langword="true"/> when the blob exists.</returns>
+    private static async Task<bool> ExistsIgnoringMissingAsync(
+        BlobClient blob,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await blob.ExistsAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException exception) when (exception.Status == 404)
+        {
+            return false;
+        }
     }
 
     /// <inheritdoc />

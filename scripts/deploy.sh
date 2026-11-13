@@ -277,13 +277,21 @@ for product in digital:
         problems.append(f"{product.get('name')!r} does not report page sizes like ['US Letter']")
         break
 
+# The A4 preview must never outlive the edition it illustrates: a listing may have the
+# render without the PDF (it is then withheld), but never the other way round.
+a4 = [p for p in digital if "A4" in (p.get("pageSizes") or [])]
+for product in digital:
+    if 3 in (product.get("gallerySlots") or []) and product not in a4:
+        problems.append(f"{product.get('name')!r} serves an A4 preview without the edition")
+        break
+
 if problems:
     print("; ".join(problems))
     sys.exit(1)
 
 listed = sum(1 for p in digital if isinstance(p.get("gallerySlots"), list))
-print(f"catalog shape ({count} products, {len(digital)} PDFs, {listed} with a gallery manifest), "
-      "page sizes, and no storage details")
+print(f"catalog shape ({count} products, {len(digital)} PDFs, {listed} with a gallery manifest, "
+      f"{len(a4)} A4 editions), page sizes, and no storage details")
 PY
     ); then
       pass "$catalog_detail"

@@ -257,7 +257,8 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
                           {download.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          PDF · link valid {formatExpiry(download.expiresAt)}
+                          {download.edition ? `${download.edition} PDF` : 'PDF'} · link valid{' '}
+                          {formatExpiry(download.expiresAt)}
                         </Typography>
                       </Box>
                       <Button
@@ -269,7 +270,7 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
                         startIcon={<DownloadRoundedIcon />}
                         sx={{ flexShrink: 0 }}
                       >
-                        Download PDF
+                        Download {download.edition ?? 'PDF'}
                       </Button>
                     </Stack>
                   ))}
