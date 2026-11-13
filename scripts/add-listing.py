@@ -11,7 +11,7 @@ What it does:
      and numbers it if that title is already taken ("Foo", then "Foo 2", "Foo 3")
   3. Inserts the listing row into the shipped SQLite database
   4. Uploads the PDF to Azure Blob Storage as ``guides/<slug>.pdf``
-  5. Prints a ready-to-paste product entry, with a fresh stable GUID
+  5. Prints a ready-to-paste product entry with a stable GUID (uuid5 of the listing id)
 
 What it deliberately does not do:
   - Choose a description, category or card colour (editorial decisions). Price is
@@ -21,9 +21,11 @@ What it deliberately does not do:
   - Deploy; run ./scripts/deploy.sh afterwards
 
 Why the source database is never copied:
-  zz_tp/projects.db has no ``title`` column. The shipped database carries 65
-  backfilled unique titles, so copying the source over it would silently blank every
-  product name. New rows are INSERTed; the shipped database is the master.
+  zz_tp/projects.db is the generator's own copy of the same table: 116 rows, titles on
+  only 45 of them, plus a row for kidney_food_guide, which no longer has an output
+  folder. The shipped database has every product name backfilled, so copying the
+  source over it would blank most of the storefront. New rows are INSERTed; the
+  shipped database is the master.
 
 Usage:
     python3 scripts/add-listing.py kidney_foodlist            # preview only

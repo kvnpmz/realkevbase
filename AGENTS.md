@@ -26,14 +26,15 @@ rendered by `zz_tp/`, a vendored PDF generator with its own manual (`zz_tp/AGENT
 
 ## Rules
 
-- **Products are code:** `Core/Services/InMemoryProductCatalog.cs` plus a row in the
+- Products are code: `Core/Services/InMemoryProductCatalog.cs` plus a row in the
   shipped database. Add or change one with `scripts/sync-catalog.py`.
-- **Copy is `zz_tp/documents/<listing>/listing.txt`** (first pipe segment = name,
+- Copy is `zz_tp/documents/<listing>/listing.txt` (first pipe segment = name,
   `DESCRIPTION` = card copy). Edit the file, then sync.
-- **Identity is derived:** `guides/<slug>.pdf` (folder name, `_` → `-`); id is
+- Identity is derived: `guides/<slug>.pdf` (folder name, `_` → `-`); id is
   `uuid5(NAMESPACE_URL, "realkevbase/listing/<slug>")`. A renamed blob moves the guide.
-- **Never copy `zz_tp/projects.db` over the shipped database** — it has no `title` column.
-- **No secrets in the repo** (env or App Service), and **the browser sees only `/api/...`**;
+- Never copy `zz_tp/projects.db` over the shipped database — the generator's copy has
+  titles on only 45 of its 116 rows, so it blanks most product names.
+- No secrets in the repo (env or App Service), and the browser sees only `/api/...`;
   blob names and SAS links stay server-side.
 - Public C# members keep XML docs; endpoints live in `Api/Endpoints/`, routes in `App.jsx`.
 
@@ -57,7 +58,7 @@ editorial values left — set them in `scripts/catalog_meta.json`. Nothing is de
 vanished folder is reported, not unlisted. `deploy.sh` refuses while the sync reports
 drift (`--skip-catalog` to bypass).
 
-**When the sync refuses**
+When the sync refuses
 
 | Message | Fix |
 | --- | --- |

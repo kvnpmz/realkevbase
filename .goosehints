@@ -15,7 +15,7 @@ rules (`zz_tp/AGENTS.md`): never run `tpr`, use `zz_tp/scripts/render-check.sh`.
 - Ship with `./scripts/deploy.sh --yes` after `dotnet build` and `npm run build` pass;
   deploy refuses while `sync-catalog.py` reports drift.
 - Never copy `zz_tp/projects.db` over `src/RealKevbase.Api/Data/projects.db` — the
-  shipped copy carries the titles and the source has no `title` column.
+  shipped copy carries every title and the generator's copy has most of them blank.
 - No secrets in code, docs or commits: Stripe, blob storage and Azure Email come from
   environment variables or App Service settings.
 - The browser only ever sees `/api/...` URLs; blob names, storage paths and SAS links
