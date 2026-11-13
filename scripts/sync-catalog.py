@@ -494,14 +494,17 @@ def write_database(plan, connection) -> int:
     return written
 
 
-def publish_images() -> bool:
-    """Publish covers and gallery renders for every listing, then report the result."""
+def publish_images(excluded=()) -> bool:
+    """Publish covers and gallery renders, skipping the generator's probe folders."""
     script = os.path.join(REPO_ROOT, "scripts", "build-thumbnails.py")
     interpreter = os.path.join(REPO_ROOT, ".venv", "bin", "python")
     if not os.path.exists(interpreter):
         interpreter = sys.executable
+    command = [interpreter, script, "--upload"]
+    for listing in excluded:
+        command += ["--exclude", listing]
     print("\npublishing thumbnails and gallery renders…")
-    return subprocess.call([interpreter, script, "--upload"]) == 0
+    return subprocess.call(command) == 0
 
 
 def describe(plan, args) -> None:
@@ -653,7 +656,7 @@ def main() -> int:
     # A listing that was just registered has no cover in storage yet, so publish the
     # renders whenever one was added; --images forces a refresh of the rest too.
     if not args.no_images and (plan["new"] or args.images):
-        if not publish_images():
+        if not publish_images(sorted(getattr(families, "EXCLUDED_DOCS", ()))):
             print("error: thumbnail publishing failed", file=sys.stderr)
             return 1
 
