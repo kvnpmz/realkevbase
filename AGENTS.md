@@ -14,7 +14,7 @@ manual at `zz_tp/AGENTS.md`.
 | `src/RealKevbase.Core/` | Models and services shared by the API (catalog seed, Stripe, blob storage) |
 | `src/RealKevbase.Api/Data/projects.db` | Shipped listing database, read-only, carries titles |
 | `zz_tp/` | PDF generator (gitignored); `output/<listing>/` holds rendered PDFs and images |
-| `scripts/` | Deploy, catalog sync, thumbnails, storage auth — see `scripts/README.md` |
+| `scripts/` | Deploy, catalog sync, thumbnails, storage auth |
 
 ## How the shop works
 
@@ -52,18 +52,39 @@ manual at `zz_tp/AGENTS.md`.
 
 **Add or refresh a guide**
 
+A guide is only on the site when three things exist: its rendered folder in
+`zz_tp/output/`, its row in the shipped database and its entry in the catalog. The
+sync adds the row and the entry for any folder that holds a PDF, and is safe to re-run.
+
 ```bash
-python3 scripts/sync-catalog.py            # preview the diff
+python3 scripts/sync-catalog.py            # preview: new listings, renames, warnings
 python3 scripts/sync-catalog.py --apply    # row, upload, catalog entry, images
 dotnet build src/RealKevbase.Api/RealKevbase.Api.csproj
 ./scripts/deploy.sh --yes
 ```
 
-`deploy.sh` runs the same check and refuses to deploy while the catalog is out of date.
+`--apply` uploads each new PDF before committing a row, publishes that listing's
+thumbnails and gallery renders, and reports "catalog is up to date" when nothing
+needs doing. Other flags: `--json` for tooling, `--no-upload` when the PDFs are
+already stored, `--no-images` to skip renders, `--images` to refresh renders for
+older listings. `scripts/add-listing.py <folder>` still registers one folder
+interactively if you need its printed entry. `deploy.sh` runs the same check and
+refuses to deploy while the catalog is out of date.
 
-**Change a name or description** — edit `listing.txt`, then `sync-catalog.py --apply`.
-Category and card colour are the only editorial values the sync cannot derive: set
-them in `scripts/catalog_meta.json`.
+**Change a name or description** — edit `zz_tp/documents/<listing>/listing.txt`
+(`TITLE` first pipe segment becomes the product name, the `DESCRIPTION` block is the
+card copy) and re-run the sync. The sync never deletes: a folder that disappeared is
+reported as an orphan, not unlisted. Category and card colour are the only editorial
+values it cannot derive; set them in `scripts/catalog_meta.json`.
+
+**When the sync refuses**
+
+| Message | Fix |
+| --- | --- |
+| `two listings would share a product name` | rename one `listing.txt` title, or pin a `name` override in `catalog_meta.json` |
+| `upload failed … nothing was written` | storage or `az` login problem; state is untouched, re-run |
+| `thumbnail publishing failed` | rows and catalog are written; fix storage, re-run `--apply --images` |
+| `catalog is out of date (N changes)` from `deploy.sh` | run `sync-catalog.py --apply`, or pass `--skip-catalog` if you mean it |
 
 **Add an API endpoint** — put it in `src/RealKevbase.Api/Endpoints/` on the existing
 route group, return `TypedResults`, and set `Cache-Control` when the response is

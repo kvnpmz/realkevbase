@@ -1,4 +1,4 @@
-# RealKevbase hints — always-on rules. Details: AGENTS.md, scripts/README.md.
+# RealKevbase hints — always-on rules. Details: AGENTS.md.
 
 Stack: .NET 10 minimal API (`src/RealKevbase.Api`) + Core library, React 19 + Vite +
 MUI SPA (`src/realkevbase-web`). `zz_tp/` is the vendored PDF generator with its own
