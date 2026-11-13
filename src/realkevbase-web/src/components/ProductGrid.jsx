@@ -239,6 +239,13 @@ export function ProductGrid({ products = [], loading = false, error = null, onRe
   const [category, setCategory] = useState('all')
   const [extraPages, setExtraPages] = useState(0)
 
+  // Kept in sync with the catalog instead of a hard-coded count, so adding a listing
+  // never leaves the intro promising the wrong number of PDFs.
+  const pdfCount = useMemo(
+    () => products.filter((product) => product.fulfillment === FULFILLMENT.DIGITAL_PDF).length,
+    [products],
+  )
+
   const filteredProducts = useMemo(() => {
     if (category === 'all') return products
     if (category === 'merch') {
@@ -272,8 +279,9 @@ export function ProductGrid({ products = [], loading = false, error = null, onRe
             </Typography>
             <Typography variant="h2">Find your next checklist.</Typography>
             <Typography variant="body1" color="text.secondary">
-              65 PDFs across Moving Out, Healthy Living, Money & Budgeting and Guides — $5 each,
-              delivered the moment you pay. Add merch to the same cart.
+              {pdfCount > 0 ? `${pdfCount} PDFs` : 'Printable PDFs'} across Moving Out, Healthy
+              Living, Money & Budgeting and Guides — $5 each, delivered the moment you pay. Add
+              merch to the same cart.
             </Typography>
           </Stack>
 

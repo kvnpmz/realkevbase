@@ -39,7 +39,7 @@ API_BASE_URL="${API_BASE_URL:-https://api.realkevbase.com}"
 SITE_URL="${SITE_URL:-https://realkevbase.com}"
 GA_MEASUREMENT_ID="${GA_MEASUREMENT_ID:-}"
 
-# A healthy catalog has 68 products (65 PDFs + 3 merch). The floor only has to catch
+# A healthy catalog has 114 products (111 PDFs + 3 merch). The floor only has to catch
 # an empty or badly broken catalog, so adding products never breaks this script.
 readonly MIN_PRODUCTS=60
 
