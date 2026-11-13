@@ -35,9 +35,11 @@ public interface IProductImageService
     /// <remarks>
     /// Slot 0 is the same artwork the storefront uses as the card thumbnail; slots 1 to 3 are
     /// the detail zoom, the tablet mockup and the A4 preview that the generator renders beside
-    /// it. Not every listing has all four, so callers must treat a missing slot as normal.
+    /// it. Slots 4 and 5 are the two pages every listing shares — how to use the files, and
+    /// the digital-download notice — stored once instead of once per product. Not every
+    /// listing has all six, so callers must treat a missing slot as normal.
     /// </remarks>
-    const int GallerySlotCount = 4;
+    const int GallerySlotCount = 6;
 
     /// <summary>
     /// Opens the thumbnail for a digital product.
@@ -121,6 +123,16 @@ public sealed class AzureBlobProductImageService : IProductImageService
     /// Mirrors the variants the PDF generator writes beside each page.
     /// </summary>
     private static readonly string[] GallerySuffixes = ["", "-zoom", "-ipad", "-a4"];
+
+    /// <summary>
+    /// Folder inside the artwork folder that holds the pages every listing shares.
+    /// </summary>
+    public const string SharedFolderName = "shared";
+
+    /// <summary>
+    /// Shared pages that follow each listing's own renders, in slot order.
+    /// </summary>
+    private static readonly string[] SharedGalleryFiles = ["guide.webp", "disclaimer.webp"];
 
     /// <summary>
     /// Extension of the deliverable documents.
@@ -260,7 +272,7 @@ public sealed class AzureBlobProductImageService : IProductImageService
     {
         ArgumentNullException.ThrowIfNull(product);
 
-        if (slot < 0 || slot >= GallerySuffixes.Length)
+        if (slot < 0 || slot >= IProductImageService.GallerySlotCount)
         {
             return null;
         }
@@ -269,6 +281,15 @@ public sealed class AzureBlobProductImageService : IProductImageService
         if (thumbnail is null)
         {
             return null;
+        }
+
+        var folder = thumbnail[..(thumbnail.LastIndexOf('/') + 1)];
+
+        // Slots past the per-listing renders are the pages shared by every listing: one copy
+        // in the artwork folder serves the whole catalog.
+        if (slot >= GallerySuffixes.Length)
+        {
+            return $"{folder}{SharedFolderName}/{SharedGalleryFiles[slot - GallerySuffixes.Length]}";
         }
 
         // Thumbnail names always end in the published image extension, so the suffix can be

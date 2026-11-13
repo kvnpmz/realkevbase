@@ -28,12 +28,6 @@ appsettings.Local.json
 appsettings.*.Local.json
 secrets.json
 
-# Editor / OS
-.vs/
-.vscode/
-.idea/
-.DS_Store
-
 # Deployment artifacts
 *.zip
 

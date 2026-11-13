@@ -1,0 +1,7 @@
+az login
+npx wrangler
+stripe login
+
+~/.azure_keys*
+~/.stripe_keys
+~/.cloudflare_keys*

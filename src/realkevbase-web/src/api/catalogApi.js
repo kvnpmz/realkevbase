@@ -25,12 +25,13 @@ const DELIVERY_COPY = Object.freeze({
 })
 
 /**
- * Gallery slots the API exposes per digital product, mirroring
+ * Gallery slots the API can expose per digital product, mirroring
  * `IProductImageService.GallerySlotCount` on the server. Slot 0 repeats the card
- * thumbnail; the rest are the detail renders. A slot that was never published
- * answers 404, which the gallery treats as "no such image".
+ * thumbnail, 1–3 are the listing's own renders and 4–5 are the how-to and notice
+ * pages every listing shares. The API reports which of them exist; a slot that was
+ * never published answers 404, which the gallery treats as "no such image".
  */
-const GALLERY_SLOT_COUNT = 4
+const GALLERY_SLOT_COUNT = 6
 
 /**
  * Error raised when the catalog API cannot complete a request.
