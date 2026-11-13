@@ -16,6 +16,12 @@ storefront requests by slot: ``<stem>.webp`` (cover), ``<stem>-zoom.webp``,
 ``<stem>-ipad.webp`` and ``<stem>-a4.webp``. Variants a listing never rendered are simply
 not uploaded; the API lists the slots it holds, so the gallery never asks for a missing one.
 
+The full-page render is also published untouched as ``<stem>.png`` — and ``<stem>-a4.png``
+when the listing has an A4 page — because a buyer receives the high-resolution image beside
+the PDF. It is copied, never re-encoded, so it stays the raw 300 dpi page the PDF was
+rendered from. Those companion PNGs are what the download links sign; a missing one simply
+means that order gets no image link.
+
 Renders are incremental: an image is rebuilt only when its target is missing, older
 than the source PNG, or was produced at a different width. Uploads are incremental too —
 one blob listing decides which files storage is missing, and only the files rebuilt in
@@ -170,6 +176,8 @@ def main() -> int:
 
     built, rebuilt, current, covers, skipped, total_bytes = 0, 0, 0, 0, [], 0
     written: set[str] = set()
+    png_built, png_copied, png_bytes = 0, 0, 0
+    png_written: set[str] = set()
 
     def is_current(source: str, target: str, width: int) -> bool:
         """True when the WebP exists, is not older than its render and has the right width."""
@@ -194,6 +202,12 @@ def main() -> int:
             image = image.resize((width, height), Image.LANCZOS)
             image.save(target, "WEBP", quality=args.quality, method=6)
         return os.path.getsize(target)
+
+    def is_png_current(source: str, target: str) -> bool:
+        """True when the full-resolution copy exists and is not older than its render."""
+        if args.force or not os.path.exists(target):
+            return False
+        return os.path.getmtime(target) >= os.path.getmtime(source)
 
     for listing, stem in stems.items():
         images_dir = os.path.join(args.source, listing, "images")
@@ -228,6 +242,31 @@ def main() -> int:
             written.add(name)
             print(f"  {name:52s} {width:4d}px  {size / 1024:5.0f} KB")
 
+        # Full-resolution pages travel with the order, so the raw render is copied rather
+        # than re-encoded: it is the same 300 dpi page the PDF was laid out from.
+        pages = [(cover, "")]
+        a4_page = os.path.join(images_dir, f"{source_stem}_a4.png")
+        if os.path.exists(a4_page):
+            pages.append((a4_page, "-a4"))
+
+        for source, suffix in pages:
+            name = f"{stem}{suffix}.png"
+            target = os.path.join(args.out, name)
+            png_built += 1
+
+            if is_png_current(source, target):
+                continue
+
+            png_copied += 1
+            if args.check:
+                continue
+
+            shutil.copy2(source, target)
+            size = os.path.getsize(target)
+            png_bytes += size
+            png_written.add(name)
+            print(f"  {name:52s} full-res  {size / 1024:5.0f} KB")
+
         covers += 1
         if args.check:
             extra = ", ".join(suffix or "cover" for _, suffix, _ in renders)
@@ -241,6 +280,16 @@ def main() -> int:
     )
     if total_bytes:
         print(f", {total_bytes / 1024 / 1024:.1f} MB total", end="")
+    print()
+
+    png_label = "would copy" if args.check else "copied"
+    print(
+        f"{png_label} {png_copied} of {png_built} full-resolution pages "
+        f"({png_built - png_copied} already current)",
+        end="",
+    )
+    if png_bytes:
+        print(f", {png_bytes / 1024 / 1024:.1f} MB total", end="")
     print()
 
     if skipped:
@@ -258,9 +307,13 @@ def main() -> int:
     published = list_published(args.container, args.prefix, auth)
     pdf_stems, stored = published if published else (None, None)
 
-    local = [name for name in sorted(os.listdir(args.out)) if name.endswith(".webp")]
+    local = [
+        name
+        for name in sorted(os.listdir(args.out))
+        if name.endswith((".webp", ".png"))
+    ]
     if published is None:
-        print("  could not list storage; every built image is a candidate")
+        print("  could not list storage; every local file is a candidate")
     else:
         kept = []
         for name in local:
@@ -270,56 +323,106 @@ def main() -> int:
                 os.remove(os.path.join(args.out, name))
         print(
             f"  {len(pdf_stems)} published PDFs; removed "
-            f"{len(local) - len(kept)} local image(s) with no product"
+            f"{len(local) - len(kept)} local file(s) with no product"
         )
         local = kept
 
     # Upload what changed: files rebuilt in this run, plus anything storage is missing.
-    candidates = [
-        name for name in local if name in written or stored is None or name not in stored
-    ]
-    if not candidates:
-        print(f"  storage already matches all {len(local)} images; nothing to upload")
+    def candidates(extension: str, rebuilt: set[str]) -> list[str]:
+        return [
+            name
+            for name in local
+            if name.endswith(extension)
+            and (name in rebuilt or stored is None or name not in stored)
+        ]
+
+    webp_files = candidates(".webp", written)
+    png_files = candidates(".png", png_written)
+    if not webp_files and not png_files:
+        print(f"  storage already matches all {len(local)} files; nothing to upload")
         return 0
 
-    print(f"  uploading {len(candidates)} of {len(local)} images")
+    if webp_files:
+        total = sum(1 for name in local if name.endswith(".webp"))
+        print(f"  uploading {len(webp_files)} of {total} WebP images")
+        code = upload_batch(
+            args.out, webp_files, "*.webp", "image/webp", args.container, args.prefix, auth
+        )
+        if code != 0:
+            drop_rebuilt(args.out, webp_files, written)
+            return code
+
+    if png_files:
+        total = sum(1 for name in local if name.endswith(".png"))
+        print(f"  uploading {len(png_files)} of {total} full-resolution pages")
+        code = upload_batch(
+            args.out, png_files, "*.png", "image/png", args.container, args.prefix, auth
+        )
+        if code != 0:
+            drop_rebuilt(args.out, png_files, png_written)
+            return code
+
+    return 0
+
+
+def upload_batch(
+    out_dir: str,
+    files: list[str],
+    pattern: str,
+    content_type: str,
+    container: str,
+    prefix: str,
+    auth: list[str],
+) -> int:
+    """Publish one batch of artwork to the container, returning the az exit code."""
+    if not files:
+        return 0
 
     staging = tempfile.mkdtemp(prefix="realkevbase-thumbs-")
-    failed = False
     try:
-        for name in candidates:
-            shutil.copy2(os.path.join(args.out, name), os.path.join(staging, name))
+        for name in files:
+            shutil.copy2(os.path.join(out_dir, name), os.path.join(staging, name))
 
         command = [
             "az", "storage", "blob", "upload-batch",
-            "--destination", f"{args.container}/{args.prefix}",
+            "--destination", f"{container}/{prefix}",
             "--source", staging,
-            "--pattern", "*.webp",
-            "--content-type", "image/webp",
+            "--pattern", pattern,
+            "--content-type", content_type,
             "--content-cache-control", "public, max-age=86400",
             "--overwrite",
             "--no-progress",
         ]
         command += auth
-
-        code = subprocess.call(command)
-        failed = code != 0
-        return code
+        return subprocess.call(command)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
-        if failed:
-            # Drop the files rebuilt in this run so a retry rebuilds and sends them.
-            # Without this, the retry would see them as current and skip the upload,
-            # leaving storage with the previous artwork.
-            for name in candidates:
-                if name in written:
-                    os.remove(os.path.join(args.out, name))
-            print("  upload failed; rebuilt files were dropped so a retry sends them again")
+
+
+def drop_rebuilt(out_dir: str, files: list[str], rebuilt: set[str]) -> None:
+    """Drop files produced in this run so a retry rebuilds and sends them again.
+
+    Without this, the retry would see them as current and skip the upload, leaving
+    storage with the previous artwork.
+    """
+    for name in files:
+        path = os.path.join(out_dir, name)
+        if name in rebuilt and os.path.exists(path):
+            os.remove(path)
+    print("  upload failed; rebuilt files were dropped so a retry sends them again")
 
 
 def stem_of(name: str) -> str:
-    """Strip ``.webp`` and any gallery suffix: ``x-zoom.webp`` -> ``x``."""
-    stem = name[: -len(".webp")] if name.endswith(".webp") else name
+    """Strip the extension and any gallery suffix: ``x-zoom.webp`` -> ``x``.
+
+    Handles both the published WebP renders and the full-resolution PNG pages, whose
+    only gallery suffix is ``-a4``.
+    """
+    stem = name
+    for extension in (".webp", ".png"):
+        if stem.endswith(extension):
+            stem = stem[: -len(extension)]
+            break
     for suffix in GALLERY_SUFFIXES:
         if stem.endswith(suffix):
             return stem[: -len(suffix)]
