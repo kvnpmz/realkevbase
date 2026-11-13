@@ -1,25 +1,15 @@
-# RealKevbase hints — always-on rules. Details: AGENTS.md.
+# RealKevbase hints — always-on rules. Full manual: AGENTS.md.
 
-RealKevbase is the personal brand store; SaveSimple is its printable-PDF collection
-($5 guides plus a few merch items, one Stripe cart).
+RealKevbase is the brand store; SaveSimple is its printable-PDF collection. .NET 10 API
+(`src/RealKevbase.Api` + `Core`), React 19 + Vite + MUI SPA (`src/realkevbase-web`),
+PDFs rendered by `zz_tp/` (own rules: `zz_tp/AGENTS.md`; never run `tpr`).
 
-Stack: .NET 10 minimal API (`src/RealKevbase.Api`) + Core library, React 19 + Vite +
-MUI SPA (`src/realkevbase-web`). `zz_tp/` is the vendored PDF generator with its own
-rules (`zz_tp/AGENTS.md`): never run `tpr`, use `zz_tp/scripts/render-check.sh`.
-
-- Products are C# seed data in `Core/Services/InMemoryProductCatalog.cs`. Add or change
-  one with `python3 scripts/sync-catalog.py` (writes the DB row, uploads the PDF,
-  publishes images). Never edit only one of the three sides.
-- Shop copy is `zz_tp/documents/<listing>/listing.txt` — name is the first pipe
-  segment, the `DESCRIPTION` block is the card copy. Edit the file, not the C#.
-- Ship with `./scripts/deploy.sh --yes` after `dotnet build` and `npm run build` pass;
-  deploy refuses while `sync-catalog.py` reports drift.
-- Never copy `zz_tp/projects.db` over `src/RealKevbase.Api/Data/projects.db` — the
-  shipped copy carries every title and the generator's copy has most of them blank.
-- No secrets in code, docs or commits: Stripe, blob storage and Azure Email come from
-  environment variables or App Service settings.
-- The browser only ever sees `/api/...` URLs; blob names, storage paths and SAS links
-  stay server-side.
-- Public C# members keep XML docs; keep every diff inside the task's scope.
-- Navigate with `lua scripts/repo-intel.lua overview|symbol <Name>|deps <X>` and `rg`
-  before opening whole files.
+- Products are C# seed data plus a DB row: change them with
+  `python3 scripts/sync-catalog.py`.
+- Shop copy is `zz_tp/documents/<listing>/listing.txt`, not the C#.
+- Never copy `zz_tp/projects.db` over `src/RealKevbase.Api/Data/projects.db`.
+- No secrets in the repo; the browser sees only `/api/...`.
+- Ship with `./scripts/deploy.sh --yes` after a clean build; it refuses while the
+  catalog is out of sync.
+- Navigate with `lua scripts/repo-intel.lua overview|symbol <Name>|deps <X>` before
+  opening whole files.
