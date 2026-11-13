@@ -10,6 +10,7 @@ RealKevbase is the personal brand store; SaveSimple is its printable-PDF collect
 - No secrets in the repo; the browser sees only `/api/...` (blob names and SAS links stay server-side). Public C# members keep XML docs.
 - Ids are derived from the folder name (`guides/<slug>.pdf`, `uuid5(...)`), so renaming a blob moves the guide. Endpoints live in `Api/Endpoints/`, routes in `App.jsx`.
 - Gallery and paper sizes are server facts: `/api/products` returns `gallerySlots` and `pageSizes` from one cached blob listing, so the SPA never hard-codes "US Letter + A4" nor requests an unpublished render. A4 is claimed only when `guides/<slug>-a4.pdf` is published, and that edition is then delivered beside the Letter PDF (A4 is legacy: 57 listings, no new ones). Slots 4 and 5 are the shared how-to and disclaimer pages, stored once in `guides/images/shared/` and published by `scripts/publish-shared-images.py`.
+- A paid order delivers the PDF plus the full-resolution page PNG that the cover is downscaled from: `guides/images/<slug>.png`, and `<slug>-a4.png` for legacy A4 editions. `scripts/build-thumbnails.py --upload` publishes both, copied byte-for-byte rather than re-encoded. The image is optional — a listing without one ships its PDF alone, and a missing image never fails an order.
 
 ## Ship a guide
 

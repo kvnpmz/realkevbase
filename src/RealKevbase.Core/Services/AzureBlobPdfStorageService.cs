@@ -175,6 +175,47 @@ public sealed class AzureBlobPdfStorageService : IPdfStorageService
                 "Upload the product PDF before selling it.");
         }
 
+        return await CreateBlobUrlAsync(blob, asAttachment: false, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<Uri?> TryCreateImageDownloadUrlAsync(
+        string pdfBlobName,
+        CancellationToken cancellationToken = default)
+    {
+        var imageBlobName = PdfEdition.ImageBlobNameFor(pdfBlobName);
+        if (imageBlobName is null)
+        {
+            return null;
+        }
+
+        var blob = _containerClient.GetBlobClient(imageBlobName);
+
+        // The image is a companion, not a promised file: a listing rendered before the
+        // high-resolution page was published simply ships its PDF alone.
+        if (!await ExistsIgnoringMissingAsync(blob, cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        return await CreateBlobUrlAsync(blob, asAttachment: true, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Signs a read-only URL for an existing blob.
+    /// </summary>
+    /// <param name="blob">Blob to sign; it is assumed to exist.</param>
+    /// <param name="asAttachment">
+    /// Whether the response should download the file instead of opening it, so the PNG does
+    /// not land in a browser tab on a phone.
+    /// </param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The signed URL.</returns>
+    private async Task<Uri> CreateBlobUrlAsync(
+        BlobClient blob,
+        bool asAttachment,
+        CancellationToken cancellationToken)
+    {
         var startsOn = DateTimeOffset.UtcNow.Subtract(SasClockSkew);
         var expiresOn = DateTimeOffset.UtcNow.Add(LinkLifetime);
 
@@ -185,6 +226,11 @@ public sealed class AzureBlobPdfStorageService : IPdfStorageService
             Resource = "b",
             StartsOn = startsOn
         };
+
+        if (asAttachment)
+        {
+            sasBuilder.ContentDisposition = $"attachment; filename=\"{Path.GetFileName(blob.Name)}\"";
+        }
 
         // Connection string / account key: the blob client can sign the SAS itself.
         if (blob.CanGenerateSasUri)

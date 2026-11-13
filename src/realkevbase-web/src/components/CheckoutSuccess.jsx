@@ -37,6 +37,54 @@ function formatExpiry(value) {
 }
 
 /**
+ * Names one file the way the buyer will see it, for example `US Letter PNG`.
+ * @param {import('../api/checkoutApi').SessionDownload} download Download link.
+ * @returns {string} Edition and format.
+ */
+function fileLabel(download) {
+  const format = download.format === 'png' ? 'PNG' : 'PDF'
+  return download.edition ? `${download.edition} ${format}` : format
+}
+
+/**
+ * Groups the flat download list by product, preserving the order the API returned.
+ *
+ * A guide contributes one entry per file, so the PDF and its full-resolution PNG become a
+ * single row of equal-weight buttons instead of two look-alike products.
+ *
+ * @param {import('../api/checkoutApi').SessionDownload[]} downloads Download links.
+ * @returns {Array<{
+ *   key: string,
+ *   name: string,
+ *   expiresAt: string | null,
+ *   files: import('../api/checkoutApi').SessionDownload[],
+ * }>} One entry per product.
+ */
+function groupDownloads(downloads) {
+  const groups = []
+  const byProduct = new Map()
+
+  downloads.forEach((download) => {
+    const key = download.productId || download.url
+    let group = byProduct.get(key)
+
+    if (!group) {
+      group = { key, name: download.name, expiresAt: download.expiresAt, files: [] }
+      byProduct.set(key, group)
+      groups.push(group)
+    }
+
+    group.files.push(download)
+
+    if (download.expiresAt && (!group.expiresAt || download.expiresAt > group.expiresAt)) {
+      group.expiresAt = download.expiresAt
+    }
+  })
+
+  return groups
+}
+
+/**
  * Success page for a completed checkout.
  *
  * Stripe redirects the buyer back with `?checkout=success&session_id=cs_…`. That id is the
@@ -237,41 +285,39 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
             {state.stage === STAGE.READY && (
               <Stack spacing={2.5}>
                 <Typography variant="body1" color="text.secondary">
-                  Download your files now. Each link is private to this order and expires 24 hours
-                  after checkout.
+                  Download your files now — each guide includes its PDF and, where published, the
+                  full-resolution PNG of the same page. Every link is private to this order and
+                  expires 24 hours after checkout.
                 </Typography>
 
                 <Stack divider={<Divider flexItem />} spacing={2}>
-                  {state.downloads.map((download) => (
-                    <Stack
-                      key={download.productId || download.url}
-                      direction={{ xs: 'column', sm: 'row' }}
-                      spacing={1.5}
-                      sx={{
-                        justifyContent: 'space-between',
-                        alignItems: { xs: 'flex-start', sm: 'center' },
-                      }}
-                    >
+                  {groupDownloads(state.downloads).map((group) => (
+                    <Stack key={group.key} spacing={1.5}>
                       <Box sx={{ minWidth: 0 }}>
                         <Typography variant="h6" component="p">
-                          {download.name}
+                          {group.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {download.edition ? `${download.edition} PDF` : 'PDF'} · link valid{' '}
-                          {formatExpiry(download.expiresAt)}
+                          {group.files.map(fileLabel).join(' + ')} · links valid{' '}
+                          {formatExpiry(group.expiresAt)}
                         </Typography>
                       </Box>
-                      <Button
-                        component="a"
-                        href={download.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="contained"
-                        startIcon={<DownloadRoundedIcon />}
-                        sx={{ flexShrink: 0 }}
-                      >
-                        Download {download.edition ?? 'PDF'}
-                      </Button>
+                      <Stack direction="row" spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                        {group.files.map((download) => (
+                          <Button
+                            key={`${download.format}-${download.url}`}
+                            component="a"
+                            href={download.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            variant="contained"
+                            startIcon={<DownloadRoundedIcon />}
+                            sx={{ flexShrink: 0 }}
+                          >
+                            Download {fileLabel(download)}
+                          </Button>
+                        ))}
+                      </Stack>
                     </Stack>
                   ))}
                 </Stack>

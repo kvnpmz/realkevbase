@@ -3,8 +3,9 @@ using RealKevbase.Core.Models;
 namespace RealKevbase.Core.Services;
 
 /// <summary>
-/// Fulfills a paid Stripe Checkout Session by issuing PDF download links for its digital
-/// products and handing them to <see cref="IPdfDeliveryService"/>.
+/// Fulfills a paid Stripe Checkout Session by issuing download links — each edition's PDF
+/// and, when published, its full-resolution page image — for its digital products and
+/// handing them to <see cref="IPdfDeliveryService"/>.
 /// </summary>
 /// <remarks>
 /// Runs in a background worker, never in the webhook HTTP request, so Stripe receives its

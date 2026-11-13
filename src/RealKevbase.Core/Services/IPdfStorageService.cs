@@ -40,6 +40,27 @@ public interface IPdfStorageService
     Task<Uri> CreateDownloadUrlAsync(string blobName, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Creates a download URL for the full-resolution page image that belongs to a PDF,
+    /// when the listing published one.
+    /// </summary>
+    /// <remarks>
+    /// The image is an optional companion, like the A4 edition: older listings may have no
+    /// render, and a missing image must never fail a paid order. The URL is served as an
+    /// attachment so a phone downloads the file instead of opening it in a new tab.
+    /// </remarks>
+    /// <param name="pdfBlobName">
+    /// Blob name of the PDF whose image should be signed, for example <c>guides/foo.pdf</c>.
+    /// </param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// A read-only URL valid for <see cref="LinkLifetime"/>, or <see langword="null"/> when
+    /// the PDF names no image or that image was never published.
+    /// </returns>
+    Task<Uri?> TryCreateImageDownloadUrlAsync(
+        string pdfBlobName,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Lists the editions a buyer of this product receives, Letter first.
     /// </summary>
     /// <remarks>

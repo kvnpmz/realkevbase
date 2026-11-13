@@ -70,7 +70,7 @@ public static class CheckoutEndpoints
 
         group.MapGet("/sessions/{sessionId}/downloads", GetSessionDownloadsAsync)
             .WithName("GetSessionDownloads")
-            .WithSummary("Lists download links for a paid session, for the checkout success page.")
+            .WithSummary("Lists PDF and PNG download links for a paid session, for the checkout success page.")
             .Produces<SessionDownloadsResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -333,6 +333,7 @@ public static class CheckoutEndpoints
                     download.Product.Id,
                     download.Product.Name,
                     download.Edition.Label,
+                    download.Format == DeliveryFormat.Image ? "png" : "pdf",
                     download.Url,
                     download.ExpiresAt))
                 .ToArray();
@@ -384,7 +385,8 @@ public sealed record CheckoutSessionResponse(string SessionId, string? Url);
 /// Downloads available for a paid Checkout Session, returned to the success page.
 /// </summary>
 /// <param name="SessionId">Stripe Checkout Session identifier.</param>
-/// <param name="Downloads">One entry per digital product; empty for merchandise-only orders.</param>
+/// <param name="Downloads">One entry per file in the order, so an edition contributes its
+/// PDF and, when published, its full-resolution PNG; empty for merchandise-only orders.</param>
 public sealed record SessionDownloadsResponse(
     string SessionId,
     IReadOnlyList<SessionDownloadResponse> Downloads);
@@ -395,11 +397,13 @@ public sealed record SessionDownloadsResponse(
 /// <param name="ProductId">Identifier of the purchased product.</param>
 /// <param name="Name">Display name of the product.</param>
 /// <param name="Edition">Paper edition this link serves, for example <c>US Letter</c>.</param>
+/// <param name="Format">File format, <c>pdf</c> or <c>png</c>.</param>
 /// <param name="Url">Read-only Azure Blob Storage SAS URL valid for 24 hours.</param>
 /// <param name="ExpiresAt">Moment the link stops working.</param>
 public sealed record SessionDownloadResponse(
     Guid ProductId,
     string Name,
     string Edition,
+    string Format,
     Uri Url,
     DateTimeOffset ExpiresAt);

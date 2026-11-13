@@ -3,7 +3,7 @@ using RealKevbase.Core.Models;
 namespace RealKevbase.Core.Services;
 
 /// <summary>
-/// Delivers issued PDF download links to the buyer.
+/// Delivers issued download links — the PDF and its page image — to the buyer.
 /// </summary>
 /// <remarks>
 /// Delivery is separated from link issuance so the fulfillment worker never depends on an

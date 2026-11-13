@@ -11,8 +11,8 @@ using RealKevbase.Core.Models;
 namespace RealKevbase.Core.Services;
 
 /// <summary>
-/// Delivers issued PDF download links to the buyer by email through Azure Communication
-/// Services.
+/// Delivers issued download links (PDF and page image) to the buyer by email through Azure
+/// Communication Services.
 /// </summary>
 /// <remarks>
 /// When <see cref="AzureEmailOptions.IsConfigured"/> is <see langword="false"/> the service
@@ -61,7 +61,7 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
         if (_emailClient is null)
         {
             _logger.LogWarning(
-                "Issued {DownloadCount} PDF download link(s) for Stripe session {SessionId}, but no delivery provider is configured; no email was sent (buyer email present: {HasBuyerEmail}).",
+                "Issued {DownloadCount} download link(s) for Stripe session {SessionId}, but no delivery provider is configured; no email was sent (buyer email present: {HasBuyerEmail}).",
                 delivery.Downloads.Count,
                 delivery.SessionId,
                 !string.IsNullOrWhiteSpace(delivery.CustomerEmail));
@@ -97,7 +97,7 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
                 .ConfigureAwait(false);
 
             _logger.LogInformation(
-                "Emailed {DownloadCount} PDF download link(s) for Stripe session {SessionId} to the buyer (operation status {Status}).",
+                "Emailed {DownloadCount} download link(s) for Stripe session {SessionId} to the buyer (operation status {Status}).",
                 delivery.Downloads.Count,
                 delivery.SessionId,
                 operation.Value.Status);
@@ -118,9 +118,10 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
 
     private EmailMessage BuildMessage(PdfDelivery delivery)
     {
-        var subject = delivery.Downloads.Count == 1
+        // Count guides, not links: a guide that ships a PNG beside its PDF is still one PDF.
+        var subject = delivery.PdfCount == 1
             ? "Your RealKevbase PDF is ready (link expires in 24 hours)"
-            : $"Your {delivery.Downloads.Count} RealKevbase PDFs are ready (links expire in 24 hours)";
+            : $"Your {delivery.PdfCount} RealKevbase PDFs are ready (links expire in 24 hours)";
 
         var content = new EmailContent(subject)
         {
@@ -137,6 +138,7 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
     private static string BuildHtml(PdfDelivery delivery)
     {
         var builder = new StringBuilder();
+        var hasImages = delivery.Downloads.Any(download => download.Format == DeliveryFormat.Image);
 
         builder.Append("<!doctype html><html><body style=\"margin:0;padding:24px;background:#f4f5f7;")
             .Append("font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;\">")
@@ -146,21 +148,29 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
             .Append("<p style=\"margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;\">RealKevbase</p>")
             .Append("<h1 style=\"margin:0 0 10px;font-size:22px;line-height:1.3;\">Your downloads are ready</h1>")
             .Append("<p style=\"margin:0 0 22px;font-size:14px;color:#4b5563;\">Thanks for your order. ")
+            .Append(hasImages ? "Each guide comes with the full-resolution PNG of the same page. " : string.Empty)
             .Append("Each link is private to this order and expires 24 hours after checkout.</p>");
 
-        foreach (var download in delivery.Downloads)
+        // One heading per guide, then a button per file, so a PDF and its PNG read as two
+        // equal ways to use the same page rather than as two separate products.
+        foreach (var group in delivery.Downloads.GroupBy(download => download.Product))
         {
             builder.Append("<p style=\"margin:0 0 8px;font-size:15px;font-weight:600;\">")
-                .Append(Html(download.Product.Name))
-                .Append("</p>")
-                .Append("<p style=\"margin:0 0 6px;\"><a href=\"")
-                .Append(Html(download.Url.AbsoluteUri))
-                .Append("\" style=\"display:inline-block;padding:11px 20px;border-radius:8px;background:#1d4ed8;color:#ffffff;")
-                .Append("text-decoration:none;font-size:14px;font-weight:600;\">Download ")
-                .Append(Html(download.Edition.Label))
-                .Append(" PDF</a></p>")
-                .Append("<p style=\"margin:0 0 20px;font-size:12px;color:#6b7280;\">Link valid until ")
-                .Append(Html(FormatExpiry(download.ExpiresAt)))
+                .Append(Html(group.Key.Name))
+                .Append("</p>");
+
+            foreach (var download in group)
+            {
+                builder.Append("<p style=\"margin:0 0 6px;\"><a href=\"")
+                    .Append(Html(download.Url.AbsoluteUri))
+                    .Append("\" style=\"display:inline-block;padding:11px 20px;border-radius:8px;background:#1d4ed8;color:#ffffff;")
+                    .Append("text-decoration:none;font-size:14px;font-weight:600;\">Download ")
+                    .Append(Html(FileLabel(download)))
+                    .Append("</a></p>");
+            }
+
+            builder.Append("<p style=\"margin:0 0 20px;font-size:12px;color:#6b7280;\">Links valid until ")
+                .Append(Html(FormatExpiry(group.Max(download => download.ExpiresAt))))
                 .Append("</p>");
         }
 
@@ -181,11 +191,16 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
             .AppendLine("Each link is private to this order and expires 24 hours after checkout.")
             .AppendLine();
 
-        foreach (var download in delivery.Downloads)
+        foreach (var group in delivery.Downloads.GroupBy(download => download.Product))
         {
-            builder.AppendLine($"{download.Product.Name} ({download.Edition.Label})")
-                .AppendLine(download.Url.AbsoluteUri)
-                .AppendLine($"Link valid until {FormatExpiry(download.ExpiresAt)}")
+            builder.AppendLine(group.Key.Name);
+
+            foreach (var download in group)
+            {
+                builder.AppendLine($"  {FileLabel(download)}: {download.Url.AbsoluteUri}");
+            }
+
+            builder.AppendLine($"  Links valid until {FormatExpiry(group.Max(download => download.ExpiresAt))}")
                 .AppendLine();
         }
 
@@ -194,6 +209,14 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
 
         return builder.ToString();
     }
+
+    /// <summary>
+    /// Describes one file as the buyer sees it, for example <c>US Letter PNG</c>.
+    /// </summary>
+    /// <param name="download">File to label.</param>
+    /// <returns>Edition and format, ready to follow "Download ".</returns>
+    private static string FileLabel(PdfDownload download) =>
+        $"{download.Edition.Label} {(download.Format == DeliveryFormat.Image ? "PNG" : "PDF")}";
 
     private static string FormatExpiry(DateTimeOffset expiresAt) =>
         expiresAt.ToUniversalTime().ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture);

@@ -51,6 +51,8 @@ export class CheckoutApiError extends Error {
  * @typedef {Object} SessionDownload
  * @property {string} productId Identifier of the purchased product.
  * @property {string} name Display name of the product.
+ * @property {string} edition Paper edition this file belongs to, for example `US Letter`.
+ * @property {'pdf' | 'png'} format Whether the link serves the PDF or the page image.
  * @property {string} url Pre-signed Azure Blob Storage URL, valid for 24 hours.
  * @property {string | null} expiresAt ISO timestamp the link stops working.
  */
@@ -241,6 +243,8 @@ export function createCheckoutApi({
         .map((entry) => ({
           productId: typeof entry.productId === 'string' ? entry.productId : '',
           name: typeof entry.name === 'string' ? entry.name : 'Download',
+          edition: typeof entry.edition === 'string' ? entry.edition : '',
+          format: entry.format === 'png' ? 'png' : 'pdf',
           url: typeof entry.url === 'string' ? entry.url : '',
           expiresAt: typeof entry.expiresAt === 'string' ? entry.expiresAt : null,
         }))

@@ -12,7 +12,8 @@ namespace RealKevbase.Core.Services;
 /// <summary>
 /// Default <see cref="IDigitalFulfillmentService"/>: re-reads the paid session from Stripe
 /// (so line items cannot be spoofed), resolves the digital products through the catalog and
-/// issues 24-hour pre-signed download links.
+/// issues 24-hour pre-signed download links for each edition's PDF and, when it was
+/// published, the full-resolution page image.
 /// </summary>
 public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
 {
@@ -82,9 +83,10 @@ public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
         await _delivery.DeliverAsync(delivery, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Fulfilled {ProductCount} digital product(s) for Stripe session {SessionId}.",
-            delivery.Downloads.Count,
-            delivery.SessionId);
+            "Fulfilled {ProductCount} digital product(s) for Stripe session {SessionId} ({FileCount} download link(s)).",
+            delivery.ProductCount,
+            delivery.SessionId,
+            delivery.Downloads.Count);
     }
 
     /// <inheritdoc />
@@ -114,21 +116,43 @@ public sealed class DigitalFulfillmentService : IDigitalFulfillmentService
         var digitalProducts = ResolveDigitalProducts(session);
         var downloads = new List<PdfDownload>(digitalProducts.Count);
 
+        // One expiry for the whole order: every file is issued at the same moment, so the
+        // success page and the email can quote a single deadline.
+        var expiresAt = DateTimeOffset.UtcNow.Add(_pdfStorage.LinkLifetime);
+
         foreach (var product in digitalProducts.Values)
         {
             // A guide with both editions yields one link per edition, so the buyer gets the
             // A4 file the listing page promised instead of only the Letter one.
             foreach (var edition in await _pdfStorage.GetEditionsAsync(product, cancellationToken).ConfigureAwait(false))
             {
-                var url = await _pdfStorage
+                var pdfUrl = await _pdfStorage
                     .CreateDownloadUrlAsync(edition.BlobName, cancellationToken)
                     .ConfigureAwait(false);
 
                 downloads.Add(new PdfDownload(
                     product,
                     edition,
-                    url,
-                    DateTimeOffset.UtcNow.Add(_pdfStorage.LinkLifetime)));
+                    DeliveryFormat.Pdf,
+                    pdfUrl,
+                    expiresAt));
+
+                // The full-resolution page the storefront cover is downscaled from makes a
+                // guide usable in note apps and design tools, so it ships beside the PDF.
+                // It is optional: a listing that never published one yields no extra link.
+                var imageUrl = await _pdfStorage
+                    .TryCreateImageDownloadUrlAsync(edition.BlobName, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (imageUrl is not null)
+                {
+                    downloads.Add(new PdfDownload(
+                        product,
+                        edition,
+                        DeliveryFormat.Image,
+                        imageUrl,
+                        expiresAt));
+                }
             }
         }
 
