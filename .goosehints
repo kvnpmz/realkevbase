@@ -1,5 +1,8 @@
 # RealKevbase hints — always-on rules. Details: AGENTS.md.
 
+RealKevbase is the personal brand store; SaveSimple is its printable-PDF collection
+($5 guides plus a few merch items, one Stripe cart).
+
 Stack: .NET 10 minimal API (`src/RealKevbase.Api`) + Core library, React 19 + Vite +
 MUI SPA (`src/realkevbase-web`). `zz_tp/` is the vendored PDF generator with its own
 rules (`zz_tp/AGENTS.md`): never run `tpr`, use `zz_tp/scripts/render-check.sh`.
