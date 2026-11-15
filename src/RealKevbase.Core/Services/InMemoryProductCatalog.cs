@@ -18,13 +18,13 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("a76057dc-170b-547f-8793-bb6b02c70f22"),
-            Name = "Baby's 150 First Foods",
-            Description = "Baby's first 150 foods grouped by type, with a common-allergen checklist for starting solids.",
+            Name = "Baby First Foods Checklist",
+            Description = "Track every new food your baby tries, with 150 first foods grouped by type and a dot beside each common allergen, so you can check off each taste and note reactions as you go.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
-            PdfBlobName = "guides/150first-foods.pdf"
+            PdfBlobName = "guides/baby-first-foods.pdf"
         },
         new()
         {
@@ -827,7 +827,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("b8cabfac-25f0-59cd-8e3e-402b9684ea2e"),
             Name = "Emergency Go Bag Checklist",
-            Description = "One gear list for three packs — home, car and work — with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
+            Description = "One gear list for three packs, home, car and work, with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -838,7 +838,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("edb04b04-eb0d-5766-b88d-9af60467945a"),
             Name = "Emergency Go Bag Checklist — Green",
-            Description = "One gear list for three packs — home, car and work — with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
+            Description = "One gear list for three packs, home, car and work, with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -849,7 +849,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("f9ae37c2-6850-5cff-a35b-7616534eef14"),
             Name = "Emergency Go Bag Checklist — Pink",
-            Description = "One gear list for three packs — home, car and work — with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
+            Description = "One gear list for three packs, home, car and work, with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -860,7 +860,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("a5e0d761-5ced-5628-aabc-1d2f89ce1a4d"),
             Name = "Emergency Go Bag Checklist — Plum",
-            Description = "One gear list for three packs — home, car and work — with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
+            Description = "One gear list for three packs, home, car and work, with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -871,7 +871,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("5f899170-eda9-5d3c-bd3b-175467535afd"),
             Name = "Emergency Go Bag Checklist — Serif",
-            Description = "One gear list for three packs — home, car and work — with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
+            Description = "One gear list for three packs, home, car and work, with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -1245,7 +1245,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("62ef6a04-a14b-5734-94ee-4ae8e1e89b4b"),
             Name = "Warehouse Club Shopping List",
-            Description = "A one-page warehouse club stock-up sheet that pairs three pack-buying rules and a worked price-per-use example with a membership break-even line, four aisle columns of 112 items, pack sizes, and quantity boxes.",
+            Description = "A one-page warehouse club stock-up sheet with three pack-buying rules, four aisle columns of 112 items, pack sizes, and a pack-count box beside every item.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -1262,6 +1262,545 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Category = "money-budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/yearly-budget.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("9abe51fa-5b3c-55f1-b360-47b968ab35fd"),
+            Name = "Bill Calendar Budget Planner",
+            Description = "Fill in each bill on its due date and carry the running balance down the column to see what is left before the next check arrives.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/bill-calendar-budget.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("5e7aaa32-4875-5adf-ad42-9a02f83265b4"),
+            Name = "Bill Calendar Budget Planner — Es",
+            Description = "Anota cada factura en su fecha de vencimiento y resta el saldo línea por línea para ver cuánto queda antes del próximo pago.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/bill-calendar-budget-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("27ef762d-55bf-595f-bf00-8f49a91ca3b0"),
+            Name = "Bill Calendar Budget Planner — Green",
+            Description = "Fill in each bill on its due date and carry the running balance down the column to see what is left before the next check arrives.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/bill-calendar-budget-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("f839654c-af7e-59b5-9a78-141c6d5ee76c"),
+            Name = "Bill Calendar Budget Planner — Pink",
+            Description = "Fill in each bill on its due date and carry the running balance down the column to see what is left before the next check arrives.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/bill-calendar-budget-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("75e044b1-f381-5700-a490-370455b3223a"),
+            Name = "Bill Calendar Budget Planner — Plum",
+            Description = "Fill in each bill on its due date and carry the running balance down the column to see what is left before the next check arrives.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/bill-calendar-budget-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("57db2a1a-f838-5572-91b2-405fab57e987"),
+            Name = "Cortisol Food List",
+            Description = "A one-page cortisol food list that sorts everyday foods into eat freely, keep small, and leave out, with a steadier-day eating timeline, four easy swaps, and the daily pattern that matters more than any single food.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/cortisol-foodlist.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("b812c8cd-d45a-5ea9-ba07-7b1050469a14"),
+            Name = "Cortisol Food List — Es",
+            Description = "Una hoja que ordena los alimentos de cada día en sin límite, con moderación y evitar, con un horario diario y cuatro cambios fáciles para estabilizar la energía.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/cortisol-foodlist-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("f1281264-4d94-5853-a731-6a24dcfe6028"),
+            Name = "Cortisol Food List — Green",
+            Description = "A one-page cortisol food list that sorts everyday foods into eat freely, keep small, and leave out, with a steadier-day eating timeline, four easy swaps, and the daily pattern that matters more than any single food.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/cortisol-foodlist-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("a6c3c648-569a-570a-b735-6f801c47f143"),
+            Name = "Cortisol Food List — Pink",
+            Description = "A one-page cortisol food list that sorts everyday foods into eat freely, keep small, and leave out, with a steadier-day eating timeline, four easy swaps, and the daily pattern that matters more than any single food.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/cortisol-foodlist-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("fefc4091-d716-50f9-aec5-5e1d4e718e96"),
+            Name = "Cortisol Food List — Plum",
+            Description = "A one-page cortisol food list that sorts everyday foods into eat freely, keep small, and leave out, with a steadier-day eating timeline, four easy swaps, and the daily pattern that matters more than any single food.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/cortisol-foodlist-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("0888d213-9155-5d7e-8164-49f082bd5e55"),
+            Name = "Diverticulitis Flare-Up Meal Plan",
+            Description = "Plan five gentle low-fiber days with breakfast, lunch, dinner and snacks, a one-page shopping list and a step-by-step return to high-fiber eating after a mild diverticulitis flare.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/diverticulitis-meal-plan.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("e8632cf1-a132-58f9-8339-6070043157cb"),
+            Name = "Diverticulitis Flare-Up Meal Plan — Es",
+            Description = "Organiza cinco días suaves y bajos en fibra con desayuno, almuerzo, cena y meriendas, lista de compras y una guía paso a paso para volver a la fibra después de un brote leve de diverticulitis.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/diverticulitis-meal-plan-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("20b0e67e-64f2-57fb-acdc-38ce4be9b3e5"),
+            Name = "Diverticulitis Flare-Up Meal Plan — Green",
+            Description = "Plan five gentle low-fiber days with breakfast, lunch, dinner and snacks, a one-page shopping list and a step-by-step return to high-fiber eating after a mild diverticulitis flare.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/diverticulitis-meal-plan-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("5063ce83-a031-5c6e-adcc-2cbca48baeae"),
+            Name = "Diverticulitis Flare-Up Meal Plan — Pink",
+            Description = "Plan five gentle low-fiber days with breakfast, lunch, dinner and snacks, a one-page shopping list and a step-by-step return to high-fiber eating after a mild diverticulitis flare.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/diverticulitis-meal-plan-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("ce22c90f-feff-566b-baf8-d1134b990db5"),
+            Name = "Diverticulitis Flare-Up Meal Plan — Plum",
+            Description = "Plan five gentle low-fiber days with breakfast, lunch, dinner and snacks, a one-page shopping list and a step-by-step return to high-fiber eating after a mild diverticulitis flare.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/diverticulitis-meal-plan-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("92716db1-b6c0-52f1-a93c-f0e5f17ccbf3"),
+            Name = "First Apartment Checklist 2",
+            Description = "A one-page first apartment budget sheet with six room-by-room sections, a price box beside every item, a room total for each section, the move-in fees that come before signing, and a grand total to fill in.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/first-apartment-costs.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("02240381-6f4b-5a08-8112-6bd984cd3c4d"),
+            Name = "First Apartment Checklist — Es",
+            Description = "Una hoja para poner precio a cada cosa del primer apartamento, con seis cuartos, total por cuarto, gastos de entrada y total general.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/first-apartment-costs-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("594672f9-4f2a-5b6c-a8f5-4417f4fd2ca4"),
+            Name = "First Apartment Checklist — Green",
+            Description = "A one-page first apartment budget sheet with six room-by-room sections, a price box beside every item, a room total for each section, the move-in fees that come before signing, and a grand total to fill in.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/first-apartment-costs-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("27d3e21b-aded-5c6c-853c-e9f7430fc198"),
+            Name = "First Apartment Checklist — Pink",
+            Description = "A one-page first apartment budget sheet with six room-by-room sections, a price box beside every item, a room total for each section, the move-in fees that come before signing, and a grand total to fill in.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/first-apartment-costs-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("94473088-26ac-52dd-bd4e-918c16998e87"),
+            Name = "First Apartment Checklist — Plum",
+            Description = "A one-page first apartment budget sheet with six room-by-room sections, a price box beside every item, a room total for each section, the move-in fees that come before signing, and a grand total to fill in.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/first-apartment-costs-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("940f690e-2fc5-5f47-ab76-8094d716515b"),
+            Name = "Kidney Friendly Holiday Menu",
+            Description = "A single-page holiday menu sorts turkey, sides, desserts and drinks into enjoy, small-serving and skip picks, with portions and lower-sodium swaps for CKD and dialysis tables.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/holiday-kidney-table.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("e2367d39-4404-5491-a4d7-4ecee5ef6fe9"),
+            Name = "Kidney Friendly Holiday Menu — Es",
+            Description = "Una hoja de fiestas ordena pavo, acompañamientos, postres y bebidas en disfruta, porción pequeña y evita, con porciones y cambios bajos en sodio para la mesa renal.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/holiday-kidney-table-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("2d86acf2-8637-5e5a-a08e-a68d8712da24"),
+            Name = "Kidney Friendly Holiday Menu — Green",
+            Description = "A single-page holiday menu sorts turkey, sides, desserts and drinks into enjoy, small-serving and skip picks, with portions and lower-sodium swaps for CKD and dialysis tables.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/holiday-kidney-table-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("59cfa1f8-d3d2-5220-8d2f-701806abc010"),
+            Name = "Kidney Friendly Holiday Menu — Pink",
+            Description = "A single-page holiday menu sorts turkey, sides, desserts and drinks into enjoy, small-serving and skip picks, with portions and lower-sodium swaps for CKD and dialysis tables.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/holiday-kidney-table-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("dfd06a5d-8503-5b78-9b47-88919273248a"),
+            Name = "Kidney Friendly Holiday Menu — Plum",
+            Description = "A single-page holiday menu sorts turkey, sides, desserts and drinks into enjoy, small-serving and skip picks, with portions and lower-sodium swaps for CKD and dialysis tables.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "healthy-living",
+            Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
+            PdfBlobName = "guides/holiday-kidney-table-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("f1271983-386a-58c7-9862-4edd4ce94064"),
+            Name = "Ultimate Move Out Checklist",
+            Description = "A room-by-room move-out checklist for renters that records condition and photos in each room, logs damage and repair costs, and totals the deposit deductions so the security deposit comes back on time.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/move-out-deposit.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("3cdd8206-171e-50fc-98dc-e9aa49231a3d"),
+            Name = "Ultimate Move Out Checklist — Es",
+            Description = "Una hoja imprimible para inquilinos que registra la condición y las fotos de cada habitación, anota daños y costos de reparación, y calcula el saldo del depósito para recuperarlo a tiempo.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/move-out-deposit-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("9b402c7e-acfc-589e-aeaa-2043fde57cd0"),
+            Name = "Ultimate Move Out Checklist — Green",
+            Description = "A room-by-room move-out checklist for renters that records condition and photos in each room, logs damage and repair costs, and totals the deposit deductions so the security deposit comes back on time.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/move-out-deposit-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("3a66153a-acfd-56b5-97e6-17a049ebdf6d"),
+            Name = "Ultimate Move Out Checklist — Pink",
+            Description = "A room-by-room move-out checklist for renters that records condition and photos in each room, logs damage and repair costs, and totals the deposit deductions so the security deposit comes back on time.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/move-out-deposit-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("f7d8943e-f18e-5005-99a3-8010bb119d87"),
+            Name = "Ultimate Move Out Checklist — Plum",
+            Description = "A room-by-room move-out checklist for renters that records condition and photos in each room, logs damage and repair costs, and totals the deposit deductions so the security deposit comes back on time.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/move-out-deposit-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("90d1725e-60b3-5605-9a00-013275deb134"),
+            Name = "14 Day Emergency Meal Plan",
+            Description = "Fourteen days of breakfast, lunch, dinner and snacks built only from shelf-stable food, with household quantities and a two-week shopping list so the pantry gets bought once and eaten in order.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/no-power-meal-plan.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("844764a2-1b33-574f-8fb7-9d0ad5620919"),
+            Name = "14 Day Emergency Meal Plan — Es",
+            Description = "Catorce días de desayuno, almuerzo, cena y merienda armados solo con comida de despensa, con raciones por persona y una lista de compras de dos semanas para comprar una vez y comer en orden.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/no-power-meal-plan-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("2ea59c26-555a-5130-8769-8149afd8539e"),
+            Name = "14 Day Emergency Meal Plan — Green",
+            Description = "Fourteen days of breakfast, lunch, dinner and snacks built only from shelf-stable food, with household quantities and a two-week shopping list so the pantry gets bought once and eaten in order.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/no-power-meal-plan-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("e1ea81cf-0ae8-5a7e-8f3e-8369c10bedc4"),
+            Name = "14 Day Emergency Meal Plan — Pink",
+            Description = "Fourteen days of breakfast, lunch, dinner and snacks built only from shelf-stable food, with household quantities and a two-week shopping list so the pantry gets bought once and eaten in order.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/no-power-meal-plan-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("29730c3c-be29-552a-b7db-6ce390fd7353"),
+            Name = "14 Day Emergency Meal Plan — Plum",
+            Description = "Fourteen days of breakfast, lunch, dinner and snacks built only from shelf-stable food, with household quantities and a two-week shopping list so the pantry gets bought once and eaten in order.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/no-power-meal-plan-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("fcc8becd-67ee-5b12-bb07-716b3229cf46"),
+            Name = "Emergency Food List 2",
+            Description = "A four-week dinner rotation built entirely from shelf-stable staples, with calorie counts, no-power cooking notes and a monthly top-up routine so the emergency pantry gets eaten and restocked instead of forgotten.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/pantry-meal-rotation.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("200ba525-db23-5699-853f-9db13e5136f4"),
+            Name = "Emergency Food List — Es",
+            Description = "Una rotación de cuatro semanas de cenas hechas solo con conservas y productos de despensa, con calorías contadas, notas para cocinar sin electricidad y una rutina mensual de reposición.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/pantry-meal-rotation-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("5dfb2afa-9587-53eb-8a23-079eb64298c4"),
+            Name = "Emergency Food List — Green",
+            Description = "A four-week dinner rotation built entirely from shelf-stable staples, with calorie counts, no-power cooking notes and a monthly top-up routine so the emergency pantry gets eaten and restocked instead of forgotten.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/pantry-meal-rotation-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("8faee11b-62ad-508e-b4ef-658eda3d5b6b"),
+            Name = "Emergency Food List — Pink",
+            Description = "A four-week dinner rotation built entirely from shelf-stable staples, with calorie counts, no-power cooking notes and a monthly top-up routine so the emergency pantry gets eaten and restocked instead of forgotten.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/pantry-meal-rotation-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("8043ac2e-2d28-52b0-b0dd-5a23f46bcaaa"),
+            Name = "Emergency Food List — Plum",
+            Description = "A four-week dinner rotation built entirely from shelf-stable staples, with calorie counts, no-power cooking notes and a monthly top-up routine so the emergency pantry gets eaten and restocked instead of forgotten.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/pantry-meal-rotation-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("d3661f69-76af-550c-a7cd-ca1f17b2320f"),
+            Name = "Sinking Funds Tracker",
+            Description = "A one-page sinking funds worksheet that gives every non-monthly bill its own line with target, saved, and monthly set-aside amounts plus twelve numbered month boxes to tick off each transfer, so insurance, repairs, holidays, and annual subscriptions are funded before they arrive.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/sinking-funds-tracker.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("ad3efb9c-7f2a-533a-a8fc-40a699d082fe"),
+            Name = "Sinking Funds Tracker — Es",
+            Description = "Una hoja para organizar los fondos de reserva: cada gasto que no es mensual tiene su meta, lo ahorrado y la cantidad mensual, con doce casillas numeradas para marcar cada apartado.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/sinking-funds-tracker-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("4b4b3750-8e60-5f63-b81f-9e621b7f9dfc"),
+            Name = "Sinking Funds Tracker — Green",
+            Description = "A one-page sinking funds worksheet that gives every non-monthly bill its own line with target, saved, and monthly set-aside amounts plus twelve numbered month boxes to tick off each transfer, so insurance, repairs, holidays, and annual subscriptions are funded before they arrive.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/sinking-funds-tracker-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("755c23ff-0aaf-5a7b-8e75-230dc33fdcd9"),
+            Name = "Sinking Funds Tracker — Pink",
+            Description = "A one-page sinking funds worksheet that gives every non-monthly bill its own line with target, saved, and monthly set-aside amounts plus twelve numbered month boxes to tick off each transfer, so insurance, repairs, holidays, and annual subscriptions are funded before they arrive.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/sinking-funds-tracker-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("52c9a6a3-cbec-599d-909c-5f7891408cd7"),
+            Name = "Sinking Funds Tracker — Plum",
+            Description = "A one-page sinking funds worksheet that gives every non-monthly bill its own line with target, saved, and monthly set-aside amounts plus twelve numbered month boxes to tick off each transfer, so insurance, repairs, holidays, and annual subscriptions are funded before they arrive.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/sinking-funds-tracker-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("33c5bff3-4e54-5c26-af55-dfef29d3e0ad"),
+            Name = "Warehouse Club Shopping List — Es",
+            Description = "Una hoja imprimible para el club de compras con tres reglas para comprar por volumen, cuatro columnas de 112 productos, tamaños de paquete y una casilla para anotar cuántos paquetes llevar.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/warehouse-bulk-list-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("1166b8b4-e676-529c-ac53-ebfe2a75d46b"),
+            Name = "Warehouse Club Shopping List — Green",
+            Description = "A one-page warehouse club stock-up sheet with three pack-buying rules, four aisle columns of 112 items, pack sizes, and a pack-count box beside every item.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/warehouse-bulk-list-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("29fa06a3-d064-592b-9abc-47e1d709918e"),
+            Name = "Warehouse Club Shopping List — Pink",
+            Description = "A one-page warehouse club stock-up sheet with three pack-buying rules, four aisle columns of 112 items, pack sizes, and a pack-count box beside every item.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/warehouse-bulk-list-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("94a8c5fe-7b10-5b56-aa54-cdba1c44c396"),
+            Name = "Warehouse Club Shopping List — Plum",
+            Description = "A one-page warehouse club stock-up sheet with three pack-buying rules, four aisle columns of 112 items, pack sizes, and a pack-count box beside every item.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "moving-out",
+            Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
+            PdfBlobName = "guides/warehouse-bulk-list-plum.pdf"
         },
     ];
 
