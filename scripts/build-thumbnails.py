@@ -45,7 +45,7 @@ Then run it with that interpreter:
     .venv/bin/python scripts/build-thumbnails.py --check
 
 The output file name must match what the API derives from the PDF blob name
-(``guides/150first-foods.pdf`` -> ``guides/images/150first-foods.webp``), so uploading
+(``guides/bill-calendar-budget.pdf`` -> ``guides/images/bill-calendar-budget.webp``), so uploading
 is a matter of placing every ``*.webp`` into the ``guides/images`` prefix.
 """
 
@@ -112,7 +112,7 @@ def blob_stem_by_listing(source: str) -> dict[str, str]:
     """Map listing id (folder name) to the PDF stem used in blob storage.
 
     The API derives the thumbnail name from the PDF blob name, where the generator
-    wrote underscores as hyphens (``guides/150first-foods.pdf``). No published PDF
+    wrote underscores as hyphens (``guides/bill-calendar-budget.pdf``). No published PDF
     name contains an underscore, so this is a faithful inverse.
     """
     mapping = {}

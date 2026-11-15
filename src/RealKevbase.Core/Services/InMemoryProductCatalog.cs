@@ -17,7 +17,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
     [
         new()
         {
-            Id = Guid.Parse("a76057dc-170b-547f-8793-bb6b02c70f22"),
+            Id = Guid.Parse("9d86df5c-23d5-5334-b5f1-a0422c889cb7"),
             Name = "Baby First Foods Checklist",
             Description = "Track every new food your baby tries, with 150 first foods grouped by type and a dot beside each common allergen, so you can check off each taste and note reactions as you go.",
             Price = 5.0m,
