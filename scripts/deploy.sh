@@ -20,7 +20,8 @@
 #   PAGES_BRANCH     pages production branch (default: main)
 #   API_BASE_URL     API origin, also baked into the bundle (default: https://api.realkevbase.com)
 #   SITE_URL         static site origin     (default: https://realkevbase.com)
-#   GA_MEASUREMENT_ID GA4 measurement id (G-...) baked into the bundle; optional
+#   GA_MEASUREMENT_ID GA4 measurement id (G-...) baked into the bundle (default: the
+#                     storefront's own property; set it empty to ship without analytics)
 #
 # The API is deployed before the web bundle on purpose: a new frontend calling an
 # endpoint that the old API does not serve yet shows an error in the storefront,
@@ -38,7 +39,11 @@ PAGES_PROJECT="${PAGES_PROJECT:-realkevbase-client}"
 PAGES_BRANCH="${PAGES_BRANCH:-main}"
 API_BASE_URL="${API_BASE_URL:-https://api.realkevbase.com}"
 SITE_URL="${SITE_URL:-https://realkevbase.com}"
-GA_MEASUREMENT_ID="${GA_MEASUREMENT_ID:-}"
+# The measurement id is a public identifier (it sits in the HTML of every tagged site), so the
+# storefront's own property is the default: a deploy must not silently ship a storefront that
+# reports nothing, which is what an optional empty default did. `${VAR-default}` rather than
+# `${VAR:-default}` so that setting the variable empty really does disable analytics.
+GA_MEASUREMENT_ID="${GA_MEASUREMENT_ID-G-6FS9CWY5LB}"
 
 # A healthy catalog has 114 products (111 PDFs + 3 merch). The floor only has to catch
 # an empty or badly broken catalog, so adding products never breaks this script.
@@ -371,6 +376,17 @@ print(urls[0] if urls else '')
   else
     pass "live bundle is current ($live_bundle)"
     check_status "bundle asset is fetchable" GET 200 "$SITE_URL/$live_bundle"
+
+    # 8b. Analytics has to be in the bundle that is actually live. The measurement id comes
+    #     from the deploy environment, and until now a deploy that forgot it shipped a
+    #     storefront that reported nothing while every other check passed.
+    if [ -n "$GA_MEASUREMENT_ID" ]; then
+      if curl -sf --max-time 60 "$SITE_URL/$live_bundle" | grep -q "$GA_MEASUREMENT_ID"; then
+        pass "GA4 $GA_MEASUREMENT_ID is in the live bundle"
+      else
+        fail "GA4 $GA_MEASUREMENT_ID is missing from the live bundle"
+      fi
+    fi
   fi
 
   # 9. Client-side routes must serve the app, not the host's 404. This is the one way a
