@@ -120,8 +120,8 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
     {
         // Count guides, not links: a guide that ships a PNG beside its PDF is still one PDF.
         var subject = delivery.PdfCount == 1
-            ? "Your RealKevbase PDF is ready (link expires in 24 hours)"
-            : $"Your {delivery.PdfCount} RealKevbase PDFs are ready (links expire in 24 hours)";
+            ? "Your SaveSimple PDF is ready (link expires in 24 hours)"
+            : $"Your {delivery.PdfCount} SaveSimple PDFs are ready (links expire in 24 hours)";
 
         var content = new EmailContent(subject)
         {
@@ -145,11 +145,11 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
             .Append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr><td align=\"center\">")
             .Append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" ")
             .Append("style=\"max-width:540px;background:#ffffff;border-radius:14px;padding:28px;\"><tr><td>")
-            .Append("<p style=\"margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;\">RealKevbase</p>")
+            .Append("<p style=\"margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;\">SaveSimple by RealKevbase</p>")
             .Append("<h1 style=\"margin:0 0 10px;font-size:22px;line-height:1.3;\">Your downloads are ready</h1>")
-            .Append("<p style=\"margin:0 0 22px;font-size:14px;color:#4b5563;\">Thanks for your order. ")
-            .Append(hasImages ? "Each guide comes with the full-resolution PNG of the same page. " : string.Empty)
-            .Append("Each link is private to this order and expires 24 hours after checkout.</p>");
+            .Append("<p style=\"margin:0 0 22px;font-size:14px;color:#4b5563;\">Thanks for your order from SaveSimple.")
+            .Append(hasImages ? " Every guide comes as a PDF and a PNG, so use whichever you need." : string.Empty)
+            .Append("</p>");
 
         // One heading per guide, then a button per file, so a PDF and its PNG read as two
         // equal ways to use the same page rather than as two separate products.
@@ -175,7 +175,7 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
         }
 
         builder.Append("<p style=\"margin:0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;\">")
-            .Append("Links expire in 24 hours. If they have lapsed, open the receipt page from your Stripe confirmation email ")
+            .Append("If they have lapsed, open the receipt page from your Stripe confirmation email ")
             .Append("and fresh links are issued automatically.</p>")
             .Append("</td></tr></table></td></tr></table></body></html>");
 
@@ -185,11 +185,16 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
     private static string BuildPlainText(PdfDelivery delivery)
     {
         var builder = new StringBuilder();
+        var hasImages = delivery.Downloads.Any(download => download.Format == DeliveryFormat.Image);
 
-        builder.AppendLine("Your RealKevbase downloads are ready.")
-            .AppendLine()
-            .AppendLine("Each link is private to this order and expires 24 hours after checkout.")
+        builder.AppendLine("Your SaveSimple downloads are ready.")
             .AppendLine();
+
+        if (hasImages)
+        {
+            builder.AppendLine("Every guide comes as a PDF and a PNG, so use whichever you need.")
+                .AppendLine();
+        }
 
         foreach (var group in delivery.Downloads.GroupBy(download => download.Product))
         {
@@ -204,8 +209,8 @@ public sealed class LoggingPdfDeliveryService : IPdfDeliveryService
                 .AppendLine();
         }
 
-        builder.AppendLine("Links expire in 24 hours. If they have lapsed, open the receipt page from")
-            .Append("your Stripe confirmation email and fresh links are issued automatically.");
+        builder.AppendLine("If the links have lapsed, open the receipt page from your Stripe confirmation")
+            .Append("email and fresh links are issued automatically.");
 
         return builder.ToString();
     }

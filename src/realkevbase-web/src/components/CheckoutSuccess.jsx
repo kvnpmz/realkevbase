@@ -285,9 +285,7 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
             {state.stage === STAGE.READY && (
               <Stack spacing={2.5}>
                 <Typography variant="body1" color="text.secondary">
-                  Download your files now — each guide includes its PDF and, where published, the
-                  full-resolution PNG of the same page. Every link is private to this order and
-                  expires 24 hours after checkout.
+                  This SaveSimple product comes in both PDF and PNG for your convenience.
                 </Typography>
 
                 <Stack divider={<Divider flexItem />} spacing={2}>
@@ -332,8 +330,8 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
                   }}
                 >
                   <Typography variant="caption" color="text.secondary">
-                    Links expire in 24 hours. Need them later? Open this page again from your Stripe
-                    receipt before they lapse, and fresh links are issued.
+                    Need them later? Open this page again from your Stripe receipt and fresh
+                    links are issued.
                   </Typography>
                 </Box>
 
