@@ -378,6 +378,69 @@ print(urls[0] if urls else '')
   check_status "guide deep link serves the app" \
     GET 200 "$SITE_URL/guides/apartment-checklist"
 
+  # 10. Search metadata is generated at build time, and a 200 cannot prove it exists: the
+  #     SPA fallback answers every path, so a skipped prerender would still look healthy
+  #     while every guide shared one generic title and one canonical URL.
+  local seo_dir
+  seo_dir=$(mktemp -d)
+
+  if curl -sf --max-time 60 "$SITE_URL/guides/apartment-checklist" -o "$seo_dir/guide.html"; then
+    if grep -q '<title>SaveSimple by RealKevbase — checklists' "$seo_dir/guide.html"; then
+      fail "guide page serves the generic shell title (prerender did not run)"
+    elif grep -q "rel=\"canonical\" href=\"$SITE_URL/guides/apartment-checklist\"" "$seo_dir/guide.html" \
+      && grep -q '"@type": "Product"' "$seo_dir/guide.html"; then
+      pass "guide page carries its own title, canonical URL and Product JSON-LD"
+    else
+      fail "guide page is missing its canonical link or Product JSON-LD"
+    fi
+  else
+    fail "could not fetch a prerendered guide page"
+  fi
+
+  if curl -sf --max-time 60 "$SITE_URL/robots.txt" -o "$seo_dir/robots.txt" \
+    && grep -qi '^Sitemap:' "$seo_dir/robots.txt" \
+    && ! grep -qi '<html' "$seo_dir/robots.txt"; then
+    pass "robots.txt is plain text and names the sitemap"
+  else
+    fail "robots.txt is missing, HTML, or does not name the sitemap"
+  fi
+
+  if curl -sf --max-time 60 "$SITE_URL/sitemap.xml" -o "$seo_dir/sitemap.xml" \
+    && grep -q '<urlset' "$seo_dir/sitemap.xml"; then
+    local sitemap_urls
+    sitemap_urls=$(grep -c '<loc>' "$seo_dir/sitemap.xml" || true)
+    if [ "${sitemap_urls:-0}" -ge "$MIN_PRODUCTS" ]; then
+      pass "sitemap lists $sitemap_urls URLs"
+    else
+      fail "sitemap lists only ${sitemap_urls:-0} URLs"
+    fi
+  else
+    fail "sitemap.xml is missing or not XML"
+  fi
+
+  if curl -sf --max-time 60 "$SITE_URL/" -o "$seo_dir/home.html" \
+    && grep -q "rel=\"canonical\" href=\"$SITE_URL/\"" "$seo_dir/home.html"; then
+    pass "home page declares $SITE_URL as canonical"
+  else
+    fail "home page has no canonical link for $SITE_URL"
+  fi
+
+  # 11. www is a second custom domain on the same Pages project. Without the redirect,
+  #     Google keeps indexing both hosts (and their http variants) as separate sites.
+  if [[ "$SITE_URL" == https://* ]]; then
+    local www_url www_code www_target
+    www_url="https://www.${SITE_URL#https://}"
+    www_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$www_url/" || echo 000)
+    www_target=$(curl -s -o /dev/null -w '%{redirect_url}' --max-time 60 "$www_url/" || true)
+    if [ "$www_code" = "301" ] && [ "$www_target" = "$SITE_URL/" ]; then
+      pass "www host redirects to the apex (301)"
+    else
+      fail "www host does not redirect to the apex (HTTP ${www_code:-000}, target '${www_target:-none}')"
+    fi
+  fi
+
+  rm -rf "$seo_dir"
+
   echo
   if [ "$FAILURES" -eq 0 ]; then
     printf '%sAll checks passed.%s\n' "$C_PASS" "$C_OFF"

@@ -14,7 +14,7 @@ import { useCartContext } from '../cart/cartContext.js'
 import { FULFILLMENT } from '../cart/cartReducer.js'
 import { formatMoney } from '../cart/formatMoney.js'
 import { CATEGORIES } from '../data/categories.js'
-import { SITE_TITLE } from '../data/site.js'
+import { SITE_NAME, SITE_TITLE } from '../data/site.js'
 
 /** Category value to its storefront label. */
 const CATEGORY_LABELS = new Map(CATEGORIES.map((option) => [option.value, option.label]))
@@ -86,7 +86,7 @@ function GuideDetail({ product }) {
   }
 
   useEffect(() => {
-    document.title = `${product.name} — ${SITE_TITLE}`
+    document.title = `${product.name} — ${SITE_NAME}`
     trackEvent('view_item', {
       currency: 'USD',
       value: product.unitPrice,
