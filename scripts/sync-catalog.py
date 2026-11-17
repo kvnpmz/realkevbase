@@ -52,11 +52,13 @@ from datetime import datetime
 
 from listing_files import (
     CONTAINER,
+    EDITION_WORDS,
     edition_name,
     find_source_pdf,
     parent_slug,
     read_config,
     read_listing,
+    strip_edition,
     site_name,
     upload_pdf,
     variant_words,
@@ -279,9 +281,10 @@ def desired_copy(listings: list[str], meta: dict) -> dict[str, dict]:
     """Compute the name and description every listed folder should carry.
 
     ``listing.txt`` wins because it is the copy the shop actually published.
-    Editions are named from their base listing so a colour never repeats the base
-    name: ``split_budget_balanced_blue`` becomes "50 30 20 Budget Worksheet —
-    Balanced Blue". ``catalog_meta.json`` may override either field, or supply copy
+    An edition keeps its own name when its TITLE says something the base listing does
+    not ("New Apartment Checklist Grid", the Spanish titles). Otherwise the variant word
+    disambiguates, so ``split_budget_balanced_blue`` becomes "50 30 20 Budget Worksheet —
+    Balanced Blue" rather than a second product with the base name. ``catalog_meta.json`` may override either field, or supply copy
     for a folder that has no ``listing.txt`` yet.
     """
     texts = {}
@@ -293,15 +296,30 @@ def desired_copy(listings: list[str], meta: dict) -> dict[str, dict]:
     available = list(texts)
     copy: dict[str, dict] = {}
     # Shortest folder names first, so a base listing is named before its editions.
+    resolved: dict[str, str] = {}
     for slug in sorted(texts, key=lambda name: (len(name), name)):
         listing = texts[slug]
         parent = parent_slug(slug, available)
-        if parent in copy:
-            name = edition_name(copy[parent]["name"], variant_words(slug, parent))
-            description = listing["description"] or copy[parent]["description"]
+        own = site_name(listing["title"])
+        inherited = resolved.get(parent, "")
+        root = strip_edition(inherited) if inherited else ""
+        claimed = {value.lower() for value in resolved.values()}
+        # An edition names itself only when that name says something new: a Spanish title,
+        # "New Apartment Checklist Grid". A title that repeats the family root ("50 30 20
+        # Budget Worksheet | Colour Coded …") or a name already claimed keeps the suffix,
+        # which is what stops four editions becoming "… 2", "… 3", "… 4".
+        # "Kidney Disease Food List Tabbed" is the family name plus an edition word, not a
+        # name of its own: it stays "— Tabbed" rather than colliding with the base listing.
+        tail = own[len(root):].strip() if root and own.lower().startswith(root.lower()) else own
+        only_edition_words = bool(tail) and all(word.lower() in EDITION_WORDS for word in tail.split())
+        self_named = (bool(own) and not only_edition_words
+                      and own.lower() != (root or inherited).lower() and own.lower() not in claimed)
+        if inherited and not self_named:
+            name = edition_name(inherited, variant_words(slug, parent))
         else:
-            name = site_name(listing["title"])
-            description = listing["description"]
+            name = own
+        resolved[slug] = name
+        description = listing["description"] or (copy[parent]["description"] if parent in copy else None)
         copy[slug] = {"name": name, "description": description or None, "source": "listing.txt"}
 
     for slug, override in meta.items():

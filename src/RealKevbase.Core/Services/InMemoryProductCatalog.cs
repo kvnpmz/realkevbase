@@ -40,7 +40,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("d0e1fe4f-9b25-52db-89ae-e971cb68ad07"),
-            Name = "First Apartment Checklist — Grid",
+            Name = "New Apartment Checklist",
             Description = "The same first-apartment essentials condensed into a dense grid rather than long columns, so 172 items fit on one sheet without turning into a booklet: living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom sit side by side and can be ticked in a single pass while you walk the rooms.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1277,7 +1277,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("5e7aaa32-4875-5adf-ad42-9a02f83265b4"),
-            Name = "Bill Calendar Budget Planner — Spanish",
+            Name = "Calendario de Pagos",
             Description = "Anota cada factura en su fecha de vencimiento y resta el saldo línea por línea para ver cuánto queda antes del próximo pago.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1332,7 +1332,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("b812c8cd-d45a-5ea9-ba07-7b1050469a14"),
-            Name = "Cortisol Food List — Spanish",
+            Name = "Lista de Alimentos para el Cortisol",
             Description = "Una hoja que ordena los alimentos de cada día en sin límite, con moderación y evitar, con un horario diario y cuatro cambios fáciles para estabilizar la energía.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1387,7 +1387,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("e8632cf1-a132-58f9-8339-6070043157cb"),
-            Name = "Diverticulitis Flare-Up Meal Plan — Spanish",
+            Name = "Plan de Comidas para Diverticulitis",
             Description = "Organiza cinco días suaves y bajos en fibra con desayuno, almuerzo, cena y meriendas, lista de compras y una guía paso a paso para volver a la fibra después de un brote leve de diverticulitis.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1442,7 +1442,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("02240381-6f4b-5a08-8112-6bd984cd3c4d"),
-            Name = "First Apartment Essentials — Costs Spanish",
+            Name = "Lista de Gastos Primer Apartamento",
             Description = "Una hoja para poner precio a cada cosa del primer apartamento, con seis cuartos, total por cuarto, gastos de entrada y total general.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1497,7 +1497,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("e2367d39-4404-5491-a4d7-4ecee5ef6fe9"),
-            Name = "Kidney Friendly Holiday Menu — Spanish",
+            Name = "Mesa Festiva para el Riñón",
             Description = "Una hoja de fiestas ordena pavo, acompañamientos, postres y bebidas en disfruta, porción pequeña y evita, con porciones y cambios bajos en sodio para la mesa renal.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1552,7 +1552,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("3cdd8206-171e-50fc-98dc-e9aa49231a3d"),
-            Name = "Ultimate Move Out Checklist — Spanish",
+            Name = "Guía Completa de Mudanza Imprimible",
             Description = "Una hoja imprimible para inquilinos que registra la condición y las fotos de cada habitación, anota daños y costos de reparación, y calcula el saldo del depósito para recuperarlo a tiempo.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1607,7 +1607,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("844764a2-1b33-574f-8fb7-9d0ad5620919"),
-            Name = "14 Day Emergency Meal Plan — Spanish",
+            Name = "Plan de Comidas 14 Días Sin Luz",
             Description = "Catorce días de desayuno, almuerzo, cena y merienda armados solo con comida de despensa, con raciones por persona y una lista de compras de dos semanas para comprar una vez y comer en orden.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1662,7 +1662,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("200ba525-db23-5699-853f-9db13e5136f4"),
-            Name = "Emergency Food List — Spanish",
+            Name = "Rotación de Comidas 28 Días",
             Description = "Una rotación de cuatro semanas de cenas hechas solo con conservas y productos de despensa, con calorías contadas, notas para cocinar sin electricidad y una rutina mensual de reposición.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1717,7 +1717,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("ad3efb9c-7f2a-533a-a8fc-40a699d082fe"),
-            Name = "Sinking Funds Tracker — Spanish",
+            Name = "Control de Fondos de Reserva",
             Description = "Una hoja para organizar los fondos de reserva: cada gasto que no es mensual tiene su meta, lo ahorrado y la cantidad mensual, con doce casillas numeradas para marcar cada apartado.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1761,7 +1761,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("33c5bff3-4e54-5c26-af55-dfef29d3e0ad"),
-            Name = "Warehouse Club Shopping List — Spanish",
+            Name = "Lista de Compras al Por Mayor",
             Description = "Una hoja imprimible para el club de compras con tres reglas para comprar por volumen, cuatro columnas de 112 productos, tamaños de paquete y una casilla para anotar cuántos paquetes llevar.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1816,7 +1816,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("dda515eb-d54e-5a5e-a6da-048906238869"),
-            Name = "Half Hour Daily Planner — Spanish",
+            Name = "Agenda Diaria por Media Hora",
             Description = "Un día dividido en bloques de media hora desde las 6:00 hasta las 21:30, con espacio arriba para las tres cosas que tienen que pasar, para que el plan del día quede escrito y no en la cabeza.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -1871,7 +1871,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("ce1b0190-94f6-5d78-922e-36a011f6f802"),
-            Name = "Simple Monthly Budget Template — Spanish",
+            Name = "Presupuesto Mensual Simple",
             Description = "Una hoja de presupuesto mensual de una página con columnas de planeado y gastado, totales de cuentas, gastos diarios y ahorros, y un renglón destacado con el dinero que queda al final del mes.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
