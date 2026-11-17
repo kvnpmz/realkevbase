@@ -79,6 +79,67 @@ def find_source_pdf(folder: str) -> str | None:
     return max(candidates, key=os.path.getsize)
 
 
+def find_cover_image(images_dir: str) -> str | None:
+    """Return the full-page render in an ``images/`` folder, or None.
+
+    The generator names a render after its template, so the file can be called something
+    other than the listing folder and repeats across colour editions
+    (``bill_calendar_budget_green`` renders ``bill_calendar_budget.png``). The cover is
+    the ``.png`` that is not a device/zoom variant or a numbered page artifact; when a
+    folder holds more than one, the largest wins so the choice stays deterministic.
+
+    ``scripts/build-thumbnails.py`` applies the same rule to pick its thumbnail source.
+
+    Args:
+        images_dir: Path to the listing's ``images/`` folder.
+
+    Returns:
+        Path to the cover render, or None when the folder has none.
+    """
+    if not os.path.isdir(images_dir):
+        return None
+
+    candidates = []
+    for name in os.listdir(images_dir):
+        if not name.lower().endswith(".png"):
+            continue
+        if is_variant(name[: -len(".png")]):
+            continue
+        path = os.path.join(images_dir, name)
+        if os.path.getsize(path) < 4096:  # skip 1x1 placeholders
+            continue
+        candidates.append(path)
+
+    if not candidates:
+        return None
+    return max(candidates, key=os.path.getsize)
+
+
+#: Edition words that describe the file rather than the product: "— Bullet", "— Green",
+#: "— Es". A shop name carries them so a buyer can tell editions apart, but they read as
+#: folder-name debris on a pin, so pin copy drops them.
+EDITION_WORDS = frozenset(
+    {"es", "dark", "light", "bullet", "grid", "tabbed", "card", "serif", "minimal",
+     "essential", "balanced", "decorative", "regal", "alternative", "blue", "green",
+     "pink", "plum", "purple", "teal", "amber", "mustard", "babyblue", "lightblue"}
+)
+
+
+def strip_edition(name: str) -> str:
+    """Drop a trailing edition label: "Cortisol Food List — Plum" -> "Cortisol Food List".
+
+    Only the words in :data:`EDITION_WORDS` are removed, so a real product distinction
+    ("— 2027") survives and only file-naming debris disappears.
+    """
+    head, _, tail = name.rpartition(" — ")
+    if not head:
+        return name
+    tokens = [token for token in tail.replace(",", " ").split() if token]
+    if tokens and all(token.lower() in EDITION_WORDS for token in tokens):
+        return head.strip()
+    return name
+
+
 def read_config(path: str) -> dict[str, str]:
     """Pull the simple string fields out of a generator config.tl."""
     if not os.path.exists(path):

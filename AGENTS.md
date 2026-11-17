@@ -34,6 +34,10 @@ python3 scripts/sync-catalog.py                           # "catalog is up to da
 ./scripts/deploy.sh verify                                # production smoke test
 ```
 
+## Pinterest
+
+Pins are generated from the catalog with `python3 scripts/pinterest_pins.py` (dry run by default; `--apply --limit N` creates). The token lives outside the repo — `scripts/pinterest_auth.py --show` — and `docs/pinterest.md` covers setup, de-duplication and the Trial-visibility caveat. Never commit app credentials or the token.
+
 ## Traps
 
 - Catalog `max-age=60` + gzip (~53 KB → ~14 KB); images `max-age=86400` + ETag; a missing image 404s from one blob download, not an `ExistsAsync` probe. CORS is an allow-list in `Cors/CorsPolicies.cs`; no CSP yet (MUI injects runtime styles).

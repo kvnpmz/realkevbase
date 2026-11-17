@@ -27,6 +27,8 @@ __pycache__/
 appsettings.Local.json
 appsettings.*.Local.json
 secrets.json
+.pinterest-token.json
+.pinterest-state.json
 
 # Deployment artifacts
 *.zip

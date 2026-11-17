@@ -181,14 +181,143 @@ function guideHead({ slug, name, description, price, id, category, image }) {
     `<meta property="og:url" content="${escapeHtml(url)}" />`,
     `<meta property="og:image" content="${escapeHtml(imageUrl)}" />`,
     `<meta property="og:image:alt" content="${escapeHtml(`${name}, first page preview`)}" />`,
+    // Pinterest reads these to turn a pin into a Product Pin (live price under the image);
+    // og:type=product alone is not enough for the Rich Pin validator.
+    `<meta property="product:price:amount" content="${formatPrice(price)}" />`,
+    '<meta property="product:price:currency" content="USD" />',
     '<meta name="twitter:card" content="summary_large_image" />',
     `<script type="application/ld+json">${serializeJsonLd(jsonLd)}</script>`,
   ]
 }
 
 /** Builds the sitemap with the home page first, then every guide. */
+/** Display order and labels for the catalog categories the shop uses. */
+const CATEGORIES = [
+  ['money-budgeting', 'Money & budgeting'],
+  ['healthy-living', 'Healthy living'],
+  ['moving-out', 'Moving out'],
+  ['guides', 'Everyday guides'],
+]
+
+/**
+ * File name of the crawlable index, which links every guide from plain HTML. Cloudflare
+ * Pages serves it pretty and 308-redirects the `.html` form, so links and the sitemap use
+ * INDEX_URL instead of this path.
+ */
+const INDEX_PATH = 'all-guides.html'
+
+/** Public URL of the index, as Pages actually serves it (no extension, no redirect hop). */
+const INDEX_URL = '/all-guides'
+
+/**
+ * Builds a standalone, JavaScript-free page listing every guide.
+ *
+ * The storefront is a single-page app, so the home page carries no <a> elements until
+ * React runs. A sitemap tells a crawler the guide URLs exist; this page is what makes them
+ * reachable by following links, which is the signal that decides how quickly they are
+ * crawled and how much of the catalogue is treated as part of the site.
+ *
+ * @param {Map<string, ReturnType<typeof toGuide>>} guides Guides keyed by slug.
+ * @returns {string} A complete HTML document.
+ */
+function buildIndexPage(guides) {
+  const byCategory = new Map(CATEGORIES.map(([key]) => [key, []]))
+  const other = []
+  for (const guide of guides.values()) {
+    const bucket = byCategory.get(guide.category)
+    if (bucket) bucket.push(guide)
+    else other.push(guide)
+  }
+
+  const section = (label, items) => {
+    if (items.length === 0) return ''
+    const entries = items
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(
+        (guide) =>
+          `        <li><a href="/guides/${guide.slug}">${escapeHtml(guide.name)}</a>` +
+          `<span>$${escapeHtml(formatPrice(guide.price))}</span></li>`,
+      )
+      .join('\n')
+    return `      <section>\n        <h2>${escapeHtml(label)} <span>${items.length}</span></h2>\n        <ul>\n${entries}\n        </ul>\n      </section>\n`
+  }
+
+  const sections =
+    CATEGORIES.map(([key, label]) => section(label, byCategory.get(key) ?? [])).join('') +
+    section('More guides', other)
+
+  const url = `${SITE_URL}${INDEX_URL}`
+  const title = `All ${guides.size} printable guides — ${SITE_NAME}`
+  const description = `Every printable PDF in the SaveSimple collection, grouped by subject: money and budgeting, healthy living, moving out and everyday guides. Instant download, $5.`
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${escapeHtml(title)}</title>
+    <meta name="description" content="${escapeHtml(description)}" />
+    <link rel="canonical" href="${escapeHtml(url)}" />
+    <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:url" content="${escapeHtml(url)}" />
+    <meta property="og:image" content="${escapeHtml(FALLBACK_IMAGE)}" />
+    <style>
+      :root { color-scheme: light; }
+      body { margin: 0; padding: 40px 20px; background: #fbf9f5; color: #16181c;
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+      main { max-width: 900px; margin: 0 auto; }
+      h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; }
+      p.lede { color: #55595f; margin: 0 0 32px; }
+      section { margin: 0 0 32px; }
+      h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid #e2ded6; padding-bottom: 8px; }
+      h2 span { color: #8a8e94; font-weight: 400; font-size: 15px; }
+      ul { list-style: none; margin: 0; padding: 0; }
+      li { display: flex; justify-content: space-between; gap: 16px; padding: 7px 0;
+        border-bottom: 1px solid #f0ece4; }
+      li span { color: #55595f; white-space: nowrap; }
+      a { color: inherit; text-decoration: none; border-bottom: 1px solid #cfc9bd; }
+      a:hover { border-bottom-color: #16181c; }
+      footer { max-width: 900px; margin: 40px auto 0; color: #6b6f76; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>All ${guides.size} printable guides</h1>
+      <p class="lede">Every SaveSimple PDF, grouped by subject. Instant download, $5 each.</p>
+${sections}    </main>
+    <footer><a href="/">Back to the shop</a></footer>
+  </body>
+</html>
+`
+}
+
+/**
+ * Appends a link to the index in plain HTML, outside the app root, so a crawler reaches
+ * the catalogue from the home page and from every guide without running JavaScript.
+ *
+ * @param {string} shell Page HTML to extend.
+ * @returns {string} The page with the footer added once.
+ */
+function withIndexFooter(shell) {
+  if (shell.includes('data-seo-index')) return shell
+  const footer =
+    '    <footer data-seo-index style="padding:28px 20px;text-align:center;' +
+    'font:14px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Inter,sans-serif;color:#6b6f76;' +
+    'border-top:1px solid #e8e3d9;background:#fbf9f5">' +
+    `<a href="${INDEX_URL}" style="color:#16181c;text-decoration:none;` +
+    'border-bottom:1px solid #cfc9bd">Browse all printable guides</a></footer>\n'
+  return shell.replace('</body>', `${footer}  </body>`)
+}
+
 function buildSitemap(slugs, lastmod) {
-  const urls = [`${SITE_URL}/`, ...slugs.map((slug) => `${SITE_URL}/guides/${slug}`)]
+  const urls = [
+    `${SITE_URL}/`,
+    `${SITE_URL}${INDEX_URL}`,
+    ...slugs.map((slug) => `${SITE_URL}/guides/${slug}`),
+  ]
   const entries = urls
     .map(
       (url) =>
@@ -262,11 +391,15 @@ async function main() {
     '<meta name="twitter:card" content="summary_large_image" />',
   ])
 
-  await writeFile(SHELL_PATH, homeShell)
+  await writeFile(SHELL_PATH, withIndexFooter(homeShell))
+  await writeFile(join(DIST, INDEX_PATH), buildIndexPage(guides))
   await mkdir(join(DIST, 'guides'), { recursive: true })
   await Promise.all(
     [...guides.values()].map((guide) =>
-      writeFile(join(DIST, 'guides', `${guide.slug}.html`), withSeoBlock(shell, guideHead(guide))),
+      writeFile(
+        join(DIST, 'guides', `${guide.slug}.html`),
+        withIndexFooter(withSeoBlock(shell, guideHead(guide))),
+      ),
     ),
   )
 
@@ -278,7 +411,8 @@ async function main() {
   }
 
   console.log(
-    `seo: prerendered ${guides.size} guide pages, sitemap with ${guides.size + 1} URLs, ` +
+    `seo: prerendered ${guides.size} guide pages plus the all-guides index, sitemap with ` +
+      `${guides.size + 2} URLs, ` +
       'robots.txt and the www redirect middleware',
   )
 }
