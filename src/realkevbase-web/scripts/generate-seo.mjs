@@ -210,6 +210,21 @@ const INDEX_PATH = 'all-guides.html'
 const INDEX_URL = '/all-guides'
 
 /**
+ * Static pages that carry the shop's credibility: who runs it, how to reach them, and what
+ * happens when an order goes wrong. They live in `public/` rather than the SPA so they add
+ * no bundle weight, and they are linked from the footer so a crawler and a first-time buyer
+ * both find them. `privacy` shipped before this list existed and was missing from the
+ * sitemap until now.
+ */
+const LEGAL_PAGES = [
+  ['/about', 'About'],
+  ['/contact', 'Contact'],
+  ['/refunds', 'Refunds'],
+  ['/terms', 'Terms'],
+  ['/privacy', 'Privacy'],
+]
+
+/**
  * Builds a standalone, JavaScript-free page listing every guide.
  *
  * The storefront is a single-page app, so the home page carries no <a> elements until
@@ -308,7 +323,12 @@ function withIndexFooter(shell) {
     'font:14px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Inter,sans-serif;color:#6b6f76;' +
     'border-top:1px solid #e8e3d9;background:#fbf9f5">' +
     `<a href="${INDEX_URL}" style="color:#16181c;text-decoration:none;` +
-    'border-bottom:1px solid #cfc9bd">Browse all printable guides</a></footer>\n'
+    'border-bottom:1px solid #cfc9bd">Browse all printable guides</a>' +
+    '<p style="margin:12px 0 0;font-size:13px;color:#8a8e94">' +
+    LEGAL_PAGES.map(
+      ([path, label]) => `<a href="${path}" style="color:#6b6f76;text-decoration:none">${label}</a>`,
+    ).join(' · ') +
+    '</p></footer>\n'
   return shell.replace('</body>', `${footer}  </body>`)
 }
 
@@ -316,6 +336,7 @@ function buildSitemap(slugs, lastmod) {
   const urls = [
     `${SITE_URL}/`,
     `${SITE_URL}${INDEX_URL}`,
+    ...LEGAL_PAGES.map(([path]) => `${SITE_URL}${path}`),
     ...slugs.map((slug) => `${SITE_URL}/guides/${slug}`),
   ]
   const entries = urls
@@ -412,7 +433,7 @@ async function main() {
 
   console.log(
     `seo: prerendered ${guides.size} guide pages plus the all-guides index, sitemap with ` +
-      `${guides.size + 2} URLs, ` +
+      `${guides.size + 2 + LEGAL_PAGES.length} URLs, ` +
       'robots.txt and the www redirect middleware',
   )
 }

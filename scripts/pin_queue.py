@@ -39,6 +39,7 @@ from pinterest_pins import (
     load_state,
     shop_copy,
 )
+from listing_files import parent_slug
 from pinterest_api import default_state_path
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,6 +47,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #: Batches live beside ``output``, not inside it: ``output/<listing>`` is one folder per
 #: product, and a queue of mixed listings does not belong in that namespace.
 QUEUE_ROOT = os.path.join(os.path.dirname(DEFAULT_OUTPUT), "pin_queue")
+
+#: Where a linkless pin sends people: the profile, which redirects with attribution tags.
+#: It is not ``DEFAULT_SITE`` because that host is the pin destination, not the profile.
+PROFILE_LINK = "https://realkevbase.com/pin"
 
 #: Cards are ordered page, block, text: the page card is the one that shows the product.
 STYLE_ORDER = {"page": 0, "block": 1, "text": 2}
@@ -73,39 +78,74 @@ def pinned_keys(state: dict) -> set[str]:
     return keys
 
 
+def family_of(listing: str, listings: list[str]) -> str:
+    """Return the base product an edition descends from.
+
+    Colour and layout editions are separate listings, so a batch drawn by listing alone can
+    spend five of fifteen slots on one bill calendar in five colours - which reads as spam in
+    a feed. Resolving the edition chain groups them under one product for the variety rule.
+    """
+    current = listing
+    for _ in range(4):
+        parent = parent_slug(current, listings)
+        if not parent:
+            break
+        current = parent
+    return current
+
+
 def choose(cards: list[dict], pinned: set[str], limit: int, new_share: float) -> list[dict]:
     """Pick a batch mixing brand-new listings with the oldest back catalogue.
 
     A listing counts as new while none of its cards has been posted; that is what gives a
-    product its first pin promptly instead of queueing behind a year of backlog.
+    product its first pin promptly instead of queueing behind a year of backlog. Variety is
+    enforced per product family first and relaxed only when the batch cannot be filled.
     """
     posted_listings = {key.split("@")[0] for key in pinned}
     unseen = [card for card in cards if f"{card['listing']}@{card['variant']}" not in pinned]
     fresh = [card for card in unseen if card["listing"] not in posted_listings]
     backlog = [card for card in unseen if card["listing"] in posted_listings]
 
-    # One card per new listing, so a fresh product is not used up before it is seen.
+    listings = sorted({card["listing"] for card in cards})
+    families = {listing: family_of(listing, listings) for listing in listings}
+
+    # One card per new product family, so a fresh product is not used up before it is seen.
     fresh_first: list[dict] = []
-    seen_listings: set[str] = set()
+    seen_families: set[str] = set()
     for card in fresh:
-        if card["listing"] in seen_listings:
+        family = families[card["listing"]]
+        if family in seen_families:
             continue
-        seen_listings.add(card["listing"])
+        seen_families.add(family)
         fresh_first.append(card)
 
     wanted_fresh = min(len(fresh_first), max(1, round(limit * new_share)))
     batch = fresh_first[:wanted_fresh]
-    batch += backlog[: limit - len(batch)]
-    if len(batch) < limit:
-        # Top up with other listings' first cards before reaching for a second card from a
-        # listing already in the batch: variety across products beats depth on one page.
-        taken = {id(card) for card in batch}
-        batch += [card for card in fresh_first[wanted_fresh:] if id(card) not in taken]
-        batch = batch[:limit]
-    if len(batch) < limit:
-        taken = {id(card) for card in batch}
-        batch += [card for card in unseen if id(card) not in taken][: limit - len(batch)]
-    return batch
+
+    taken = {id(card) for card in batch}
+    counts: dict[str, int] = {}
+    for card in batch:
+        counts[families[card["listing"]]] = counts.get(families[card["listing"]], 0) + 1
+
+    def take(pool: list[dict], cap: int) -> None:
+        """Add unseen cards from ``pool`` while no family exceeds ``cap`` and room remains."""
+        for card in pool:
+            if len(batch) >= limit:
+                return
+            if id(card) in taken:
+                continue
+            family = families[card["listing"]]
+            if counts.get(family, 0) >= cap:
+                continue
+            batch.append(card)
+            taken.add(id(card))
+            counts[family] = counts.get(family, 0) + 1
+
+    take(backlog, 1)
+    take(fresh_first[wanted_fresh:], 1)
+    take(unseen, 2)
+    take(unseen, len(cards))
+    return batch[:limit]
 
 
 def mark_done(folder: str, state_path: str) -> int:
@@ -149,9 +189,18 @@ def write_batch(
     day: str,
     board: str,
     documents_dir: str = DEFAULT_DOCUMENTS,
+    linkless: bool = False,
 ) -> str:
-    """Copy the cards into a dated folder and write the copy sheet beside them."""
+    """Copy the cards into a dated folder and write the copy sheet beside them.
+
+    ``linkless`` leaves the destination empty, for the case where Pinterest rejects links to
+    the domain: the pin still reaches the feed, and the profile carries the way back. The
+    copy is otherwise unchanged, so the same card can be posted with a link once the domain
+    is cleared without rewriting anything.
+    """
     folder = os.path.join(QUEUE_ROOT, day)
+    if os.path.isdir(folder):
+        shutil.rmtree(folder)
     os.makedirs(folder, exist_ok=True)
 
     known = [card["listing"] for card in batch]
@@ -170,7 +219,7 @@ def write_batch(
                 "title": plan["title"],
                 "description": plan["description"],
                 "tags": shop_copy(card["listing"], known, documents_dir).get("tags", ""),
-                "link": plan["link"],
+                "link": "" if linkless else plan["link"],
                 "board": board,
             }
         )
@@ -181,6 +230,13 @@ def write_batch(
         writer.writerows(rows)
 
     lines = [f"# Pins for {day}", "", f"Board: {board}", ""]
+    if linkless:
+        lines += [
+            "Destination links are deliberately empty: Pinterest rejects links to this",
+            "domain as spam. Post the image and copy with no link, and let the profile",
+            f"carry the traffic ({PROFILE_LINK}).",
+            "",
+        ]
     for row in rows:
         lines += [
             f"## {row['order']} · {row['file']}",
@@ -196,7 +252,7 @@ def write_batch(
             lines += [row["tags"], ""]
         lines += [
             f"**Link**  ",
-            row["link"],
+            row["link"] or "(leave empty — the profile carries the link)",
             "",
         ]
     with open(os.path.join(folder, "queue.md"), "w", encoding="utf-8") as handle:
@@ -221,6 +277,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--documents", default=DEFAULT_DOCUMENTS)
     parser.add_argument("--site-url", default=DEFAULT_SITE)
     parser.add_argument("--utm", action="store_true", help="append utm_* campaign tags")
+    parser.add_argument(
+        "--no-link",
+        action="store_true",
+        help="post without a destination link, for while Pinterest blocks the domain",
+    )
     parser.add_argument("--done", action="store_true",
                         help="record the day's folder as posted, then stop")
     args = parser.parse_args(argv)
@@ -251,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
         for plan in build_plan(catalog, args.output, args.site_url, utm=args.utm)[0]
     }
 
-    folder = write_batch(batch, plans, day, args.board, args.documents)
+    folder = write_batch(batch, plans, day, args.board, args.documents, linkless=args.no_link)
     print(f"{len(batch)} pins for {day}")
     for card in batch:
         print(f"  {card['listing']:<34} {card['variant']}  {card['style']}")

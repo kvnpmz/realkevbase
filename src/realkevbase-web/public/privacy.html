@@ -13,132 +13,7 @@
     <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <style>
-      :root {
-        --ink: #14161a;
-        --muted: #5a6068;
-        --accent: #2f6bff;
-        --canvas: #fbfaf7;
-        --divider: #e7e4dc;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        background: var(--canvas);
-        color: var(--ink);
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-size: 17px;
-        line-height: 1.65;
-      }
-
-      .page {
-        max-width: 46rem;
-        margin: 0 auto;
-        padding: 2.5rem 1.25rem 4rem;
-      }
-
-      .brand {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding-bottom: 1.25rem;
-        border-bottom: 1px solid var(--divider);
-      }
-
-      .brand strong {
-        font-size: 1.05rem;
-        letter-spacing: 0.01em;
-      }
-
-      .brand span {
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      h1 {
-        font-size: clamp(1.75rem, 4vw, 2.25rem);
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-        margin: 2rem 0 0.5rem;
-      }
-
-      .updated {
-        color: var(--muted);
-        font-size: 0.95rem;
-        margin: 0 0 1.5rem;
-      }
-
-      h2 {
-        font-size: 1.2rem;
-        line-height: 1.35;
-        margin: 2.25rem 0 0.5rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid var(--divider);
-      }
-
-      p,
-      li {
-        margin: 0 0 0.9rem;
-      }
-
-      ul {
-        padding-left: 1.25rem;
-        margin: 0 0 1rem;
-      }
-
-      li {
-        margin-bottom: 0.5rem;
-      }
-
-      a {
-        color: var(--accent);
-        text-decoration-thickness: 1px;
-        text-underline-offset: 2px;
-      }
-
-      a:hover {
-        text-decoration-thickness: 2px;
-      }
-
-      .lede {
-        font-size: 1.1rem;
-      }
-
-      .note {
-        background: #ffffff;
-        border: 1px solid var(--divider);
-        border-radius: 14px;
-        padding: 1rem 1.15rem;
-        margin: 1.5rem 0;
-      }
-
-      .note p:last-child {
-        margin-bottom: 0;
-      }
-
-      footer {
-        margin-top: 3rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid var(--divider);
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 0.92em;
-        background: #ffffff;
-        border: 1px solid var(--divider);
-        border-radius: 6px;
-        padding: 0.05rem 0.35rem;
-      }
-    </style>
+    <link rel="stylesheet" href="/legal.css" />
   </head>
   <body>
     <main class="page">
@@ -266,7 +141,11 @@
       </div>
 
       <footer>
-        <p><a href="https://realkevbase.com">← Back to the shop</a></p>
+        <p>
+          <a href="https://realkevbase.com">← Back to the shop</a> ·
+          <a href="/about">About</a> · <a href="/contact">Contact</a> ·
+          <a href="/refunds">Refunds</a> · <a href="/terms">Terms</a>
+        </p>
       </footer>
     </main>
   </body>
