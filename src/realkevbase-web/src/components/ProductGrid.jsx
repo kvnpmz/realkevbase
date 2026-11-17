@@ -107,7 +107,7 @@ function ProductCard({ product }) {
           <Box
             component="img"
             src={product.thumbnailUrl}
-            alt=""
+            alt={`${product.name} — printable PDF cover`}
             loading="lazy"
             decoding="async"
             onError={() => setThumbnailFailed(true)}

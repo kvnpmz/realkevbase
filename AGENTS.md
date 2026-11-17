@@ -34,6 +34,10 @@ python3 scripts/sync-catalog.py                           # "catalog is up to da
 ./scripts/deploy.sh verify                                # production smoke test
 ```
 
+## Getting indexed
+
+Bing-family engines (Bing, DuckDuckGo, Copilot, ChatGPT search, Yandex) are pushed rather than crawled: `python3 scripts/ping_indexnow.py --apply` posts every sitemap URL to IndexNow (dry run by default). Ownership is proven by `src/realkevbase-web/public/<key>.txt`, whose name is the key, so the key must be deployed before the first push and the script verifies it before sending. Re-run it after any deploy that adds guides. Google ignores IndexNow — it only has Search Console.
+
 ## Pinterest
 
 Pins are generated from the catalog with `python3 scripts/pinterest_pins.py` (dry run by default; `--apply --limit N` creates). The token lives outside the repo — `scripts/pinterest_auth.py --show` — and `docs/pinterest.md` covers setup, de-duplication and the Trial-visibility caveat. Never commit app credentials or the token.
