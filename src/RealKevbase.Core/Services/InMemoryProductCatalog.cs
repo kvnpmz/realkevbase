@@ -1802,6 +1802,116 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/warehouse-bulk-list-plum.pdf"
         },
+        new()
+        {
+            Id = Guid.Parse("febe87e2-ecd0-5f39-887e-01e7efb3a58e"),
+            Name = "Half Hour Daily Planner",
+            Description = "A day ruled into half-hour blocks from 6 AM to 9:30 PM, with room at the top for the three things that have to happen, so the plan for the day gets written down instead of held in your head.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/halfhour-daily-planner.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("dda515eb-d54e-5a5e-a6da-048906238869"),
+            Name = "Half Hour Daily Planner — Spanish",
+            Description = "Un día dividido en bloques de media hora desde las 6:00 hasta las 21:30, con espacio arriba para las tres cosas que tienen que pasar, para que el plan del día quede escrito y no en la cabeza.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/halfhour-daily-planner-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("981d0ad1-5ca4-5752-9ba7-a9ca7b10a231"),
+            Name = "Half Hour Daily Planner — Green",
+            Description = "A day ruled into half-hour blocks from 6 AM to 9:30 PM, with room at the top for the three things that have to happen, so the plan for the day gets written down instead of held in your head.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/halfhour-daily-planner-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("4cf0be0a-63d1-5e92-b5e3-dcdeee63ddf7"),
+            Name = "Half Hour Daily Planner — Pink",
+            Description = "A day ruled into half-hour blocks from 6 AM to 9:30 PM, with room at the top for the three things that have to happen, so the plan for the day gets written down instead of held in your head.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/halfhour-daily-planner-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("f8798ef1-956f-53fb-9d99-1ca22798fe33"),
+            Name = "Half Hour Daily Planner — Plum",
+            Description = "A day ruled into half-hour blocks from 6 AM to 9:30 PM, with room at the top for the three things that have to happen, so the plan for the day gets written down instead of held in your head.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "guides",
+            Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
+            PdfBlobName = "guides/halfhour-daily-planner-plum.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("79199fac-9db1-592f-81c4-3925becefd1d"),
+            Name = "Simple Monthly Budget Template",
+            Description = "A one-page monthly budget sheet with planned and actual columns, bills, everyday spending and savings subtotals, and a bold left-to-spend total for beginner budgeters.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/simple-monthly-budget.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("ce1b0190-94f6-5d78-922e-36a011f6f802"),
+            Name = "Simple Monthly Budget Template — Spanish",
+            Description = "Una hoja de presupuesto mensual de una página con columnas de planeado y gastado, totales de cuentas, gastos diarios y ahorros, y un renglón destacado con el dinero que queda al final del mes.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/simple-monthly-budget-es.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("e445172f-781c-5f49-82e7-f8e6e5f68df3"),
+            Name = "Simple Monthly Budget Template — Green",
+            Description = "A one-page monthly budget sheet with planned and actual columns, bills, everyday spending and savings subtotals, and a bold left-to-spend total for beginner budgeters.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/simple-monthly-budget-green.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("3e62e5fe-0380-5489-b305-ec0fd7a3442a"),
+            Name = "Simple Monthly Budget Template — Pink",
+            Description = "A one-page monthly budget sheet with planned and actual columns, bills, everyday spending and savings subtotals, and a bold left-to-spend total for beginner budgeters.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/simple-monthly-budget-pink.pdf"
+        },
+        new()
+        {
+            Id = Guid.Parse("8c7b171b-1b3e-5c96-9146-f4be0b115c0c"),
+            Name = "Simple Monthly Budget Template — Plum",
+            Description = "A one-page monthly budget sheet with planned and actual columns, bills, everyday spending and savings subtotals, and a bold left-to-spend total for beginner budgeters.",
+            Price = 5.0m,
+            Fulfillment = FulfillmentType.DigitalPdf,
+            Category = "money-budgeting",
+            Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
+            PdfBlobName = "guides/simple-monthly-budget-plum.pdf"
+        },
     ];
 
     private readonly Dictionary<Guid, Product> _products;
