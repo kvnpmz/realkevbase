@@ -107,6 +107,10 @@ function toGuide(product) {
   }
 
   const thumbnail = typeof product.thumbnailUrl === 'string' ? product.thumbnailUrl : ''
+  const pageSizes = Array.isArray(product.pageSizes)
+    ? product.pageSizes.filter((size) => typeof size === 'string' && size.trim())
+    : []
+
   return {
     slug,
     id: typeof product.id === 'string' ? product.id : '',
@@ -114,8 +118,45 @@ function toGuide(product) {
     description: typeof product.description === 'string' ? product.description.trim() : '',
     price: product.price,
     category: typeof product.category === 'string' ? product.category : null,
+    pageSizes,
     image: thumbnail.startsWith('/') ? `${API_BASE}${thumbnail}` : thumbnail || null,
   }
+}
+
+/**
+ * Builds the static product block shown before the bundle has downloaded or run.
+ *
+ * The storefront cannot paint a product until React boots, which on a phone is most of two
+ * seconds of empty screen; a visitor arriving from a social link sees nothing for that long
+ * and leaves. This block puts the name, price, paper sizes and cover in the HTML itself, so
+ * something real is on screen within a few hundred milliseconds. `src/main.jsx` removes it
+ * the instant React is ready, so there is exactly one product on screen at a time.
+ *
+ * Everything is inline: the block has to render before any stylesheet or script loads, and
+ * inline styles cannot be lost to a later cascade.
+ *
+ * @param {{ name: string, price: number, image: string | null, pageSizes: string[] }} guide
+ *   Facts from the catalog for one guide.
+ * @returns {string} The seed markup, or an empty string when there is nothing to show.
+ */
+function guideSeed({ name, price, image, pageSizes }) {
+  if (!name) return ''
+  const sizes = pageSizes.length ? pageSizes.join(' + ') : 'PDF'
+  const cover = image
+    ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)} — printable PDF cover" ` +
+      'width="220" style="display:block;width:220px;max-width:52vw;height:auto;margin:0 auto 20px;' +
+      'border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,0.16)" />'
+    : ''
+
+  return `    <div data-product-seed style="background:#fbfaf7;color:#16181c;` +
+    'font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
+    '<div style="max-width:44rem;margin:0 auto;padding:32px 20px 8px;text-align:center">' +
+    `${cover}` +
+    '<p style="margin:0 0 6px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#6b6f76">' +
+    'SaveSimple by RealKevbase</p>' +
+    `<h1 style="margin:0 0 10px;font-size:clamp(1.4rem,5vw,2rem);line-height:1.15;letter-spacing:-0.02em">${escapeHtml(name)}</h1>` +
+    `<p style="margin:0;color:#5a6068">${escapeHtml(formatPrice(price))} · Instant PDF download · ${escapeHtml(sizes)}</p>` +
+    '</div></div>\n'
 }
 
 /** Loads the catalog from the API, or from a saved JSON file when `--catalog=` is given. */
@@ -310,6 +351,24 @@ ${sections}    </main>
 }
 
 /**
+ * Puts the static product block in front of the app root.
+ *
+ * It sits outside `#root` so React's first render cannot wipe it before there is a product
+ * to replace it with; `src/main.jsx` removes the block itself once the bundle is running.
+ * The home page and the index get no seed, because neither shows one product.
+ *
+ * @param {string} shell Page HTML to extend.
+ * @param {{ name: string, price: number, image: string | null, pageSizes: string[] }} guide
+ *   Facts for the product this page sells.
+ * @returns {string} The page with the seed inserted before `#root`.
+ */
+function withProductSeed(shell, guide) {
+  const seed = guideSeed(guide)
+  if (!seed) return shell
+  return shell.replace('<div id="root">', `${seed}    <div id="root">`)
+}
+
+/**
  * Appends a link to the index in plain HTML, outside the app root, so a crawler reaches
  * the catalogue from the home page and from every guide without running JavaScript.
  *
@@ -419,7 +478,7 @@ async function main() {
     [...guides.values()].map((guide) =>
       writeFile(
         join(DIST, 'guides', `${guide.slug}.html`),
-        withIndexFooter(withSeoBlock(shell, guideHead(guide))),
+        withIndexFooter(withProductSeed(withSeoBlock(shell, guideHead(guide)), guide)),
       ),
     ),
   )

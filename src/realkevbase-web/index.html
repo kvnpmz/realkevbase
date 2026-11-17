@@ -7,6 +7,17 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      The catalog is fetched with a plain cross-origin GET, so the connection to the API host
+      can be opened while the HTML is still parsing and the response can be downloaded while
+      the bundle is parsing. Without these two hints the request does not start until React
+      has booted, which is the largest avoidable delay before the first product paints.
+      `crossorigin` matches the fetch's default credentials mode, so React reuses this
+      response instead of issuing a second request. The host is the production API that
+      scripts/deploy.sh bakes into the bundle; a build pointed elsewhere simply ignores it.
+    -->
+    <link rel="preconnect" href="https://api.realkevbase.com" crossorigin />
+    <link rel="preload" as="fetch" href="https://api.realkevbase.com/api/products" crossorigin="anonymous" />
     <!-- seo:start -->
     <title>SaveSimple by RealKevbase — checklists, planners &amp; printables</title>
     <meta name="description" content="The SaveSimple collection from RealKevbase: streamlined checklists, planners, and printables with instant PDF delivery, plus small-run merch. One cart, checked out securely with Stripe." />
