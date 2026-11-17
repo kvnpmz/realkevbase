@@ -7,6 +7,7 @@ import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 import { ProductGrid } from './ProductGrid.jsx'
+import { Reviews } from './Reviews.jsx'
 import { SITE_TITLE } from '../data/site.js'
 
 /** Trust/reassurance points shown below the fold. */
@@ -84,6 +85,8 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
       </Box>
 
       <ProductGrid products={products} loading={loading} error={error} onRetry={onRetry} />
+
+      <Reviews />
 
       <Box
         component="section"

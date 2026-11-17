@@ -43,6 +43,16 @@ const SITE_URL = (process.env.SITE_URL || 'https://realkevbase.com').replace(/\/
 const API_BASE = (process.env.VITE_API_BASE_URL || 'https://api.realkevbase.com').replace(/\/+$/, '')
 const FALLBACK_IMAGE = `${SITE_URL}/apple-touch-icon.png`
 
+/**
+ * Where the shop states its refund terms. Google's MerchantReturnPolicy markup accepts a
+ * link in place of the full policy ("Option B" in its documentation), which is the only
+ * honest way to describe a digital download: nothing is posted back, so a return window
+ * with a return method would be fiction. Shipping is left out for the same reason — no
+ * shipping service exists for a PDF, and a zero-rate zero-day delivery would be a claim
+ * about a service that does not exist.
+ */
+const REFUNDS_URL = `${SITE_URL}/refunds`
+
 /** Slugs become file names and canonical paths, so only lowercase words and dashes pass. */
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
@@ -208,6 +218,10 @@ function guideHead({ slug, name, description, price, id, category, image }) {
       price: formatPrice(price),
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        merchantReturnLink: REFUNDS_URL,
+      },
     },
   }
 
