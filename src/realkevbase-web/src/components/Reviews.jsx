@@ -21,9 +21,6 @@ export function Reviews() {
             From our Etsy shop
           </Typography>
           <Typography variant="h2">What buyers said</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Quotes from buyers of the same PDFs, before this store opened.
-          </Typography>
         </Stack>
 
         <Grid container spacing={{ xs: 2, md: 3 }}>
