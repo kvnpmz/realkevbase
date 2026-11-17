@@ -28,6 +28,9 @@ NAME_FILLER = ("Printable", "Print", "PDF", "Instant Download", "Digital Downloa
 
 #: Variant words used to tell two editions of one listing apart on the storefront.
 VARIANT_WORDS = {
+    # `_es` is a translation, not a colour: without this the edition is named "Es" and
+    # then collides with its base, which the catalog resolves as "— Costs 2".
+    "es": "Spanish",
     "babyblue": "Baby Blue",
     "lightblue": "Light Blue",
     "blue": "Blue",
@@ -169,10 +172,13 @@ def read_listing(doc_dir: str) -> dict[str, str]:
 
         TITLE
         Pipe | separated | keywords
+        DESCRIPTION
+        One or two sentences about the PDF.
         TAGS
         case, study, tags
-        DESCRIPTION
-        One sentence about the PDF.
+
+    The headings are matched by name, so a file written in another order still parses;
+    every file in the repository is kept in the order above.
 
     Args:
         doc_dir: Path to ``zz_tp/documents/<listing>``.

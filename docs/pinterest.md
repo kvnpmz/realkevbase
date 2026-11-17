@@ -26,7 +26,8 @@ name is only the first phrase with the format words trimmed off — pinning the 
 would throw away most of the keywords the listing was written around.
 
 `read_listing` parses the three blocks by heading, so the 49 files ordered
-TITLE/TAGS/DESCRIPTION and the 46 ordered TITLE/DESCRIPTION/TAGS both read the same.
+all 131 files now use one order, TITLE/DESCRIPTION/TAGS, and the reader is
+headings-based, so an older file written the other way round still parses.
 Editions without their own copy (`emergency_gobag_pink` renders from `emergency_gobag`)
 inherit the parent's via `parent_slug`, and the 65 listings that predate `listing.txt` fall
 back to the name and catalog description. Format words ("A4 Letter PDF", "Instant
