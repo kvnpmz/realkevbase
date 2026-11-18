@@ -37,12 +37,12 @@ Usage:
 
 Requires Pillow. Create the repo-local environment once:
 
-    python3 -m venv .venv
-    .venv/bin/pip install -r scripts/requirements.txt
+    python3 -m venv venv
+    venv/bin/pip install -r scripts/requirements.txt
 
 Then run it with that interpreter:
 
-    .venv/bin/python scripts/build-thumbnails.py --check
+    venv/bin/python scripts/build-thumbnails.py --check
 
 The output file name must match what the API derives from the PDF blob name
 (``guides/bill-calendar-budget.pdf`` -> ``guides/images/bill-calendar-budget.webp``), so uploading
@@ -159,8 +159,8 @@ def main() -> int:
     except ImportError:
         print(
             "error: Pillow is required. Create the repo-local environment and install it:\n"
-            "  python3 -m venv .venv && .venv/bin/pip install -r scripts/requirements.txt\n"
-            "then run: .venv/bin/python scripts/build-thumbnails.py",
+            "  python3 -m venv venv && venv/bin/pip install -r scripts/requirements.txt\n"
+            "then run: venv/bin/python scripts/build-thumbnails.py",
             file=sys.stderr,
         )
         return 1

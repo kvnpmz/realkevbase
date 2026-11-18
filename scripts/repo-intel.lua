@@ -312,7 +312,7 @@ end
 
 local EXCLUDED_DIRS = {
   [".git"] = true, [".repo-intel"] = true, [".semantic-search"] = true,
-  [".venv"] = true, ["venv"] = true, ["node_modules"] = true,
+  ["venv"] = true, ["node_modules"] = true,
   ["dist"] = true, ["dist-ssr"] = true, ["bin"] = true, ["obj"] = true,
   ["zz_tp"] = true, [".vs"] = true, [".vscode"] = true, [".idea"] = true,
   ["coverage"] = true, ["__pycache__"] = true, [".pytest_cache"] = true,

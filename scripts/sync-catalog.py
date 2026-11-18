@@ -680,7 +680,7 @@ def publish_a4_editions(source: str, container: str = CONTAINER) -> bool:
 def publish_images(excluded=()) -> bool:
     """Publish covers and gallery renders, skipping the generator's probe folders."""
     script = os.path.join(REPO_ROOT, "scripts", "build-thumbnails.py")
-    interpreter = os.path.join(REPO_ROOT, ".venv", "bin", "python")
+    interpreter = os.path.join(REPO_ROOT, "venv", "bin", "python")
     if not os.path.exists(interpreter):
         interpreter = sys.executable
     command = [interpreter, script, "--upload"]

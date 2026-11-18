@@ -33,7 +33,7 @@ Usage:
     python3 scripts/add-listing.py kidney_foodlist --apply --no-upload
 
 After applying:
-    .venv/bin/python scripts/build-thumbnails.py --upload
+    venv/bin/python scripts/build-thumbnails.py --upload
     # paste the printed entry into InMemoryProductCatalog.cs
     ./scripts/deploy.sh --yes
 """
@@ -226,7 +226,7 @@ def main() -> int:
     print("            },")
     print("\nNext:")
     print("  1. paste the entry above and fill in the TODO fields")
-    print("  2. .venv/bin/python scripts/build-thumbnails.py --upload")
+    print("  2. venv/bin/python scripts/build-thumbnails.py --upload")
     print("  3. ./scripts/deploy.sh --yes")
     return 0
 

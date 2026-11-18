@@ -5,6 +5,6 @@
 #   venv/bin/pip install -r scripts/requirements.txt
 #   venv/bin/python scripts/build-thumbnails.py --check
 #
-# ``venv/`` and ``.venv/`` are both gitignored: environments embed absolute paths and
-# platform binaries and must be recreated per machine, never committed.
+# ``venv/`` is gitignored: environments embed absolute paths and platform binaries and
+# must be recreated per machine, never committed.
 Pillow>=13,<14
