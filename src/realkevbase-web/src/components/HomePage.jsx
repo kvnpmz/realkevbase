@@ -24,8 +24,8 @@ const VALUE_PROPS = [
   },
   {
     icon: LocalShippingOutlinedIcon,
-    title: 'Merch, made to last',
-    copy: 'Physical orders are printed and shipped within 2–4 business days, worldwide.',
+    title: 'Printed to order',
+    copy: 'Every piece is produced after you order it, then shipped. PDFs in the same order download immediately.',
   },
 ]
 
@@ -62,10 +62,10 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
             <Typography variant="overline" color="secondary.main">
               The SaveSimple collection
             </Typography>
-            <Typography variant="h1">Organization, made effortless.</Typography>
+            <Typography variant="h1">Printable checklists and planners, made effortless.</Typography>
             <Typography variant="h5" component="p" color="text.secondary" sx={{ maxWidth: 620 }}>
-              Streamlined checklists, planners, and printables that make staying organized easy and
-              effortless. Instant PDFs from RealKevbase — with small-run merch in the same cart.
+              One-page PDFs you download the moment you pay and print at home. Checklists,
+              planners and trackers for the things you keep meaning to get to.
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
               <Button size="large" variant="contained" href="#products" endIcon={<ArrowForwardRoundedIcon />}>

@@ -34,6 +34,28 @@ const PAGE_SIZE_MOBILE = 6
 const PAGE_SIZE_DESKTOP = 12
 
 /**
+ * Browse families named in the grid intro, derived from {@link CATEGORIES}.
+ *
+ * Derived rather than written out so a new family appears in the sentence the moment it is
+ * added, instead of leaving copy behind that quietly describes an older, smaller catalogue.
+ * `all` and `merch` are filters, not families, so they are left out.
+ *
+ * @type {string[]}
+ */
+const FAMILY_LABELS = CATEGORIES.filter(
+  (option) => option.value !== 'all' && option.value !== 'merch',
+).map((option) => option.label)
+
+/**
+ * Joins labels the way a sentence does: "A, B and C".
+ *
+ * @param {readonly string[]} labels Labels to join.
+ * @returns {string} The joined list.
+ */
+const joinLabels = (labels) =>
+  labels.length < 2 ? labels.join('') : `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}`
+
+/**
  * A single product card. Digital PDFs and physical merchandise share the layout but
  * differ in badge, artwork and delivery promise.
  *
@@ -292,9 +314,8 @@ export function ProductGrid({ products = [], loading = false, error = null, onRe
             </Typography>
             <Typography variant="h2">Find your next checklist.</Typography>
             <Typography variant="body1" color="text.secondary">
-              {pdfCount > 0 ? `${pdfCount} PDFs` : 'Printable PDFs'} across Moving Out, Healthy
-              Living, Money & Budgeting and Guides — $5 each, delivered the moment you pay. Add
-              merch to the same cart.
+              {pdfCount > 0 ? `${pdfCount} PDFs` : 'Printable PDFs'} across{' '}
+              {joinLabels(FAMILY_LABELS)}. Delivered the moment you pay.
             </Typography>
           </Stack>
 
