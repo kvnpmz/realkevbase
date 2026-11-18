@@ -1,27 +1,74 @@
 {
+  "baby_registrylist_lightblue": {
+    "name": "Ultimate Baby Registry List"
+  },
+  "bill_calendar_budget_green": {
+    "name": "Simple Bill Calendar Planner"
+  },
+  "bill_calendar_budget_pink": {
+    "name": "Complete Bill Calendar Planner"
+  },
+  "bill_calendar_budget_plum": {
+    "name": "Master Bill Calendar Planner"
+  },
   "budget_vs_actual": {
     "category": "money-budgeting",
     "accent": "amber"
   },
   "budget_vs_actual_green": {
     "category": "money-budgeting",
-    "accent": "green"
+    "accent": "green",
+    "name": "Simple Budget vs Actual"
   },
   "budget_vs_actual_serif": {
     "category": "money-budgeting",
-    "accent": "amber"
+    "accent": "amber",
+    "name": "Complete Budget vs Actual"
   },
   "carryon_packing": {
     "category": "guides",
     "accent": "purple"
   },
+  "cleaning_planner_pink": {
+    "name": "Simple Cleaning Planner"
+  },
+  "cortisol_foodlist_green": {
+    "name": "Complete Cortisol Food List"
+  },
+  "cortisol_foodlist_pink": {
+    "name": "Simple Cortisol Food List"
+  },
+  "cortisol_foodlist_plum": {
+    "name": "Everyday Cortisol Food List"
+  },
   "dialysis_food_fluid": {
     "category": "healthy-living",
     "accent": "green"
   },
+  "diverticulitis_foodchart_alternative": {
+    "name": "Simple Diverticulitis Food Chart"
+  },
+  "diverticulitis_foodlist_regal": {
+    "name": "Flare-Up Diverticulitis Food List"
+  },
+  "diverticulitis_meal_plan_green": {
+    "name": "Simple Diverticulitis Meal Plan"
+  },
+  "diverticulitis_meal_plan_pink": {
+    "name": "Complete Diverticulitis Meal Plan"
+  },
+  "diverticulitis_meal_plan_plum": {
+    "name": "Everyday Diverticulitis Meal Plan"
+  },
+  "dorm_list_pink": {
+    "name": "Essential College Dorm Checklist"
+  },
   "dorm_room_layout": {
     "category": "moving-out",
     "accent": "blue"
+  },
+  "emergency_foodlist_teal": {
+    "name": "Starter Emergency Food List"
   },
   "emergency_gobag": {
     "category": "guides",
@@ -29,27 +76,73 @@
   },
   "emergency_gobag_green": {
     "category": "guides",
-    "accent": "green"
+    "accent": "green",
+    "name": "Essential Emergency Go Bag"
   },
   "emergency_gobag_pink": {
     "category": "guides",
-    "accent": "pink"
+    "accent": "pink",
+    "name": "Complete Emergency Go Bag"
   },
   "emergency_gobag_plum": {
     "category": "guides",
-    "accent": "purple"
+    "accent": "purple",
+    "name": "Ultimate Emergency Go Bag"
   },
   "emergency_gobag_serif": {
     "category": "guides",
-    "accent": "slate"
+    "accent": "slate",
+    "name": "Starter Emergency Go Bag"
   },
   "emergency_stock_log": {
     "category": "guides",
     "accent": "slate"
   },
+  "fattyliver_foodlist_alternative": {
+    "name": "Simple Fatty Liver List"
+  },
+  "first_apartment_blue": {
+    "name": "First Apartment Master List"
+  },
+  "first_apartment_costs": {
+    "name": "First Apartment Setup Costs"
+  },
+  "first_apartment_costs_green": {
+    "name": "First Apartment Cost Breakdown"
+  },
+  "first_apartment_costs_pink": {
+    "name": "First Apartment Cost Worksheet"
+  },
+  "first_apartment_costs_plum": {
+    "name": "First Apartment Budget Estimate"
+  },
+  "first_apartment_green": {
+    "name": "First Apartment Complete List"
+  },
+  "first_apartment_pink": {
+    "name": "First Apartment Starter List"
+  },
+  "first_apartment_plum": {
+    "name": "First Apartment Ultimate List"
+  },
+  "first_apartment_purple": {
+    "name": "First Apartment Everyday List"
+  },
+  "folicacid_foodlist_blue": {
+    "name": "Simple Folic Acid List"
+  },
+  "folicacid_foodlist_pink": {
+    "name": "Complete Folic Acid List"
+  },
+  "glp1_checklist_green": {
+    "name": "Complete GLP-1 Food List"
+  },
   "gout_food_list": {
     "category": "healthy-living",
     "accent": "green"
+  },
+  "grocery_list_blue": {
+    "name": "Essential Grocery Checklist"
   },
   "grocery_mealplan": {
     "category": "healthy-living",
@@ -57,23 +150,66 @@
   },
   "grocery_mealplan_blue": {
     "category": "healthy-living",
-    "accent": "blue"
+    "accent": "blue",
+    "name": "Simple Weekly Meal Plan"
   },
   "grocery_mealplan_mustard": {
     "category": "healthy-living",
-    "accent": "amber"
+    "accent": "amber",
+    "name": "Complete Weekly Meal Plan"
   },
   "grocery_mealplan_pink": {
     "category": "healthy-living",
-    "accent": "pink"
+    "accent": "pink",
+    "name": "Weekly Meal Plan Essentials"
   },
   "grocery_mealplan_plum": {
     "category": "healthy-living",
-    "accent": "purple"
+    "accent": "purple",
+    "name": "Weekly Grocery Meal Plan"
   },
   "grocery_shopping_list": {
     "category": "guides",
     "accent": "green"
+  },
+  "halfhour_daily_planner_green": {
+    "name": "Simple Half Hour Planner"
+  },
+  "halfhour_daily_planner_pink": {
+    "name": "Complete Half Hour Planner"
+  },
+  "halfhour_daily_planner_plum": {
+    "name": "Everyday Half Hour Planner"
+  },
+  "holiday_kidney_table_green": {
+    "name": "Complete Kidney Holiday Menu"
+  },
+  "holiday_kidney_table_pink": {
+    "name": "Simple Kidney Holiday Menu"
+  },
+  "holiday_kidney_table_plum": {
+    "name": "Everyday Kidney Holiday Menu"
+  },
+  "household_checklist_blue": {
+    "name": "Complete Household Checklist"
+  },
+  "household_checklist_pink": {
+    "name": "Simple Household Essentials"
+  },
+  "investment_goals_pink": {
+    "name": "Complete Investment Goals Template"
+  },
+  "kidney_checklist_bullet": {
+    "name": "Quick-Scan Kidney Food List"
+  },
+  "kidney_checklist_tabbed": {
+    "name": "Sectioned Kidney Food List"
+  },
+  "kidney_checklist_tabbed_dark": {
+    "name": "Sectioned Kidney Grocery List"
+  },
+  "kidney_foodlist_card": {
+    "name": "Complete Kidney Food List"
   },
   "kidney_grocery_list": {
     "category": "healthy-living",
@@ -93,19 +229,66 @@
   },
   "kidney_lab_tracker_pink": {
     "category": "healthy-living",
-    "accent": "pink"
+    "accent": "pink",
+    "name": "Simple Kidney Lab Tracker"
   },
   "kidney_lab_tracker_serif": {
     "category": "healthy-living",
-    "accent": "green"
+    "accent": "green",
+    "name": "Complete Kidney Lab Tracker"
+  },
+  "lowcarb_foodlist_alternative": {
+    "name": "Simple Low Carb List"
+  },
+  "lowpotassium_foodlist_decorative": {
+    "name": "Simple Low Potassium List"
   },
   "lowpotassium_swap_chart": {
     "category": "healthy-living",
     "accent": "green"
   },
+  "meal_plan_plum": {
+    "name": "Master Weekly Meal Plan"
+  },
+  "monthly_template_green": {
+    "name": "Complete Monthly Budget Template"
+  },
+  "monthly_template_pink": {
+    "name": "Master Monthly Budget Template"
+  },
+  "move_out_deposit_green": {
+    "name": "Simple Move Out Checklist"
+  },
+  "move_out_deposit_pink": {
+    "name": "Complete Move Out Checklist"
+  },
+  "move_out_deposit_plum": {
+    "name": "Move Out Essentials Checklist"
+  },
   "movein_budget": {
     "category": "money-budgeting",
     "accent": "amber"
+  },
+  "no_power_meal_plan_green": {
+    "name": "Two-Week Emergency Meal Plan"
+  },
+  "no_power_meal_plan_pink": {
+    "name": "Emergency Meal Plan Essentials"
+  },
+  "no_power_meal_plan_plum": {
+    "name": "Complete Emergency Meal Plan"
+  },
+  "pantry_meal_rotation_green": {
+    "name": "Master Emergency Food List"
+  },
+  "pantry_meal_rotation_pink": {
+    "name": "Complete Emergency Food List"
+  },
+  "pantry_meal_rotation_plum": {
+    "name": "Emergency Food List Essentials"
+  },
+  "paycheck_budget_blue": {
+    "name": "Simple Paycheck Budget"
   },
   "power_outage_foodlist": {
     "category": "guides",
@@ -113,19 +296,23 @@
   },
   "power_outage_foodlist_blue": {
     "category": "guides",
-    "accent": "blue"
+    "accent": "blue",
+    "name": "Essential Power Outage List"
   },
   "power_outage_foodlist_green": {
     "category": "guides",
-    "accent": "green"
+    "accent": "green",
+    "name": "Complete Power Outage List"
   },
   "power_outage_foodlist_lightblue": {
     "category": "guides",
-    "accent": "blue"
+    "accent": "blue",
+    "name": "Simple Power Outage List"
   },
   "power_outage_foodlist_pink": {
     "category": "guides",
-    "accent": "pink"
+    "accent": "pink",
+    "name": "Everyday Power Outage List"
   },
   "renal_eating_out": {
     "category": "healthy-living",
@@ -133,23 +320,45 @@
   },
   "renal_eating_out_babyblue": {
     "category": "healthy-living",
-    "accent": "blue"
+    "accent": "blue",
+    "name": "Complete Renal Restaurant Guide"
   },
   "renal_eating_out_blue": {
     "category": "healthy-living",
-    "accent": "blue"
+    "accent": "blue",
+    "name": "Simple Renal Restaurant Guide"
   },
   "renal_eating_out_pink": {
     "category": "healthy-living",
-    "accent": "pink"
+    "accent": "pink",
+    "name": "Everyday Renal Restaurant Guide"
   },
   "renal_eating_out_serif": {
     "category": "healthy-living",
-    "accent": "green"
+    "accent": "green",
+    "name": "Classic Renal Restaurant Guide"
   },
   "renal_meal_plan": {
     "category": "healthy-living",
     "accent": "green"
+  },
+  "simple_monthly_budget_green": {
+    "name": "Simple Monthly Budget Planner"
+  },
+  "simple_monthly_budget_pink": {
+    "name": "Simple Monthly Budget Sheet"
+  },
+  "simple_monthly_budget_plum": {
+    "name": "Simple Monthly Budget Worksheet"
+  },
+  "sinking_funds_tracker_green": {
+    "name": "Simple Sinking Funds Tracker"
+  },
+  "sinking_funds_tracker_pink": {
+    "name": "Complete Sinking Funds Tracker"
+  },
+  "sinking_funds_tracker_plum": {
+    "name": "Master Sinking Funds Tracker"
   },
   "split_budget": {
     "category": "money-budgeting",
@@ -157,27 +366,44 @@
   },
   "split_budget_balanced": {
     "category": "money-budgeting",
-    "accent": "amber"
+    "accent": "amber",
+    "name": "All-In-One 50 30 20 Budget"
   },
   "split_budget_balanced_blue": {
     "category": "money-budgeting",
-    "accent": "blue"
+    "accent": "blue",
+    "name": "Complete 50 30 20 Budget"
   },
   "split_budget_balanced_pink": {
     "category": "money-budgeting",
-    "accent": "pink"
+    "accent": "pink",
+    "name": "Starter 50 30 20 Budget"
   },
   "split_budget_balanced_serif": {
     "category": "money-budgeting",
-    "accent": "amber"
+    "accent": "amber",
+    "name": "Classic 50 30 20 Budget"
   },
   "split_budget_minimal": {
     "category": "money-budgeting",
-    "accent": "slate"
+    "accent": "slate",
+    "name": "Minimal 50 30 20 Budget"
+  },
+  "travel_list_blue": {
+    "name": "Complete Travel Packing List"
   },
   "warehouse_bulk_list": {
     "category": "guides",
     "accent": "green"
+  },
+  "warehouse_bulk_list_green": {
+    "name": "Simple Warehouse Shopping List"
+  },
+  "warehouse_bulk_list_pink": {
+    "name": "Complete Warehouse Shopping List"
+  },
+  "warehouse_bulk_list_plum": {
+    "name": "Master Warehouse Shopping List"
   },
   "yearly_budget": {
     "category": "money-budgeting",
