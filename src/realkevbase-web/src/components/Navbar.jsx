@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom'
 
 import { useCartContext } from '../cart/cartContext.js'
 import { formatMoney } from '../cart/formatMoney.js'
+import { BRAND } from '../data/site.js'
 
 /** Primary navigation targets, absolute so they also work from a guide page. */
 const NAV_LINKS = [
@@ -75,7 +76,7 @@ export function Navbar() {
                 width: 34,
                 height: 34,
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #2F6BFF 0%, #1B44C8 100%)',
+                background: BRAND.gradient,
                 color: '#fff',
                 display: 'grid',
                 placeItems: 'center',
@@ -84,14 +85,14 @@ export function Navbar() {
                 letterSpacing: '-0.02em',
               }}
             >
-              RK
+              {BRAND.initials}
             </Box>
             <Typography
               variant="h6"
               component="span"
               sx={{ fontWeight: 800, fontSize: { xs: '1.05rem', sm: '1.25rem' }, whiteSpace: 'nowrap' }}
             >
-              RealKevbase
+              {BRAND.wordmark}
             </Typography>
           </Stack>
 

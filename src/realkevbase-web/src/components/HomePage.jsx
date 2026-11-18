@@ -8,6 +8,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 import { ProductGrid } from './ProductGrid.jsx'
 import { Reviews } from './Reviews.jsx'
+import { HOME_HERO } from '../data/home.js'
 import { SITE_TITLE } from '../data/site.js'
 
 /** Trust/reassurance points shown below the fold. */
@@ -60,22 +61,28 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
         <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 5 } }}>
           <Stack spacing={3} sx={{ maxWidth: 720 }}>
             <Typography variant="overline" color="secondary.main">
-              The SaveSimple collection
+              {HOME_HERO.overline}
             </Typography>
-            <Typography variant="h1">Printable checklists and planners, made effortless.</Typography>
+            <Typography variant="h1">{HOME_HERO.title}</Typography>
             <Typography variant="h5" component="p" color="text.secondary" sx={{ maxWidth: 620 }}>
-              One-page PDFs you download the moment you pay and print at home. Checklists,
-              planners and trackers for the things you keep meaning to get to.
+              {HOME_HERO.subtitle}
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-              <Button size="large" variant="contained" href="#products" endIcon={<ArrowForwardRoundedIcon />}>
-                Shop the collection
+              <Button
+                size="large"
+                variant="contained"
+                href={HOME_HERO.cta.href}
+                endIcon={<ArrowForwardRoundedIcon />}
+              >
+                {HOME_HERO.cta.label}
               </Button>
             </Stack>
             <Stack direction="row" spacing={2.5} sx={{ pt: 1, color: 'text.secondary', flexWrap: 'wrap' }}>
-              <Typography variant="caption">24-hour download links</Typography>
-              <Typography variant="caption">Stripe checkout</Typography>
-              <Typography variant="caption">Ships worldwide</Typography>
+              {HOME_HERO.captions.map((caption) => (
+                <Typography key={caption} variant="caption">
+                  {caption}
+                </Typography>
+              ))}
             </Stack>
           </Stack>
         </Container>

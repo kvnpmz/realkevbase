@@ -32,7 +32,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { SITE_NAME } from '../src/data/site.js'
+import { SITE_NAME, BRAND } from '../src/data/site.js'
+import { HOME_HERO } from '../src/data/home.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DIST = resolve(HERE, '..', 'dist')
@@ -167,6 +168,96 @@ function guideSeed({ name, price, image, pageSizes }) {
     `<h1 style="margin:0 0 10px;font-size:clamp(1.4rem,5vw,2rem);line-height:1.15;letter-spacing:-0.02em">${escapeHtml(name)}</h1>` +
     `<p style="margin:0;color:#5a6068">${escapeHtml(formatPrice(price))} · Instant PDF download · ${escapeHtml(sizes)}</p>` +
     '</div></div>\n'
+}
+
+/**
+ * Builds the static hero that the served HTML shows at `/` before the bundle has run.
+ *
+ * The home page was the one route with nothing in its body: a crawler that does not
+ * execute JavaScript found `<div id="root"></div>` — no <h1>, no copy, nothing to rank —
+ * even though the head carried the right title and canonical. The strings come from
+ * `src/data/home.js`, the same module `HomePage` renders from, so the seeded hero and the
+ * React hero cannot drift; `src/main.jsx` drops the block the moment the bundle boots, so a
+ * reader never sees the hero twice. Everything is inline because it has to paint before
+ * any stylesheet, script or web font exists.
+ *
+ * @returns {string} The seeded hero markup.
+ */
+function homeSeed() {
+  const captions = HOME_HERO.captions
+    .map((caption) => `<span>${escapeHtml(caption)}</span>`)
+    .join('')
+
+  const logo =
+    '<span aria-hidden="true" style="width:34px;height:34px;border-radius:10px;display:grid;' +
+    'place-items:center;color:#FFFFFF;font-size:13px;font-weight:800;' +
+    `letter-spacing:-0.02em;background:${BRAND.gradient}">${escapeHtml(BRAND.initials)}</span>`
+
+  return (
+    '      <div data-home-seed style="background:#FBFAF7;color:#14161A;' +
+    'font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif">' +
+    // The bar's height and the hero's padding are the header's and the hero's real metrics,
+    // so the page does not jump when React mounts the real ones. They need a <style>
+    // element because the header is 65px tall on a phone and 77px from `md` up, and an
+    // inline attribute cannot hold a media query.
+    '<style>' +
+    // MuiCssBaseline zeroes the body margin; without it the seeded page sits 8px in from
+    // each edge and the headline breaks a line early, which is a visible jump on boot.
+    'body{margin:0}' +
+    '[data-home-seed] .rk-bar{display:flex;align-items:center;height:65px;' +
+    'border-bottom:1px solid #E7E4DC;background:#FBFAF7}' +
+    '[data-home-seed] .rk-bar>div{display:flex;align-items:center;gap:10px;width:100%;' +
+    'box-sizing:border-box;max-width:1200px;margin:0 auto;padding:0 16px;font-weight:800;' +
+    'font-size:1.05rem}' +
+    '[data-home-seed] .rk-hero{background:' +
+    'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.12), transparent 62%)}' +
+    // MUI's Container is 1200px wide *including* its 24px padding, and pads 16px on a
+    // phone; the seed copies that box so the text column lands on the same x after boot.
+    '[data-home-seed] .rk-wrap{box-sizing:border-box;max-width:1200px;margin:0 auto;' +
+    'padding:64px 16px 32px}' +
+    '[data-home-seed] .rk-lede{font-size:1.5rem}' +
+    '@media (min-width:600px){[data-home-seed] .rk-bar>div{padding:0 24px}' +
+    '[data-home-seed] .rk-wrap{padding:64px 24px 32px}}' +
+    '@media (min-width:900px){[data-home-seed] .rk-bar{height:77px}' +
+    '[data-home-seed] .rk-bar>div{font-size:1.25rem}' +
+    '[data-home-seed] .rk-wrap{padding:96px 24px 40px}}' +
+    '</style>' +
+    `<div class="rk-bar"><div>${logo}<span>${escapeHtml(BRAND.wordmark)}</span></div></div>` +
+    '<div class="rk-hero"><div class="rk-wrap"><div style="max-width:720px">' +
+    // MUI's overline is 0.75rem on a 2.66 line box, and the hero Stack leaves 24px after
+    // it; both numbers are copied so the headline starts on the same pixel after boot.
+    '<p style="margin:0 0 24px;font-size:0.75rem;line-height:2.66;font-weight:700;' +
+    'letter-spacing:0.12em;text-transform:uppercase;color:#2F6BFF">' +
+    `${escapeHtml(HOME_HERO.overline)}</p>` +
+    '<h1 style="margin:0;font-size:clamp(2.6rem,6vw,4.25rem);font-weight:800;line-height:1.03;' +
+    `letter-spacing:-0.035em">${escapeHtml(HOME_HERO.title)}</h1>` +
+    '<p class="rk-lede" style="margin:24px 0 0;max-width:620px;' +
+    `color:#5A6068">${escapeHtml(HOME_HERO.subtitle)}</p>` +
+    `<p style="margin:24px 0 0"><a href="${escapeHtml(HOME_HERO.cta.href)}" ` +
+    'style="display:inline-block;padding:15px 30px;border-radius:14px;background:#14161A;' +
+    `color:#FFFFFF;font-weight:700;text-decoration:none">${escapeHtml(HOME_HERO.cta.label)}</a></p>` +
+    '<p style="margin:32px 0 0;display:flex;flex-wrap:wrap;gap:20px;font-size:12px;color:#5A6068">' +
+    `${captions}</p>` +
+    '</div></div></div></div>\n'
+  )
+}
+
+/**
+ * Puts the home hero inside `#root`.
+ *
+ * Inside rather than in front of it, unlike the product seed: this block *is* the page, so
+ * it stays readable if the bundle fails to load, and React takes the container over on the
+ * first render. Guide pages are built from the unseeded shell, so only `/` carries it.
+ *
+ * @param {string} shell The home page HTML.
+ * @returns {string} The page with the hero seeded into `#root`.
+ */
+function withHomeSeed(shell) {
+  const emptyRoot = '<div id="root"></div>'
+  if (!shell.includes(emptyRoot)) {
+    throw new Error('dist/index.html has no empty <div id="root"></div> to seed the home hero into')
+  }
+  return shell.replace(emptyRoot, `<div id="root">\n${homeSeed()}    </div>`)
 }
 
 /** Loads the catalog from the API, or from a saved JSON file when `--catalog=` is given. */
@@ -485,7 +576,7 @@ async function main() {
     '<meta name="twitter:card" content="summary_large_image" />',
   ])
 
-  await writeFile(SHELL_PATH, withIndexFooter(homeShell))
+  await writeFile(SHELL_PATH, withIndexFooter(withHomeSeed(homeShell)))
   await writeFile(join(DIST, INDEX_PATH), buildIndexPage(guides))
   await mkdir(join(DIST, 'guides'), { recursive: true })
   await Promise.all(
