@@ -106,10 +106,11 @@ function withSeoBlock(shell, lines) {
  *
  * @param {Record<string, unknown>} product Catalog entry from `GET /api/products`.
  * @returns {{ slug: string, name: string, description: string, price: number, id: string,
- *   image: string | null } | null} Guide facts, or null for merch.
+ *   cover: string | null, image: string | null } | null} Guide facts, or null for merch.
  */
 function toGuide(product) {
   if (!product || product.fulfillment !== 'DigitalPdf' || !product.listingId) return null
+
   if (typeof product.name !== 'string' || !product.name.trim()) return null
 
   const slug = String(product.listingId).replaceAll('_', '-').toLowerCase()
@@ -134,6 +135,15 @@ function toGuide(product) {
     price: product.price,
     category: typeof product.category === 'string' ? product.category : null,
     pageSizes,
+    // The artwork route as the *storefront* serves it: root-relative, same origin, proxied
+    // and edge-cached by the Pages Function. The seeded cover, its preload and the app's
+    // gallery all have to name the same URL — when the seed asked the API host for the
+    // cover while the app asked its own origin, the browser downloaded the same 16KB image
+    // twice, once over a second TLS handshake, and the second copy had to finish before
+    // the guide could paint its Largest Contentful Paint.
+    cover: thumbnail || null,
+    // Absolute, because og:image and the Product JSON-LD are read by crawlers that have no
+    // idea what "this site" is.
     image: thumbnail.startsWith('/') ? `${API_BASE}${thumbnail}` : thumbnail || null,
   }
 }
@@ -150,11 +160,12 @@ function toGuide(product) {
  * Everything is inline: the block has to render before any stylesheet or script loads, and
  * inline styles cannot be lost to a later cascade.
  *
- * @param {{ name: string, price: number, image: string | null, pageSizes: string[] }} guide
- *   Facts from the catalog for one guide.
+ * @param {{ name: string, price: number, cover: string | null, pageSizes: string[] }} guide
+ *   Facts from the catalog for one guide. `cover` is the same-origin artwork route the app
+ *   asks for, so the browser holds one copy of the image instead of two.
  * @returns {string} The seed markup, or an empty string when there is nothing to show.
  */
-function guideSeed({ name, price, image, pageSizes }) {
+function guideSeed({ name, price, cover, pageSizes }) {
   if (!name) return ''
   const sizes = pageSizes.length ? pageSizes.join(' + ') : 'PDF'
   // Every thumbnail is a 500x647 webp, so the seed declares that ratio up front: without a
@@ -167,8 +178,8 @@ function guideSeed({ name, price, image, pageSizes }) {
   // later, larger paint take LCP away from the cover, which is already on screen at ~1.5s;
   // at the width the real hero uses, the seeded cover outranks it and the metric follows
   // the paint a shopper actually sees first.
-  const cover = image
-    ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)} — printable PDF cover" ` +
+  const coverMarkup = cover
+    ? `<img src="${escapeHtml(cover)}" alt="${escapeHtml(name)} — printable PDF cover" ` +
       'width="400" height="518" fetchpriority="high" decoding="async" ' +
       'style="display:block;width:100%;max-width:400px;height:auto;aspect-ratio:500/647;' +
       'margin:0 auto 20px;border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,0.16)" />'
@@ -177,7 +188,7 @@ function guideSeed({ name, price, image, pageSizes }) {
   return `    <div data-product-seed style="min-height:100vh;box-sizing:border-box;background:#fbfaf7;color:#16181c;` +
     'font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
     '<div style="max-width:44rem;margin:0 auto;padding:32px 20px 8px;text-align:center">' +
-    `${cover}` +
+    `${coverMarkup}` +
     '<p style="margin:0 0 6px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#6b6f76">' +
     'SaveSimple by RealKevbase</p>' +
     `<h1 style="margin:0 0 10px;font-size:clamp(1.4rem,5vw,2rem);line-height:1.15;letter-spacing:-0.02em">${escapeHtml(name)}</h1>` +
@@ -301,7 +312,7 @@ async function loadCatalog(catalogFile) {
 }
 
 /** Builds the <head> contents for one guide page. */
-function guideHead({ slug, name, description, price, id, category, image }) {
+function guideHead({ slug, name, description, price, id, category, cover, image }) {
   const url = `${SITE_URL}/guides/${slug}`
   const title = `${name} — ${SITE_NAME}`
   const summary =
@@ -345,7 +356,11 @@ function guideHead({ slug, name, description, price, id, category, image }) {
     `<meta property="og:image:alt" content="${escapeHtml(`${name}, first page preview`)}" />`,
     // Pinterest reads these to turn a pin into a Product Pin (live price under the image);
     // og:type=product alone is not enough for the Rich Pin validator.
-    image ? `<link rel="preload" as="image" href="${escapeHtml(image)}" fetchpriority="high" />` : '',
+    //
+    // The preload names the root-relative route, not the API host: it has to be the exact
+    // URL the app puts in its gallery, or the browser fetches the cover a second time and
+    // the Largest Contentful Paint waits for that copy instead of painting from cache.
+    cover ? `<link rel="preload" as="image" href="${escapeHtml(cover)}" fetchpriority="high" />` : '',
     `<meta property="product:price:amount" content="${formatPrice(price)}" />`,
     '<meta property="product:price:currency" content="USD" />',
     '<meta name="twitter:card" content="summary_large_image" />',

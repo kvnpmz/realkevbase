@@ -110,16 +110,18 @@ function GuideDetail({ product }) {
   }
 
   // Nothing plays on its own. The clip is 546 KB — the single largest transfer on the page,
-  // and the reason a 16 KB poster took three seconds to arrive on a throttled phone — so it
-  // is not attached to the element until the reader presses play, which keeps it off the
-  // critical path entirely. The observer below only ever pauses: a clip whose owner has
-  // scrolled away should stop costing battery, but scrolling back must not restart it.
+  // and the reason a 16 KB poster took three seconds to arrive on a throttled phone — so no
+  // <video> element exists until the reader presses play. Until then the panel holds a
+  // plain <img> of the same poster, which is the element the prerendered HTML already
+  // downloaded and which therefore paints out of the HTTP cache the moment React commits
+  // its first frame. The observer below only ever pauses: a clip whose owner has scrolled
+  // away should stop costing battery, but scrolling back must not restart it.
   //
-  // Reduced motion needs no branch any more: a visitor who asked for it simply never
-  // presses play, and everyone else opts in by choice.
+  // Reduced motion needs no branch: a visitor who asked for it simply never presses play,
+  // and everyone else opts in by choice.
   useEffect(() => {
     const node = videoRef.current
-    if (!node || !showVideo) return undefined
+    if (!node || !showVideo || !videoArmed) return undefined
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -129,15 +131,16 @@ function GuideDetail({ product }) {
     )
     observer.observe(node)
     return () => observer.disconnect()
-  }, [showVideo])
+  }, [showVideo, videoArmed])
 
   const markFailed = (slot) => {
     setFailedSlots((previous) => new Set(previous).add(slot))
   }
 
-  // The first press is what gives the element a source — React assigns `src`, the element
-  // is muted and inline, and `autoPlay` starts it as the bytes arrive. Later presses are an
-  // ordinary play/pause on a clip that is already downloaded.
+  // The first press mounts the clip — the element only exists once somebody asks for it, so
+  // React assigns `src` as it creates it, the element is muted and inline, and `autoPlay`
+  // starts it as the bytes arrive. Later presses are an ordinary play/pause on a clip that
+  // is already downloaded.
   const toggleVideo = () => {
     const node = videoRef.current
     if (!node) return
@@ -209,17 +212,16 @@ function GuideDetail({ product }) {
               background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
             }}
           >
-            {showVideo ? (
+            {showVideo && videoArmed ? (
               <Box
                 component="video"
                 ref={videoRef}
-                src={videoArmed ? product.videoUrl : undefined}
+                src={product.videoUrl}
                 poster={slots[0]}
                 muted
                 loop
                 playsInline
-                autoPlay={videoArmed}
-                preload="none"
+                autoPlay
                 aria-label={`${product.name}, silent five second preview`}
                 onError={() => setVideoFailed(true)}
                 onPlay={() => setVideoPlaying(true)}
