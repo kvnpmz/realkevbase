@@ -188,9 +188,15 @@ export function normalizeProducts(rawProducts, baseUrl) {
       const fulfillment = record.fulfillment === 'PhysicalMerch' ? 'PhysicalMerch' : 'DigitalPdf'
       const accent = /** @type {Record<string, unknown>} */ (record.accent ?? {})
       const listingId = typeof record.listingId === 'string' ? record.listingId : null
+      // Artwork is resolved against the storefront's own origin, not the API's: the Pages
+      // Function at /api/* proxies these reads and caches them at the edge, which costs a
+      // round trip instead of the API's ~1.3s before the first byte. The cover is the
+      // Largest Contentful Paint element on a guide page, so that difference is the
+      // difference between a green and an amber score.
+      const artworkBase = ''
       const thumbnailUrl =
         typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
-          ? joinUrl(baseUrl, record.thumbnailUrl)
+          ? joinUrl(artworkBase, record.thumbnailUrl)
           : null
       // The API returns a relative route, not a storage URL, so the browser is redirected
       // to the clip rather than handed a blob name or a signature.
@@ -216,7 +222,7 @@ export function normalizeProducts(rawProducts, baseUrl) {
           ? availableSlots.map((slot) =>
               slot === 0 && thumbnailUrl
                 ? thumbnailUrl
-                : joinUrl(baseUrl, `/api/products/${id}/images/${slot}`),
+                : joinUrl(artworkBase, `/api/products/${id}/images/${slot}`),
             )
           : []
 
