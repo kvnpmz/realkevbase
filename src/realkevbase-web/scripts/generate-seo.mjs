@@ -153,13 +153,17 @@ function toGuide(product) {
 function guideSeed({ name, price, image, pageSizes }) {
   if (!name) return ''
   const sizes = pageSizes.length ? pageSizes.join(' + ') : 'PDF'
+  // Every thumbnail is a 500x647 webp, so the seed declares that ratio up front: without a
+  // reserved box the cover's arrival pushes the name, price and footer down the page, which
+  // is pure layout shift on the screen a shopper lands on from a search result.
   const cover = image
     ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)} — printable PDF cover" ` +
-      'width="220" style="display:block;width:220px;max-width:52vw;height:auto;margin:0 auto 20px;' +
-      'border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,0.16)" />'
+      'width="220" height="285" fetchpriority="high" decoding="async" ' +
+      'style="display:block;width:220px;max-width:52vw;height:auto;aspect-ratio:500/647;' +
+      'margin:0 auto 20px;border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,0.16)" />'
     : ''
 
-  return `    <div data-product-seed style="background:#fbfaf7;color:#16181c;` +
+  return `    <div data-product-seed style="min-height:100vh;box-sizing:border-box;background:#fbfaf7;color:#16181c;` +
     'font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
     '<div style="max-width:44rem;margin:0 auto;padding:32px 20px 8px;text-align:center">' +
     `${cover}` +
@@ -330,6 +334,7 @@ function guideHead({ slug, name, description, price, id, category, image }) {
     `<meta property="og:image:alt" content="${escapeHtml(`${name}, first page preview`)}" />`,
     // Pinterest reads these to turn a pin into a Product Pin (live price under the image);
     // og:type=product alone is not enough for the Rich Pin validator.
+    image ? `<link rel="preload" as="image" href="${escapeHtml(image)}" fetchpriority="high" />` : '',
     `<meta property="product:price:amount" content="${formatPrice(price)}" />`,
     '<meta property="product:price:currency" content="USD" />',
     '<meta name="twitter:card" content="summary_large_image" />',
@@ -489,7 +494,7 @@ function withIndexFooter(shell) {
     'border-top:1px solid #e8e3d9;background:#fbf9f5">' +
     `<a href="${INDEX_URL}" style="color:#16181c;text-decoration:none;` +
     'border-bottom:1px solid #cfc9bd">Browse all printable guides</a>' +
-    '<p style="margin:12px 0 0;font-size:13px;color:#8a8e94">' +
+    '<p style="margin:12px 0 0;font-size:13px;color:#5A6068">' +
     LEGAL_PAGES.map(
       ([path, label]) => `<a href="${path}" style="color:#6b6f76;text-decoration:none">${label}</a>`,
     ).join(' · ') +
