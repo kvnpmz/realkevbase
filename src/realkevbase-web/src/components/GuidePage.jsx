@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Link, useParams } from 'react-router-dom'
 
-import { Box, Button, Chip, Container, Divider, Grid, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Container, Divider, Grid, IconButton, Stack, Typography } from '@mui/material'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
+import PauseRoundedIcon from '@mui/icons-material/PauseRounded'
+import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded'
 
 import { trackEvent } from '../analytics/ga.js'
 import { useCartContext } from '../cart/cartContext.js'
@@ -70,6 +72,7 @@ function GuideDetail({ product }) {
   const [failedSlots, setFailedSlots] = useState(() => new Set())
   const [videoFailed, setVideoFailed] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
+  const [videoPlaying, setVideoPlaying] = useState(false)
   const addedTimer = useRef(null)
   const videoRef = useRef(null)
 
@@ -101,10 +104,19 @@ function GuideDetail({ product }) {
 
   // Start the clip only once it is on screen, and never for a visitor who asked for reduced
   // motion: they keep the poster frame, which is the artwork slot 0 would show anyway.
+  // The play button below is what makes the clip reachable in that case, and what satisfies
+  // the pause requirement for auto-moving content once it is looping.
   useEffect(() => {
     const node = videoRef.current
     if (!node || !showVideo) return undefined
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    // Belt and braces: the autoplay policy reads this property, and React assigns it rather
+    // than writing the attribute, so set it on the node before anything tries to play.
+    node.muted = true
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return undefined
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -122,6 +134,22 @@ function GuideDetail({ product }) {
 
   const markFailed = (slot) => {
     setFailedSlots((previous) => new Set(previous).add(slot))
+  }
+
+  // One control for two jobs: it starts the clip for a visitor whose reduced-motion setting
+  // stopped it autoplaying, and it is the pause an auto-looping clip needs for everyone else.
+  // The button's own state comes from the element's play/pause events, so a failed autoplay
+  // attempt leaves it showing "play" without any extra bookkeeping here.
+  const toggleVideo = () => {
+    const node = videoRef.current
+    if (!node) return
+
+    if (node.paused) {
+      node.muted = true
+      node.play().catch(() => {})
+    } else {
+      node.pause()
+    }
   }
 
   useEffect(() => {
@@ -190,6 +218,8 @@ function GuideDetail({ product }) {
                 preload="none"
                 aria-label={`${product.name}, silent five second preview`}
                 onError={() => setVideoFailed(true)}
+                onPlay={() => setVideoPlaying(true)}
+                onPause={() => setVideoPlaying(false)}
                 sx={mediaSx}
               />
             ) : currentUrl ? (
@@ -217,6 +247,30 @@ function GuideDetail({ product }) {
               >
                 <MenuBookRoundedIcon sx={{ fontSize: 64 }} />
               </Box>
+            )}
+
+            {showVideo && (
+              <IconButton
+                type="button"
+                onClick={toggleVideo}
+                aria-label={videoPlaying ? 'Pause the preview' : 'Play the preview'}
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  right: { xs: 10, md: 16 },
+                  bottom: { xs: 10, md: 16 },
+                  bgcolor: 'rgba(20, 22, 26, 0.55)',
+                  color: '#fff',
+                  backdropFilter: 'blur(4px)',
+                  '&:hover': { bgcolor: 'rgba(20, 22, 26, 0.78)' },
+                }}
+              >
+                {videoPlaying ? (
+                  <PauseRoundedIcon fontSize="small" />
+                ) : (
+                  <PlayArrowRoundedIcon fontSize="small" />
+                )}
+              </IconButton>
             )}
           </Box>
 
