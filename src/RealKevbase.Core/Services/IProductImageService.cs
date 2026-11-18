@@ -72,6 +72,23 @@ public interface IProductImageService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Signs the URL of a digital product's gallery clip.
+    /// </summary>
+    /// <param name="product">Product whose clip should be located.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// An absolute URL the browser fetches straight from storage, or <see langword="null"/> when
+    /// the product has no clip, none was published, or storage cannot sign.
+    /// </returns>
+    /// <remarks>
+    /// The catalog never carries this URL. Putting a storage host and a signature in a payload
+    /// the browser can read is exactly what this API refuses to do elsewhere, so the response
+    /// carries a relative route and the request for it is answered with a redirect.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    Task<string?> GetVideoUrlAsync(Product product, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Reports what storage actually holds for each product.
     /// </summary>
     /// <remarks>
@@ -96,13 +113,11 @@ public interface IProductImageService
 /// </summary>
 /// <param name="GallerySlots">Gallery slots that can be served, in display order.</param>
 /// <param name="PageSizes">Paper sizes the listing is laid out for, always starting with US Letter.</param>
-/// <param name="VideoUrl">
-/// Public URL of the listing's gallery clip, or <see langword="null"/> when none is published.
-/// </param>
+/// <param name="HasVideo">Whether a gallery clip has been published for the listing.</param>
 public sealed record PublishedArtwork(
     IReadOnlyList<int> GallerySlots,
     IReadOnlyList<string> PageSizes,
-    string? VideoUrl = null);
+    bool HasVideo = false);
 
 /// <summary>
 /// Reads product thumbnails from the same private container that holds the PDFs.
@@ -367,6 +382,31 @@ public sealed class AzureBlobProductImageService : IProductImageService
     }
 
     /// <inheritdoc />
+    public async Task<string?> GetVideoUrlAsync(Product product, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        var blobName = GetVideoBlobName(product);
+        var folder = GetPdfFolderName(product);
+        if (blobName is null || folder is null)
+        {
+            return null;
+        }
+
+        // The same cached listing the catalog used, so a request that reaches here is answered
+        // without another round trip to storage.
+        var prefix = $"{folder}{VideoFolderName}/";
+        var names = await GetPublishedNamesAsync(
+                _mediaContainerClient,
+                $"video:{prefix}",
+                prefix,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        return names is not null && names.Contains(blobName) ? SignMediaUrl(blobName) : null;
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyDictionary<Guid, PublishedArtwork>?> DescribeArtworkAsync(
         IReadOnlyList<Product> products,
         CancellationToken cancellationToken = default)
@@ -425,13 +465,11 @@ public sealed class AzureBlobProductImageService : IProductImageService
 
             var videoName = GetVideoBlobName(product);
             var publishedVideos = videos[GetPdfFolderName(product)!];
-            var videoUrl = videoName is not null
+            var hasVideo = videoName is not null
                            && publishedVideos is not null
-                           && publishedVideos.Contains(videoName)
-                ? SignMediaUrl(videoName)
-                : null;
+                           && publishedVideos.Contains(videoName);
 
-            artwork[product.Id] = new PublishedArtwork(slots, pageSizes, videoUrl);
+            artwork[product.Id] = new PublishedArtwork(slots, pageSizes, hasVideo);
         }
 
         return artwork;

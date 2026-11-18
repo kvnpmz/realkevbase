@@ -47,6 +47,12 @@ public static class CatalogEndpoints
             .Produces(StatusCodes.Status304NotModified)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapGet("/products/{id:guid}/video", GetProductVideoAsync)
+            .WithName("GetProductVideo")
+            .WithSummary("Redirects to the signed URL of a digital product's gallery clip.")
+            .Produces(StatusCodes.Status302Found)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return endpoints;
     }
 
@@ -162,6 +168,33 @@ public static class CatalogEndpoints
     }
 
     /// <summary>
+    /// Sends the browser to a digital product's gallery clip.
+    /// </summary>
+    /// <remarks>
+    /// A redirect rather than a stream: video is fetched as a long series of range requests, and
+    /// those belong on blob storage instead of tying up this app. The catalog offers the route,
+    /// never the signed URL, so no storage host or signature reaches the browser in a payload.
+    /// </remarks>
+    /// <param name="id">Product whose clip should be served.</param>
+    /// <param name="catalog">Catalog used to resolve the product.</param>
+    /// <param name="images">Storage-backed source of the clip.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    private static async Task<IResult> GetProductVideoAsync(
+        Guid id,
+        IProductCatalog catalog,
+        IProductImageService images,
+        CancellationToken cancellationToken)
+    {
+        if (!catalog.TryGetProduct(id, out var product) || !product.IsDigitalPdf)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var url = await images.GetVideoUrlAsync(product, cancellationToken);
+        return url is null ? TypedResults.NotFound() : Results.Redirect(url);
+    }
+
+    /// <summary>
     /// Writes a product image with cache validators.
     /// </summary>
     /// <param name="image">Open image to stream.</param>
@@ -204,7 +237,8 @@ public static class CatalogEndpoints
 /// <param name="PageSizes">Paper sizes the product is laid out for, or <see langword="null"/> for merchandise.</param>
 /// <param name="VideoUrl">
 /// Public URL of the listing's five-second gallery clip, or <see langword="null"/> when no clip
-/// has been published. Fetched straight from storage rather than proxied, so it is absolute.
+/// has been published. Relative, like the artwork: the browser is sent to storage by a redirect
+/// and never learns a blob name or a SAS from the catalog payload.
 /// </param>
 /// <param name="Accent">Card artwork colours.</param>
 public sealed record ProductResponse(
@@ -245,7 +279,9 @@ public sealed record ProductResponse(
             product.IsDigitalPdf ? $"/api/products/{product.Id}/thumbnail" : null,
             product.IsDigitalPdf ? artwork?.GallerySlots : null,
             product.IsDigitalPdf ? artwork?.PageSizes : null,
-            product.IsDigitalPdf ? artwork?.VideoUrl : null,
+            product.IsDigitalPdf && artwork?.HasVideo == true
+                ? $"/api/products/{product.Id}/video"
+                : null,
             product.Accent is null
                 ? null
                 : new ProductAccentResponse(product.Accent.From, product.Accent.To, product.Accent.Ink));

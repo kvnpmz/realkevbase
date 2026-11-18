@@ -136,11 +136,11 @@ export function createCatalogApi({
             typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
               ? joinUrl(baseUrl, record.thumbnailUrl)
               : null
-          // The clip is served by storage, not the API, so it arrives absolute and is used
-          // as-is. Anything else would be a relative path to a host that has no clips.
+          // The API returns a relative route, not a storage URL, so the browser is redirected
+          // to the clip rather than handed a blob name or a signature.
           const videoUrl =
-            typeof record.videoUrl === 'string' && /^https?:\/\//i.test(record.videoUrl)
-              ? record.videoUrl
+            typeof record.videoUrl === 'string' && record.videoUrl
+              ? joinUrl(baseUrl, record.videoUrl)
               : null
           // The API lists the slots it can actually serve, so the detail page no longer asks
           // for renders a listing never made. A null list means storage could not be read;
