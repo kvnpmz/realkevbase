@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 
 using Microsoft.Extensions.Logging;
 
@@ -95,7 +96,13 @@ public interface IProductImageService
 /// </summary>
 /// <param name="GallerySlots">Gallery slots that can be served, in display order.</param>
 /// <param name="PageSizes">Paper sizes the listing is laid out for, always starting with US Letter.</param>
-public sealed record PublishedArtwork(IReadOnlyList<int> GallerySlots, IReadOnlyList<string> PageSizes);
+/// <param name="VideoUrl">
+/// Public URL of the listing's gallery clip, or <see langword="null"/> when none is published.
+/// </param>
+public sealed record PublishedArtwork(
+    IReadOnlyList<int> GallerySlots,
+    IReadOnlyList<string> PageSizes,
+    string? VideoUrl = null);
 
 /// <summary>
 /// Reads product thumbnails from the same private container that holds the PDFs.
@@ -117,6 +124,16 @@ public sealed class AzureBlobProductImageService : IProductImageService
     /// File extension of the published thumbnails.
     /// </summary>
     public const string ThumbnailExtension = ".webp";
+
+    /// <summary>
+    /// Folder, beside the PDFs, that holds the gallery clips.
+    /// </summary>
+    public const string VideoFolderName = "video";
+
+    /// <summary>
+    /// Extension of the published gallery clips.
+    /// </summary>
+    public const string VideoExtension = ".mp4";
 
     /// <summary>
     /// File-name suffixes of the gallery renders, in the order the storefront shows them.
@@ -182,7 +199,40 @@ public sealed class AzureBlobProductImageService : IProductImageService
     /// </summary>
     private static readonly TimeSpan ListingTimeout = TimeSpan.FromSeconds(3);
 
+    /// <summary>
+    /// How long one signed clip URL stays valid.
+    /// </summary>
+    /// <remarks>
+    /// Long on purpose. The clips are public marketing artwork, so the signature protects
+    /// nothing a visitor could not see anyway; a short one would only churn URLs and throw
+    /// away every browser's cached copy.
+    /// </remarks>
+    private static readonly TimeSpan MediaSasLifetime = TimeSpan.FromDays(365);
+
+    /// <summary>
+    /// Age at which the signature is renewed. Half the lifetime, so a clip URL stays byte-stable
+    /// for months instead of changing with each catalog refresh.
+    /// </summary>
+    private static readonly TimeSpan MediaSasRenewAfter = MediaSasLifetime / 2;
+
     private readonly BlobContainerClient _containerClient;
+
+    private readonly BlobContainerClient _mediaContainerClient;
+
+    /// <summary>
+    /// Serialises signing, so a burst of catalog requests mints one SAS rather than one each.
+    /// </summary>
+    private readonly Lock _sasGate = new();
+
+    /// <summary>
+    /// Signed container URL reused until <see cref="_mediaSasValidUntil"/>.
+    /// </summary>
+    private Uri? _mediaSas;
+
+    /// <summary>
+    /// Moment the cached signature should be replaced by a fresh one.
+    /// </summary>
+    private DateTimeOffset _mediaSasValidUntil;
 
     private readonly ILogger<AzureBlobProductImageService> _logger;
 
@@ -218,6 +268,7 @@ public sealed class AzureBlobProductImageService : IProductImageService
         ArgumentNullException.ThrowIfNull(logger);
 
         _containerClient = blobServiceClient.GetBlobContainerClient(options.PdfContainerName);
+        _mediaContainerClient = blobServiceClient.GetBlobContainerClient(options.MediaContainerName);
         _logger = logger;
     }
 
@@ -334,9 +385,10 @@ public sealed class AzureBlobProductImageService : IProductImageService
             .ToArray();
 
         var published = new Dictionary<string, IReadOnlySet<string>>(folders.Length, StringComparer.Ordinal);
+        var videos = new Dictionary<string, IReadOnlySet<string>?>(folders.Length, StringComparer.Ordinal);
         foreach (var folder in folders)
         {
-            var names = await GetPublishedNamesAsync(folder, cancellationToken).ConfigureAwait(false);
+            var names = await GetPublishedNamesAsync(_containerClient, folder, folder, cancellationToken).ConfigureAwait(false);
             if (names is null)
             {
                 // Unknown beats wrong: the storefront falls back to asking slot by slot.
@@ -344,6 +396,16 @@ public sealed class AzureBlobProductImageService : IProductImageService
             }
 
             published[folder] = names;
+
+            // Clips live in the public container, so a listing without one simply shows the
+            // still page: a failed listing here costs the video, never the gallery.
+            var videoPrefix = $"{folder}{VideoFolderName}/";
+            videos[folder] = await GetPublishedNamesAsync(
+                    _mediaContainerClient,
+                    $"video:{videoPrefix}",
+                    videoPrefix,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         var artwork = new Dictionary<Guid, PublishedArtwork>(digital.Length);
@@ -361,7 +423,15 @@ public sealed class AzureBlobProductImageService : IProductImageService
                 .Where(slot => slot != A4PreviewSlot || pageSizes.Contains(A4PageSize))
                 .ToArray();
 
-            artwork[product.Id] = new PublishedArtwork(slots, pageSizes);
+            var videoName = GetVideoBlobName(product);
+            var publishedVideos = videos[GetPdfFolderName(product)!];
+            var videoUrl = videoName is not null
+                           && publishedVideos is not null
+                           && publishedVideos.Contains(videoName)
+                ? SignMediaUrl(videoName)
+                : null;
+
+            artwork[product.Id] = new PublishedArtwork(slots, pageSizes, videoUrl);
         }
 
         return artwork;
@@ -422,22 +492,52 @@ public sealed class AzureBlobProductImageService : IProductImageService
     }
 
     /// <summary>
-    /// Lists the blobs under one publication folder, reusing the previous answer while it is fresh.
+    /// Derives the blob name of a listing's gallery clip.
     /// </summary>
-    /// <param name="folder">Blob-name prefix ending in a slash.</param>
+    /// <param name="product">Product whose clip should be located.</param>
+    /// <returns>
+    /// For example <c>guides/video/foo.mp4</c> beside <c>guides/foo.pdf</c>, or
+    /// <see langword="null"/> when the product has no PDF blob.
+    /// </returns>
+    /// <remarks>
+    /// Derived from the PDF's own file name rather than from the listing folder, because that
+    /// is the handle the catalog already trusts: the sync publishes every PDF as
+    /// <c>guides/&lt;slug&gt;.pdf</c>, so the clip sits beside it and two listings that happen to
+    /// share a template still get one clip each.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="product"/> is <see langword="null"/>.</exception>
+    public static string? GetVideoBlobName(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        var folder = GetPdfFolderName(product);
+        var stem = Path.GetFileNameWithoutExtension(product.PdfBlobName);
+        return folder is null || string.IsNullOrEmpty(stem)
+            ? null
+            : $"{folder}{VideoFolderName}/{stem}{VideoExtension}";
+    }
+
+    /// <summary>
+    /// Lists the blobs under one prefix, reusing the previous answer while it is fresh.
+    /// </summary>
+    /// <param name="container">Container to list.</param>
+    /// <param name="key">Cache key, unique across containers.</param>
+    /// <param name="prefix">Blob-name prefix to list.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>The published blob names, or <see langword="null"/> when listing failed.</returns>
     private async Task<IReadOnlySet<string>?> GetPublishedNamesAsync(
-        string folder,
+        BlobContainerClient container,
+        string key,
+        string prefix,
         CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
-        if (_published.TryGetValue(folder, out var cached) && cached.ExpiresAt > now)
+        if (_published.TryGetValue(key, out var cached) && cached.ExpiresAt > now)
         {
             return cached.Names;
         }
 
-        if (_retryAfter.TryGetValue(folder, out var retryAt) && retryAt > now)
+        if (_retryAfter.TryGetValue(key, out var retryAt) && retryAt > now)
         {
             return null;
         }
@@ -446,7 +546,7 @@ public sealed class AzureBlobProductImageService : IProductImageService
         try
         {
             now = DateTimeOffset.UtcNow;
-            if (_published.TryGetValue(folder, out cached) && cached.ExpiresAt > now)
+            if (_published.TryGetValue(key, out cached) && cached.ExpiresAt > now)
             {
                 return cached.Names;
             }
@@ -457,8 +557,8 @@ public sealed class AzureBlobProductImageService : IProductImageService
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeout.CancelAfter(ListingTimeout);
 
-                await foreach (var blob in _containerClient
-                    .GetBlobsAsync(BlobTraits.None, BlobStates.None, folder, timeout.Token)
+                await foreach (var blob in container
+                    .GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix, timeout.Token)
                     .ConfigureAwait(false))
                 {
                     names.Add(blob.Name);
@@ -469,21 +569,75 @@ public sealed class AzureBlobProductImageService : IProductImageService
             {
                 // Storage being unreachable must not take the catalog down: report "unknown",
                 // give up quickly, and try again after a short pause.
-                _retryAfter[folder] = DateTimeOffset.UtcNow.Add(FailureBackoff);
+                _retryAfter[key] = DateTimeOffset.UtcNow.Add(FailureBackoff);
                 _logger.LogWarning(
                     exception,
-                    "Could not list published artwork under {Folder}; the catalog will leave gallery slots unknown for a moment.",
-                    folder);
+                    "Could not list published artwork under {Prefix}; the catalog will leave gallery slots unknown for a moment.",
+                    prefix);
                 return null;
             }
 
-            _retryAfter.TryRemove(folder, out _);
-            _published[folder] = new PublishedNames(names, DateTimeOffset.UtcNow.Add(IndexLifetime));
+            _retryAfter.TryRemove(key, out _);
+            _published[key] = new PublishedNames(names, DateTimeOffset.UtcNow.Add(IndexLifetime));
             return names;
         }
         finally
         {
             _listingGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Builds the URL of one clip, signed so the private container will answer.
+    /// </summary>
+    /// <param name="blobName">Blob name inside the media container.</param>
+    /// <returns>The absolute URL, or <see langword="null"/> when storage cannot sign.</returns>
+    private string? SignMediaUrl(string blobName)
+    {
+        var sas = GetMediaSas();
+        if (sas is null)
+        {
+            return null;
+        }
+
+        var blobUri = _mediaContainerClient.GetBlobClient(blobName).Uri;
+        return new UriBuilder(blobUri) { Query = sas.Query.TrimStart('?') }.Uri.ToString();
+    }
+
+    /// <summary>
+    /// Returns a cached read SAS for the media container, minting one when it is due.
+    /// </summary>
+    /// <remarks>
+    /// One signature covers every clip: the storefront asks for a hundred URLs at once, and
+    /// signing each would be a hundred HMACs for URLs that change on every refresh, which
+    /// would also defeat browser caching.
+    /// </remarks>
+    /// <returns>The signed container URL, or <see langword="null"/> when no account key is available.</returns>
+    private Uri? GetMediaSas()
+    {
+        lock (_sasGate)
+        {
+            var now = DateTimeOffset.UtcNow;
+            if (_mediaSas is not null && now < _mediaSasValidUntil)
+            {
+                return _mediaSas;
+            }
+
+            if (!_mediaContainerClient.CanGenerateSasUri)
+            {
+                // Keyless authentication has no shared key to sign with. Clips are optional, so
+                // the storefront keeps its still pages rather than the gallery breaking.
+                _logger.LogWarning(
+                    "Cannot sign gallery clips: the storage account key is unavailable. Set AzureStorage:ConnectionString to serve video.");
+                _mediaSasValidUntil = now.Add(FailureBackoff);
+                return null;
+            }
+
+            _mediaSas = _mediaContainerClient.GenerateSasUri(
+                BlobContainerSasPermissions.Read,
+                now.Add(MediaSasLifetime));
+            _mediaSasValidUntil = now.Add(MediaSasRenewAfter);
+            return _mediaSas;
         }
     }
 

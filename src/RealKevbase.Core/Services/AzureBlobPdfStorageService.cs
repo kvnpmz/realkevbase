@@ -40,6 +40,18 @@ public sealed class AzurePdfStorageOptions
     /// Gets or sets the container that holds the PDF blobs. Defaults to <c>pdfs</c>.
     /// </summary>
     public string PdfContainerName { get; set; } = "pdfs";
+
+    /// <summary>
+    /// Gets or sets the container that holds the public gallery clips. Defaults to <c>media</c>.
+    /// </summary>
+    /// <remarks>
+    /// Clips are marketing artwork, not a deliverable, so they live apart from the paid PDFs:
+    /// a public gallery is fetched by a video element, which means thousands of range requests
+    /// that belong on blob storage rather than on the API. The container stays private and the
+    /// catalog signs a long-lived read URL instead, so the storage account keeps refusing
+    /// anonymous reads.
+    /// </remarks>
+    public string MediaContainerName { get; set; } = "media";
 }
 
 /// <summary>
@@ -278,7 +290,10 @@ public static class PdfStorageServiceCollectionExtensions
             AccountName = section[nameof(AzurePdfStorageOptions.AccountName)],
             PdfContainerName = section[nameof(AzurePdfStorageOptions.PdfContainerName)] is { Length: > 0 } container
                 ? container
-                : "pdfs"
+                : "pdfs",
+            MediaContainerName = section[nameof(AzurePdfStorageOptions.MediaContainerName)] is { Length: > 0 } media
+                ? media
+                : "media"
         };
 
         services.AddSingleton(options);

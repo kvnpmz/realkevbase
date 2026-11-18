@@ -202,6 +202,10 @@ public static class CatalogEndpoints
 /// listed; the storefront then requests every slot and drops the ones that answer 404.
 /// </param>
 /// <param name="PageSizes">Paper sizes the product is laid out for, or <see langword="null"/> for merchandise.</param>
+/// <param name="VideoUrl">
+/// Public URL of the listing's five-second gallery clip, or <see langword="null"/> when no clip
+/// has been published. Fetched straight from storage rather than proxied, so it is absolute.
+/// </param>
 /// <param name="Accent">Card artwork colours.</param>
 public sealed record ProductResponse(
     Guid Id,
@@ -214,6 +218,7 @@ public sealed record ProductResponse(
     string? ThumbnailUrl,
     IReadOnlyList<int>? GallerySlots,
     IReadOnlyList<string>? PageSizes,
+    string? VideoUrl,
     ProductAccentResponse? Accent)
 {
     /// <summary>
@@ -240,6 +245,7 @@ public sealed record ProductResponse(
             product.IsDigitalPdf ? $"/api/products/{product.Id}/thumbnail" : null,
             product.IsDigitalPdf ? artwork?.GallerySlots : null,
             product.IsDigitalPdf ? artwork?.PageSizes : null,
+            product.IsDigitalPdf ? artwork?.VideoUrl : null,
             product.Accent is null
                 ? null
                 : new ProductAccentResponse(product.Accent.From, product.Accent.To, product.Accent.Ink));

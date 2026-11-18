@@ -68,8 +68,10 @@ function GuideDetail({ product }) {
   const { addItem } = useCartContext()
   const [activeSlot, setActiveSlot] = useState(0)
   const [failedSlots, setFailedSlots] = useState(() => new Set())
+  const [videoFailed, setVideoFailed] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const addedTimer = useRef(null)
+  const videoRef = useRef(null)
 
   // The API states the paper sizes the listing is laid out for; fall back to the Letter
   // edition, which every listing has.
@@ -80,6 +82,43 @@ function GuideDetail({ product }) {
   const currentUrl = currentSlot === null ? null : slots[currentSlot]
   const { from, to, ink } = product.accent
   const categoryLabel = CATEGORY_LABELS.get(product.category) ?? 'Digital PDF'
+
+  // The clip is the page itself, so it only stands in for slot 0. The other slots are the
+  // zoom, tablet and A4 renders, which have no clip of their own.
+  const showVideo = Boolean(product.videoUrl) && currentSlot === 0 && !videoFailed
+
+  const mediaSx = {
+    // Absolute positioning is what makes the percentage height resolve; as a grid item the
+    // image would keep its intrinsic height and get clipped.
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    p: { xs: 2, md: 4 },
+    filter: 'drop-shadow(0 12px 28px rgba(20, 22, 26, 0.2))',
+  }
+
+  // Start the clip only once it is on screen, and never for a visitor who asked for reduced
+  // motion: they keep the poster frame, which is the artwork slot 0 would show anyway.
+  useEffect(() => {
+    const node = videoRef.current
+    if (!node || !showVideo) return undefined
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          node.play().catch(() => {})
+        } else {
+          node.pause()
+        }
+      },
+      { threshold: 0.4 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [showVideo])
 
   const markFailed = (slot) => {
     setFailedSlots((previous) => new Set(previous).add(slot))
@@ -139,7 +178,21 @@ function GuideDetail({ product }) {
               background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
             }}
           >
-            {currentUrl ? (
+            {showVideo ? (
+              <Box
+                component="video"
+                ref={videoRef}
+                src={product.videoUrl}
+                poster={slots[0]}
+                muted
+                loop
+                playsInline
+                preload="none"
+                aria-label={`${product.name}, silent five second preview`}
+                onError={() => setVideoFailed(true)}
+                sx={mediaSx}
+              />
+            ) : currentUrl ? (
               <Box
                 component="img"
                 src={currentUrl}
@@ -147,17 +200,7 @@ function GuideDetail({ product }) {
                 fetchPriority="high"
                 decoding="async"
                 onError={() => markFailed(currentSlot)}
-                sx={{
-                  // Absolute positioning is what makes the percentage height resolve; as a
-                  // grid item the image would keep its intrinsic height and get clipped.
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  p: { xs: 2, md: 4 },
-                  filter: 'drop-shadow(0 12px 28px rgba(20, 22, 26, 0.2))',
-                }}
+                sx={mediaSx}
               />
             ) : (
               <Box

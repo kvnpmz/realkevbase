@@ -136,6 +136,12 @@ export function createCatalogApi({
             typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
               ? joinUrl(baseUrl, record.thumbnailUrl)
               : null
+          // The clip is served by storage, not the API, so it arrives absolute and is used
+          // as-is. Anything else would be a relative path to a host that has no clips.
+          const videoUrl =
+            typeof record.videoUrl === 'string' && /^https?:\/\//i.test(record.videoUrl)
+              ? record.videoUrl
+              : null
           // The API lists the slots it can actually serve, so the detail page no longer asks
           // for renders a listing never made. A null list means storage could not be read;
           // fall back to probing every slot and dropping the ones that answer 404.
@@ -178,6 +184,7 @@ export function createCatalogApi({
             // The API returns relative paths so the bundle stays portable; they were
             // resolved against the same origin the catalog came from.
             thumbnailUrl,
+            videoUrl,
             galleryUrls,
             pageSizes: pageSizes.length > 0 ? pageSizes : null,
             badge: DELIVERY_COPY[fulfillment].badge,
