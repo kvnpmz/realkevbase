@@ -9,6 +9,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { ProductGrid } from './ProductGrid.jsx'
 import { Reviews } from './Reviews.jsx'
 import { HOME_HERO } from '../data/home.js'
+import { ACCENT_WASH } from '../data/site.js'
 import { SITE_TITLE } from '../data/site.js'
 
 /** Trust/reassurance points shown below the fold. */
@@ -55,7 +56,7 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
             position: 'absolute',
             inset: 0,
             background:
-              'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.12), transparent 62%)',
+              `radial-gradient(60% 60% at 72% 0%, ${ACCENT_WASH}, transparent 62%)`,
           }}
         />
         <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 5 } }}>

@@ -32,7 +32,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { SITE_NAME, BRAND } from '../src/data/site.js'
+import { ACCENT, ACCENT_WASH, SITE_NAME, BRAND } from '../src/data/site.js'
 import { HOME_HERO } from '../src/data/home.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -207,7 +207,7 @@ function homeSeed() {
     'box-sizing:border-box;max-width:1200px;margin:0 auto;padding:0 16px;font-weight:800;' +
     'font-size:1.05rem}' +
     '[data-home-seed] .rk-hero{background:' +
-    'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.12), transparent 62%)}' +
+    `radial-gradient(60% 60% at 72% 0%, ${ACCENT_WASH}, transparent 62%)}` +
     // MUI's Container is 1200px wide *including* its 24px padding, and pads 16px on a
     // phone; the seed copies that box so the text column lands on the same x after boot.
     // The seeded screen is the hero and nothing else. The static footer sits right below
@@ -228,7 +228,7 @@ function homeSeed() {
     // MUI's overline is 0.75rem on a 2.66 line box, and the hero Stack leaves 24px after
     // it; both numbers are copied so the headline starts on the same pixel after boot.
     '<p style="margin:0 0 24px;font-size:0.75rem;line-height:2.66;font-weight:700;' +
-    'letter-spacing:0.12em;text-transform:uppercase;color:#2F6BFF">' +
+    `letter-spacing:0.12em;text-transform:uppercase;color:${ACCENT}">` +
     `${escapeHtml(HOME_HERO.overline)}</p>` +
     '<h1 style="margin:0;font-size:clamp(2.6rem,6vw,4.25rem);font-weight:800;line-height:1.03;' +
     `letter-spacing:-0.035em">${escapeHtml(HOME_HERO.title)}</h1>` +

@@ -232,7 +232,7 @@ function ProductCard({ product }) {
           }}
         >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+            <Typography component="p" variant="h6" sx={{ fontWeight: 800 }}>
               {formatMoney(product.unitPrice)}
             </Typography>
             <Typography variant="caption" color="text.secondary">

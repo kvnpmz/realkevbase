@@ -180,14 +180,14 @@ export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
         pt: { xs: 6, md: 9 },
         pb: { xs: 3, md: 4 },
         background:
-          'radial-gradient(70% 120% at 50% 0%, rgba(47, 107, 255, 0.10), transparent 70%)',
+          'radial-gradient(70% 120% at 50% 0%, rgba(27, 68, 200, 0.10), transparent 70%)',
       }}
     >
       <Container maxWidth="md">
         <Paper
           sx={{
             p: { xs: 3, sm: 4, md: 5 },
-            borderColor: 'rgba(47, 107, 255, 0.24)',
+            borderColor: 'rgba(27, 68, 200, 0.24)',
             boxShadow: '0 24px 60px -40px rgba(20, 22, 26, 0.45)',
           }}
         >

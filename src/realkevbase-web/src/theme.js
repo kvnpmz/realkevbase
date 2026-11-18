@@ -1,12 +1,14 @@
 import { createTheme } from '@mui/material/styles'
 
+import { ACCENT } from './data/site.js'
+
 /**
  * Storefront theme: warm, high-contrast, conversion-focused.
  * System fonts keep first paint instant; the palette pairs near-black "ink" with
  * a single trustworthy blue accent and an off-white canvas.
  */
 const ink = '#14161A'
-const accent = '#2F6BFF'
+const accent = ACCENT
 
 export const theme = createTheme({
   palette: {
@@ -52,7 +54,7 @@ export const theme = createTheme({
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
         },
-        '::selection': { backgroundColor: 'rgba(47, 107, 255, 0.18)' },
+        '::selection': { backgroundColor: 'rgba(27, 68, 200, 0.18)' },
       },
     },
     MuiButton: {
