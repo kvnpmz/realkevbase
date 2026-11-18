@@ -123,6 +123,10 @@ function toGuide(product) {
     : []
 
   return {
+    // The untouched API record, baked into the page so the hero can render before the
+    // catalog request returns. `normalizeProducts` in the SPA turns it into the same shape
+    // the fetch produces.
+    raw: product,
     slug,
     id: typeof product.id === 'string' ? product.id : '',
     name: product.name.trim(),
@@ -487,6 +491,28 @@ function withProductSeed(shell, guide) {
 }
 
 /**
+ * Bakes one guide's catalog record into its page as JSON.
+ *
+ * The SPA reads it through `readInlineProduct` and renders the hero without waiting for
+ * `GET /api/products`, which on a throttled phone is a second of TLS before the first byte
+ * and was the last thing standing between the page and a green Largest Contentful Paint.
+ * `type="application/json"` keeps it inert — the browser will not execute or display it —
+ * and the escape in `serializeJsonLd` makes a `</script>` inside the data harmless.
+ *
+ * @param {string} shell Page HTML to extend.
+ * @param {Record<string, unknown>} guide Guide facts, including the raw catalog record.
+ * @returns {string} The page with the record inserted before `#root`.
+ */
+function withInlineProduct(shell, guide) {
+  if (!guide.raw) return shell
+  // Compact, unlike the pretty-printed JSON-LD: this rides in the page body, where the
+  // indentation would be shipped bytes for nobody's benefit. `<` is still escaped.
+  const payload = JSON.stringify({ slug: guide.slug, product: guide.raw }).replaceAll('<', '\\u003c')
+  const tag = `    <script type="application/json" id="guide-product">${payload}</script>\n`
+  return shell.replace('<div id="root">', `${tag}    <div id="root">`)
+}
+
+/**
  * Appends a link to the index in plain HTML, outside the app root, so a crawler reaches
  * the catalogue from the home page and from every guide without running JavaScript.
  *
@@ -596,7 +622,7 @@ async function main() {
     [...guides.values()].map((guide) =>
       writeFile(
         join(DIST, 'guides', `${guide.slug}.html`),
-        withIndexFooter(withProductSeed(withSeoBlock(shell, guideHead(guide)), guide)),
+        withIndexFooter(withInlineProduct(withProductSeed(withSeoBlock(shell, guideHead(guide)), guide), guide)),
       ),
     ),
   )

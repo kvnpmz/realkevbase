@@ -12,6 +12,7 @@ import PauseRoundedIcon from '@mui/icons-material/PauseRounded'
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded'
 
 import { trackEvent } from '../analytics/ga.js'
+import { readInlineProduct } from '../api/catalogApi.js'
 import { useCartContext } from '../cart/cartContext.js'
 import { FULFILLMENT } from '../cart/cartReducer.js'
 import { formatMoney } from '../cart/formatMoney.js'
@@ -402,21 +403,27 @@ export function GuidePage({ catalog }) {
   const { slug } = useParams()
   const { products, loading, error, reload } = catalog
 
+  // The build bakes this guide's own catalog record into the page, so the hero can paint
+  // from the HTML instead of waiting for /api/products — the slowest request in the chain.
+  // The fetched catalog still wins once it lands, so a price edited between deploys settles
+  // in the same visit; the inline copy is only the first paint.
+  const inlineProduct = useMemo(() => readInlineProduct(slug), [slug])
+
   const product = useMemo(
     () =>
       products.find(
         (entry) =>
           entry.fulfillment === FULFILLMENT.DIGITAL_PDF &&
           (entry.slug === slug || entry.id === slug),
-      ),
-    [products, slug],
+      ) ?? inlineProduct,
+    [products, slug, inlineProduct],
   )
 
-  if (loading) {
+  if (loading && !product) {
     return <PageMessage title="Loading this guide…" />
   }
 
-  if (error) {
+  if (error && !product) {
     return (
       <PageMessage
         title="We couldn’t load this guide."
