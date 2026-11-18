@@ -156,10 +156,17 @@ function guideSeed({ name, price, image, pageSizes }) {
   // Every thumbnail is a 500x647 webp, so the seed declares that ratio up front: without a
   // reserved box the cover's arrival pushes the name, price and footer down the page, which
   // is pure layout shift on the screen a shopper lands on from a search result.
+  //
+  // The size matters as much as the ratio. The browser awards Largest Contentful Paint to
+  // the biggest thing painted, and the app's gallery panel only exists once the bundle has
+  // parsed and the catalog has answered — 4.3s on a throttled phone. A 220px card let that
+  // later, larger paint take LCP away from the cover, which is already on screen at ~1.5s;
+  // at the width the real hero uses, the seeded cover outranks it and the metric follows
+  // the paint a shopper actually sees first.
   const cover = image
     ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)} — printable PDF cover" ` +
-      'width="220" height="285" fetchpriority="high" decoding="async" ' +
-      'style="display:block;width:220px;max-width:52vw;height:auto;aspect-ratio:500/647;' +
+      'width="400" height="518" fetchpriority="high" decoding="async" ' +
+      'style="display:block;width:100%;max-width:400px;height:auto;aspect-ratio:500/647;' +
       'margin:0 auto 20px;border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,0.16)" />'
     : ''
 
@@ -170,7 +177,7 @@ function guideSeed({ name, price, image, pageSizes }) {
     '<p style="margin:0 0 6px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#6b6f76">' +
     'SaveSimple by RealKevbase</p>' +
     `<h1 style="margin:0 0 10px;font-size:clamp(1.4rem,5vw,2rem);line-height:1.15;letter-spacing:-0.02em">${escapeHtml(name)}</h1>` +
-    `<p style="margin:0;color:#5a6068">${escapeHtml(formatPrice(price))} · Instant PDF download · ${escapeHtml(sizes)}</p>` +
+    `<p style="margin:0;color:#5a6068">$${escapeHtml(formatPrice(price))} · Instant PDF download · ${escapeHtml(sizes)}</p>` +
     '</div></div>\n'
 }
 
