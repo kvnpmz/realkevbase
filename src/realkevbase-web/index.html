@@ -8,6 +8,17 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
+      The minimum reset, shipped as a static stylesheet rather than in the seeded hero.
+      MuiCssBaseline applies the same rules from Emotion, but only once React has mounted;
+      until then the browser would lay the page out with its default 8px body margin, and
+      the moment the baseline landed everything would jump 8px and count as layout shift.
+      Both the seeded HTML and the app read these values, so the handover moves nothing.
+    -->
+    <style>
+      html { color-scheme: light; }
+      body { margin: 0; background-color: #FBFAF7; }
+    </style>
+    <!--
       The catalog is fetched with a plain cross-origin GET, so the connection to the API host
       can be opened while the HTML is still parsing and the response can be downloaded while
       the bundle is parsing. Without these two hints the request does not start until React

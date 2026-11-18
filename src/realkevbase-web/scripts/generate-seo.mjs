@@ -201,9 +201,6 @@ function homeSeed() {
     // element because the header is 65px tall on a phone and 77px from `md` up, and an
     // inline attribute cannot hold a media query.
     '<style>' +
-    // MuiCssBaseline zeroes the body margin; without it the seeded page sits 8px in from
-    // each edge and the headline breaks a line early, which is a visible jump on boot.
-    'body{margin:0}' +
     '[data-home-seed] .rk-bar{display:flex;align-items:center;height:65px;' +
     'border-bottom:1px solid #E7E4DC;background:#FBFAF7}' +
     '[data-home-seed] .rk-bar>div{display:flex;align-items:center;gap:10px;width:100%;' +
@@ -213,14 +210,18 @@ function homeSeed() {
     'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.12), transparent 62%)}' +
     // MUI's Container is 1200px wide *including* its 24px padding, and pads 16px on a
     // phone; the seed copies that box so the text column lands on the same x after boot.
+    // The seeded screen is the hero and nothing else. The static footer sits right below
+    // it in the HTML, and when React paints the real page the footer is pushed thousands
+    // of pixels down; an element that is off-screen both before and after contributes no
+    // layout shift, whereas a footer parked in the first viewport scored 0.35 on its own.
     '[data-home-seed] .rk-wrap{box-sizing:border-box;max-width:1200px;margin:0 auto;' +
-    'padding:64px 16px 32px}' +
+    'padding:64px 16px 32px;min-height:calc(100vh - 65px)}' +
     '[data-home-seed] .rk-lede{font-size:1.5rem}' +
     '@media (min-width:600px){[data-home-seed] .rk-bar>div{padding:0 24px}' +
     '[data-home-seed] .rk-wrap{padding:64px 24px 32px}}' +
     '@media (min-width:900px){[data-home-seed] .rk-bar{height:77px}' +
     '[data-home-seed] .rk-bar>div{font-size:1.25rem}' +
-    '[data-home-seed] .rk-wrap{padding:96px 24px 40px}}' +
+    '[data-home-seed] .rk-wrap{padding:96px 24px 40px;min-height:calc(100vh - 77px)}}' +
     '</style>' +
     `<div class="rk-bar"><div>${logo}<span>${escapeHtml(BRAND.wordmark)}</span></div></div>` +
     '<div class="rk-hero"><div class="rk-wrap"><div style="max-width:720px">' +
