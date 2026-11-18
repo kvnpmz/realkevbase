@@ -41,7 +41,12 @@ const guidePromises = (pageSizes) => [
  */
 function PageMessage({ title, copy, action }) {
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 10, md: 16 } }}>
+    // Full height on purpose: this is what a guide shows while the catalog is still in
+    // flight, and a short message left the site footer sitting in the first screen, so the
+    // footer dropped hundreds of pixels when the guide replaced it — 0.08 of layout shift
+    // on every deep link. Filling the viewport keeps the footer off-screen until the real
+    // page is there to hold it down.
+    <Container maxWidth="sm" sx={{ py: { xs: 10, md: 16 }, minHeight: '100vh' }}>
       <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center' }}>
         <Typography variant="h4" component="h1">
           {title}
