@@ -78,6 +78,7 @@ function GuideDetail({ product }) {
   const [videoFailed, setVideoFailed] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [videoPlaying, setVideoPlaying] = useState(false)
+  const [videoArmed, setVideoArmed] = useState(false)
   const addedTimer = useRef(null)
   const videoRef = useRef(null)
 
@@ -107,29 +108,21 @@ function GuideDetail({ product }) {
     filter: 'drop-shadow(0 12px 28px rgba(20, 22, 26, 0.2))',
   }
 
-  // Start the clip only once it is on screen, and never for a visitor who asked for reduced
-  // motion: they keep the poster frame, which is the artwork slot 0 would show anyway.
-  // The play button below is what makes the clip reachable in that case, and what satisfies
-  // the pause requirement for auto-moving content once it is looping.
+  // Nothing plays on its own. The clip is 546 KB — the single largest transfer on the page,
+  // and the reason a 16 KB poster took three seconds to arrive on a throttled phone — so it
+  // is not attached to the element until the reader presses play, which keeps it off the
+  // critical path entirely. The observer below only ever pauses: a clip whose owner has
+  // scrolled away should stop costing battery, but scrolling back must not restart it.
+  //
+  // Reduced motion needs no branch any more: a visitor who asked for it simply never
+  // presses play, and everyone else opts in by choice.
   useEffect(() => {
     const node = videoRef.current
     if (!node || !showVideo) return undefined
 
-    // Belt and braces: the autoplay policy reads this property, and React assigns it rather
-    // than writing the attribute, so set it on the node before anything tries to play.
-    node.muted = true
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return undefined
-    }
-
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          node.play().catch(() => {})
-        } else {
-          node.pause()
-        }
+        if (!entry.isIntersecting) node.pause()
       },
       { threshold: 0.4 },
     )
@@ -141,13 +134,17 @@ function GuideDetail({ product }) {
     setFailedSlots((previous) => new Set(previous).add(slot))
   }
 
-  // One control for two jobs: it starts the clip for a visitor whose reduced-motion setting
-  // stopped it autoplaying, and it is the pause an auto-looping clip needs for everyone else.
-  // The button's own state comes from the element's play/pause events, so a failed autoplay
-  // attempt leaves it showing "play" without any extra bookkeeping here.
+  // The first press is what gives the element a source — React assigns `src`, the element
+  // is muted and inline, and `autoPlay` starts it as the bytes arrive. Later presses are an
+  // ordinary play/pause on a clip that is already downloaded.
   const toggleVideo = () => {
     const node = videoRef.current
     if (!node) return
+
+    if (!videoArmed) {
+      setVideoArmed(true)
+      return
+    }
 
     if (node.paused) {
       node.muted = true
@@ -215,11 +212,12 @@ function GuideDetail({ product }) {
               <Box
                 component="video"
                 ref={videoRef}
-                src={product.videoUrl}
+                src={videoArmed ? product.videoUrl : undefined}
                 poster={slots[0]}
                 muted
                 loop
                 playsInline
+                autoPlay={videoArmed}
                 preload="none"
                 aria-label={`${product.name}, silent five second preview`}
                 onError={() => setVideoFailed(true)}
