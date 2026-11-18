@@ -54,7 +54,7 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
             position: 'absolute',
             inset: 0,
             background:
-              'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.14), transparent 62%), radial-gradient(45% 45% at 8% 18%, rgba(124, 58, 237, 0.12), transparent 60%)',
+              'radial-gradient(60% 60% at 72% 0%, rgba(47, 107, 255, 0.12), transparent 62%)',
           }}
         />
         <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 5 } }}>
@@ -70,9 +70,6 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
               <Button size="large" variant="contained" href="#products" endIcon={<ArrowForwardRoundedIcon />}>
                 Shop the collection
-              </Button>
-              <Button size="large" variant="outlined" href="#how-it-works">
-                How it works
               </Button>
             </Stack>
             <Stack direction="row" spacing={2.5} sx={{ pt: 1, color: 'text.secondary', flexWrap: 'wrap' }}>

@@ -75,7 +75,7 @@ export function Navbar() {
                 width: 34,
                 height: 34,
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #2F6BFF 0%, #7C3AED 100%)',
+                background: 'linear-gradient(135deg, #2F6BFF 0%, #1B44C8 100%)',
                 color: '#fff',
                 display: 'grid',
                 placeItems: 'center',
