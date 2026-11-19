@@ -400,63 +400,6 @@ async function loadCatalog(catalogFile) {
 const SPANISH_SUFFIX = '-es'
 
 /**
- * Finds the pages that are editions of one document.
- *
- * The collection sells the same sheet in several colours and typefaces — `no-power-meal-plan`
- * beside `-pink`, `-plum`, `-green` and `-serif`. Each edition is a separate PDF and a
- * separate product, but the shop's copy for it is the base listing's copy word for word: the
- * same description in the catalog, the same paragraph in the seed, a different name and a
- * different colour. Seventeen sets exist, 57 pages in all.
- *
- * A crawler treats those as one page published five times, so it indexes one and files the
- * rest as duplicates — which is what Search Console reports as "Crawled - currently not
- * indexed". The fix is the one Google documents for near-duplicates: pick a canonical and
- * have the others point at it, rather than claiming 57 near-identical pages are 57 pages.
- *
- * Editions are detected from the catalog, not from a hand-kept list, so a new colour is
- * consolidated the moment it is registered. Two entries count as editions only when their
- * descriptions are identical *and* one slug is a dash-extension of the other; two unrelated
- * guides that happen to share copy are left alone, because merging them would hide a real
- * product behind another product's page.
- *
- * @param {Map<string, ReturnType<typeof toGuide>>} guides Guides keyed by slug.
- * @returns {Map<string, ReturnType<typeof toGuide>>} Edition slug to the page it should
- *   canonicalise to. Pages without an entry are already canonical.
- */
-function resolveEditions(guides) {
-  const byCopy = new Map()
-
-  for (const guide of guides.values()) {
-    if (!guide.description) continue
-    // Grouped on the copy alone: an edition that was filed under a different category (the
-    // warehouse list's base sits in "Everyday guides" while its colourways sit in "Moving
-    // out") is still the same document, and the slug check below is what decides that.
-    const key = guide.description.trim().toLowerCase()
-    const bucket = byCopy.get(key)
-    if (bucket) bucket.push(guide)
-    else byCopy.set(key, [guide])
-  }
-
-  const editions = new Map()
-  for (const bucket of byCopy.values()) {
-    if (bucket.length < 2) continue
-    // The base listing is the shortest slug, so `no-power-meal-plan` beats `-pink`.
-    const [primary] = [...bucket].sort(
-      (a, b) => a.slug.length - b.slug.length || a.slug.localeCompare(b.slug),
-    )
-    const sameFamily = bucket.every(
-      (guide) => guide.slug === primary.slug || guide.slug.startsWith(`${primary.slug}-`),
-    )
-    if (!sameFamily) continue
-    for (const guide of bucket) {
-      if (guide.slug !== primary.slug) editions.set(guide.slug, primary)
-    }
-  }
-
-  return editions
-}
-
-/**
  * Pairs each Spanish edition with the English guide it translates.
  *
  * The two are genuinely different pages — different language, different copy, different
@@ -485,9 +428,8 @@ function translationPairs(guides) {
 /**
  * Builds the <head> contents for one guide page.
  *
- * @param {object} guide Facts from `toGuide`, with `canonical` and `alternates` resolved
- *   against the whole catalog: an edition canonicalises to its base listing, and a guide
- *   that has a translation names both URLs.
+ * @param {object} guide Facts from `toGuide`, with `alternates` resolved against the whole
+ *   catalog: a guide that has a translation names both URLs.
  */
 function guideHead({
   slug,
@@ -498,10 +440,9 @@ function guideHead({
   category,
   cover,
   image,
-  canonical = slug,
   alternates = null,
 }) {
-  const url = `${SITE_URL}/guides/${canonical}`
+  const url = `${SITE_URL}/guides/${slug}`
   const title = `${name} — ${SITE_NAME}`
   const summary =
     description || `${name}, a printable PDF from the SaveSimple collection by RealKevbase.`
@@ -833,23 +774,14 @@ async function main() {
 
   const coverCount = await publishCovers(guides)
 
-  // Which pages are editions of another, and which have a translation. Both answers come
-  // from the catalog, so neither can drift as listings are added.
-  const editions = resolveEditions(guides)
+  // Which guides have a translation, so both URLs can name each other through `hreflang`.
   const pairs = translationPairs(guides)
-  // Only a canonical URL belongs in the sitemap: submitting a page that points somewhere
-  // else teaches a crawler that the sitemap is not a list of pages worth indexing.
-  const canonicalSlugs = [...guides.keys()].filter((slug) => !editions.has(slug))
 
   await writeFile(SHELL_PATH, withIndexFooter(withHomeSeed(homeShell)))
   await writeFile(join(DIST, INDEX_PATH), buildIndexPage(guides))
   await mkdir(join(DIST, 'guides'), { recursive: true })
   await Promise.all(
     [...guides.values()].map((guide) => {
-      const canonical = editions.get(guide.slug)?.slug ?? guide.slug
-      // A translated page keeps its own canonical (it is a different page, not a duplicate
-      // skin); only its `hreflang` ties it to the English one.
-      const canonicalSlug = pairs.has(guide.slug) ? guide.slug : canonical
       // The Spanish editions are built from the English shell, so they would otherwise
       // declare themselves English to every crawler and reader that lands on them.
       const pageShell = guide.slug.endsWith(SPANISH_SUFFIX)
@@ -862,7 +794,7 @@ async function main() {
             withProductSeed(
               withSeoBlock(
                 pageShell,
-                guideHead({ ...guide, canonical: canonicalSlug, alternates: pairs.get(guide.slug) ?? null }),
+                guideHead({ ...guide, alternates: pairs.get(guide.slug) ?? null }),
               ),
               guide,
             ),
@@ -875,7 +807,7 @@ async function main() {
 
   await writeFile(
     join(DIST, 'sitemap.xml'),
-    buildSitemap(canonicalSlugs, new Date().toISOString().slice(0, 10)),
+    buildSitemap([...guides.keys()], new Date().toISOString().slice(0, 10)),
   )
   await writeFile(join(DIST, 'robots.txt'), ROBOTS)
 
@@ -884,10 +816,9 @@ async function main() {
   }
 
   console.log(
-    `seo: prerendered ${guides.size} guide pages (${editions.size} of them editions ` +
-      `canonicalised to their base listing, ${pairs.size / 2} translated pairs) plus the ` +
-      `all-guides index, ${coverCount} covers beside them, sitemap with ` +
-      `${canonicalSlugs.length + 2 + LEGAL_PAGES.length} URLs, ` +
+    `seo: prerendered ${guides.size} guide pages (${pairs.size / 2} translated pairs) plus ` +
+      `the all-guides index, ${coverCount} covers beside them, sitemap with ` +
+      `${guides.size + 2 + LEGAL_PAGES.length} URLs, ` +
       'robots.txt and the www redirect middleware',
   )
 }
