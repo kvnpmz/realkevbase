@@ -36,6 +36,7 @@ import { fileURLToPath } from 'node:url'
 
 import { ACCENT, ACCENT_WASH, SITE_NAME, BRAND } from '../src/data/site.js'
 import { HOME_HERO } from '../src/data/home.js'
+import { HUBS } from '../src/data/hubs.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DIST = resolve(HERE, '..', 'dist')
@@ -526,6 +527,21 @@ const INDEX_PATH = 'all-guides.html'
 const INDEX_URL = '/all-guides'
 
 /**
+ * The collection page a guide belongs to, or null for a listing whose subject has no hub.
+ *
+ * Hubs are tested in declaration order and the first prefix match wins, so `renal-meal-plan`
+ * is a kidney guide rather than a meal-planning one and `no-power-meal-plan` is an emergency
+ * guide rather than a meal plan. Membership is derived, never listed twice: a new colourway
+ * or translation joins the hub its base guide belongs to as soon as it is published.
+ *
+ * @param {string} slug Guide slug.
+ * @returns {(typeof HUBS)[number] | null} The hub that owns this guide, if any.
+ */
+function hubForSlug(slug) {
+  return HUBS.find((hub) => hub.prefixes.some((prefix) => slug.startsWith(prefix))) ?? null
+}
+
+/**
  * Static pages that carry the shop's credibility: who runs it, how to reach them, and what
  * happens when an order goes wrong. They live in `public/` rather than the SPA so they add
  * no bundle weight, and they are linked from the footer so a crawler and a first-time buyer
@@ -551,6 +567,32 @@ const LEGAL_PAGES = [
  * @param {Map<string, ReturnType<typeof toGuide>>} guides Guides keyed by slug.
  * @returns {string} A complete HTML document.
  */
+/**
+ * The stylesheet the static collection pages share.
+ *
+ * The all-guides index and the hubs are plain HTML on purpose: they carry the internal
+ * links a crawler follows into the guide pages, and keeping them out of the SPA means
+ * they add nothing to the bundle. One stylesheet keeps the two page types looking like
+ * the same site.
+ */
+const STATIC_PAGE_CSS = `      :root { color-scheme: light; }
+      body { margin: 0; padding: 40px 20px; background: #fbf9f5; color: #16181c;
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+      main { max-width: 900px; margin: 0 auto; }
+      h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; }
+      p.lede { color: #55595f; margin: 0 0 32px; }
+      section { margin: 0 0 32px; }
+      h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid #e2ded6; padding-bottom: 8px; }
+      h2 span { color: #8a8e94; font-weight: 400; font-size: 15px; }
+      ul { list-style: none; margin: 0; padding: 0; }
+      li { display: flex; justify-content: space-between; gap: 16px; padding: 7px 0;
+        border-bottom: 1px solid #f0ece4; }
+      li span { color: #55595f; white-space: nowrap; }
+      a { color: inherit; text-decoration: none; border-bottom: 1px solid #cfc9bd; }
+      a:hover { border-bottom-color: #16181c; }
+      footer { max-width: 900px; margin: 40px auto 0; color: #6b6f76; font-size: 14px; }
+`
+
 function buildIndexPage(guides) {
   const byCategory = new Map(CATEGORIES.map(([key]) => [key, []]))
   const other = []
@@ -577,6 +619,11 @@ function buildIndexPage(guides) {
     CATEGORIES.map(([key, label]) => section(label, byCategory.get(key) ?? [])).join('') +
     section('More guides', other)
 
+  const hubNav =
+    '      <p class="lede">Collections: ' +
+    HUBS.map((hub) => `<a href="/${hub.slug}">${escapeHtml(hub.label)}</a>`).join(' · ') +
+    '</p>\n'
+
   const url = `${SITE_URL}${INDEX_URL}`
   const title = `All ${guides.size} printable guides — ${SITE_NAME}`
   const description = `Every printable PDF in the SaveSimple collection, grouped by subject: money and budgeting, healthy living, moving out and everyday guides. Instant download, $5.`
@@ -596,29 +643,13 @@ function buildIndexPage(guides) {
     <meta property="og:url" content="${escapeHtml(url)}" />
     <meta property="og:image" content="${escapeHtml(FALLBACK_IMAGE)}" />
     <style>
-      :root { color-scheme: light; }
-      body { margin: 0; padding: 40px 20px; background: #fbf9f5; color: #16181c;
-        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
-      main { max-width: 900px; margin: 0 auto; }
-      h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; }
-      p.lede { color: #55595f; margin: 0 0 32px; }
-      section { margin: 0 0 32px; }
-      h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid #e2ded6; padding-bottom: 8px; }
-      h2 span { color: #8a8e94; font-weight: 400; font-size: 15px; }
-      ul { list-style: none; margin: 0; padding: 0; }
-      li { display: flex; justify-content: space-between; gap: 16px; padding: 7px 0;
-        border-bottom: 1px solid #f0ece4; }
-      li span { color: #55595f; white-space: nowrap; }
-      a { color: inherit; text-decoration: none; border-bottom: 1px solid #cfc9bd; }
-      a:hover { border-bottom-color: #16181c; }
-      footer { max-width: 900px; margin: 40px auto 0; color: #6b6f76; font-size: 14px; }
-    </style>
+${STATIC_PAGE_CSS}    </style>
   </head>
   <body>
     <main>
       <h1>All ${guides.size} printable guides</h1>
       <p class="lede">Every SaveSimple PDF, grouped by subject. Instant download, $5 each.</p>
-${sections}    </main>
+${hubNav}${sections}    </main>
     <footer><a href="/">Back to the shop</a></footer>
   </body>
 </html>
@@ -672,7 +703,20 @@ function withInlineProduct(shell, guide) {
  * @param {string} shell Page HTML to extend.
  * @returns {string} The page with the footer added once.
  */
-function withIndexFooter(shell) {
+/**
+ * Appends a link to the index in plain HTML, outside the app root, so a crawler reaches
+ * the catalogue from the home page and from every guide without running JavaScript.
+ *
+ * When a guide belongs to a collection, its own hub is named here too. That link is the
+ * point of the hubs: it gives every guide page an inbound internal link from a page that is
+ * crawled on its own schedule, and the anchor text says what the collection is about rather
+ * than repeating "browse all".
+ *
+ * @param {string} shell Page HTML to extend.
+ * @param {(typeof HUBS)[number] | null} [hub] Collection this page belongs to, if any.
+ * @returns {string} The page with the footer added once.
+ */
+function withIndexFooter(shell, hub = null) {
   if (shell.includes('data-seo-index')) return shell
   const footer =
     '    <footer data-seo-index style="padding:28px 20px;text-align:center;' +
@@ -680,6 +724,17 @@ function withIndexFooter(shell) {
     'border-top:1px solid #e8e3d9;background:#fbf9f5">' +
     `<a href="${INDEX_URL}" style="color:#16181c;text-decoration:none;` +
     'border-bottom:1px solid #cfc9bd">Browse all printable guides</a>' +
+    (hub
+      ? '<p style="margin:12px 0 0;font-size:13px">More ' +
+        `<a href="/${hub.slug}" style="color:#16181c;text-decoration:none;` +
+        `border-bottom:1px solid #cfc9bd">${hub.label.toLowerCase()}</a> guides</p>`
+      : '') +
+    '<p style="margin:12px 0 0;font-size:13px;color:#5A6068">Collections: ' +
+    HUBS.map(
+      (each) =>
+        `<a href="/${each.slug}" style="color:#5A6068;text-decoration:none">${each.label}</a>`,
+    ).join(' · ') +
+    '</p>' +
     '<p style="margin:12px 0 0;font-size:13px;color:#5A6068">' +
     LEGAL_PAGES.map(
       ([path, label]) => `<a href="${path}" style="color:#6b6f76;text-decoration:none">${label}</a>`,
@@ -688,11 +743,89 @@ function withIndexFooter(shell) {
   return shell.replace('</body>', `${footer}  </body>`)
 }
 
-function buildSitemap(slugs, lastmod) {
+/**
+ * Builds one collection page: a heading, the hub's own copy, and a card for every guide in
+ * that subject.
+ *
+ * Cards carry the name, the listing's one-sentence description and the price, because those
+ * are the three things a reader compares — and the description is already unique per
+ * listing, so the page cannot read as the same paragraph repeated. Membership is resolved
+ * from the live catalog through `hubForSlug`, so a hub can never list an unpublished guide
+ * or miss one that is live.
+ *
+ * @param {(typeof HUBS)[number]} hub Hub definition, including its copy.
+ * @param {Map<string, Record<string, any>>} guides Guide facts keyed by slug.
+ * @returns {string} A complete HTML document.
+ */
+function buildHubPage(hub, guides) {
+  const owned = [...guides.values()]
+    .filter((guide) => hubForSlug(guide.slug)?.slug === hub.slug)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  const cards = owned
+    .map(
+      (guide) =>
+        '        <li class="card">' +
+        `<a href="/guides/${guide.slug}"><strong>${escapeHtml(guide.name)}</strong></a>` +
+        `<span class="price">$${escapeHtml(formatPrice(guide.price))}</span>` +
+        `<p>${escapeHtml(guide.description)}</p></li>`,
+    )
+    .join('\n')
+
+  const others = HUBS.filter((other) => other.slug !== hub.slug)
+    .map((other) => `<a href="/${other.slug}">${escapeHtml(other.label)}</a>`)
+    .join(' · ')
+
+  const url = `${SITE_URL}/${hub.slug}`
+  const title = `${hub.title} — ${SITE_NAME}`
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${escapeHtml(title)}</title>
+    <meta name="description" content="${escapeHtml(hub.metaDescription)}" />
+    <link rel="canonical" href="${escapeHtml(url)}" />
+    <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:description" content="${escapeHtml(hub.metaDescription)}" />
+    <meta property="og:url" content="${escapeHtml(url)}" />
+    <meta property="og:image" content="${escapeHtml(FALLBACK_IMAGE)}" />
+    <style>
+${STATIC_PAGE_CSS}      li.card { display: block; padding: 14px 0; }
+      li.card strong { font-size: 17px; }
+      li.card .price { display: block; color: #55595f; font-size: 14px; margin: 2px 0 0; }
+      li.card p { margin: 6px 0 0; color: #4a4e54; font-size: 15px; }
+      nav.other { margin: 40px 0 0; font-size: 14px; color: #6b6f76; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>${escapeHtml(hub.title)}</h1>
+      <p class="lede">${escapeHtml(hub.lede)}</p>
+${hub.intro.map((paragraph) => `      <p>${escapeHtml(paragraph)}</p>`).join('\n')}
+      <section>
+        <h2>${owned.length} guides in this collection</h2>
+        <ul>
+${cards}
+        </ul>
+      </section>
+      <nav class="other">Other collections: ${others} · <a href="${INDEX_URL}">All guides</a></nav>
+    </main>
+    <footer><a href="${SITE_URL}/">Back to the shop</a></footer>
+  </body>
+</html>
+`
+}
+
+function buildSitemap(slugs, lastmod, hubSlugs = []) {
   const urls = [
     `${SITE_URL}/`,
     `${SITE_URL}${INDEX_URL}`,
     ...LEGAL_PAGES.map(([path]) => `${SITE_URL}${path}`),
+    ...hubSlugs.map((slug) => `${SITE_URL}/${slug}`),
     ...slugs.map((slug) => `${SITE_URL}/guides/${slug}`),
   ]
   const entries = urls
@@ -779,6 +912,9 @@ async function main() {
 
   await writeFile(SHELL_PATH, withIndexFooter(withHomeSeed(homeShell)))
   await writeFile(join(DIST, INDEX_PATH), buildIndexPage(guides))
+  await Promise.all(
+    HUBS.map((hub) => writeFile(join(DIST, `${hub.slug}.html`), buildHubPage(hub, guides))),
+  )
   await mkdir(join(DIST, 'guides'), { recursive: true })
   await Promise.all(
     [...guides.values()].map((guide) => {
@@ -800,6 +936,7 @@ async function main() {
             ),
             guide,
           ),
+          hubForSlug(guide.slug),
         ),
       )
     }),
@@ -807,7 +944,11 @@ async function main() {
 
   await writeFile(
     join(DIST, 'sitemap.xml'),
-    buildSitemap([...guides.keys()], new Date().toISOString().slice(0, 10)),
+    buildSitemap(
+      [...guides.keys()],
+      new Date().toISOString().slice(0, 10),
+      HUBS.map((hub) => hub.slug),
+    ),
   )
   await writeFile(join(DIST, 'robots.txt'), ROBOTS)
 
@@ -817,8 +958,8 @@ async function main() {
 
   console.log(
     `seo: prerendered ${guides.size} guide pages (${pairs.size / 2} translated pairs) plus ` +
-      `the all-guides index, ${coverCount} covers beside them, sitemap with ` +
-      `${guides.size + 2 + LEGAL_PAGES.length} URLs, ` +
+      `${HUBS.length} collection pages and the all-guides index, ${coverCount} covers ` +
+      `beside them, sitemap with ${guides.size + 2 + LEGAL_PAGES.length + HUBS.length} URLs, ` +
       'robots.txt and the www redirect middleware',
   )
 }
