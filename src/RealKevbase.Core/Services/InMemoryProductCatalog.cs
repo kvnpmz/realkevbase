@@ -535,7 +535,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("f05d66f0-b8b8-5345-bf38-32464fe1e542"),
-            Name = "Sectioned Kidney Grocery List",
+            Name = "Simple Kidney Grocery List",
             Description = "A kidney grocery list split into sections for vegetables, fruit, lean proteins, grains and starch, healthy fats and dairy alternatives, with a dark header, so the food you want is found without hunting through a long sheet.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -689,7 +689,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("25baa9eb-c8f9-553e-8363-ebe4867a2556"),
-            Name = "One Page Budget Planner",
+            Name = "Essential Budget Planner",
             Description = "A budget planner that keeps the whole month on one page, covering income, bills, savings, expenses, debt and a summary, for people who want the full picture in front of them at once.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
