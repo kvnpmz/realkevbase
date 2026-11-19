@@ -155,19 +155,21 @@ function toGuide(product) {
  *
  * The storefront cannot paint a product until React boots, which on a phone is most of two
  * seconds of empty screen; a visitor arriving from a social link sees nothing for that long
- * and leaves. This block puts the name, price, paper sizes and cover in the HTML itself, so
- * something real is on screen within a few hundred milliseconds. `src/main.jsx` removes it
- * the instant React is ready, so there is exactly one product on screen at a time.
+ * and leaves. This block puts the name, the card copy, price, paper sizes and cover in the
+ * HTML itself, so something real is on screen within a few hundred milliseconds — and there
+ * is something for a crawler to read if the bundle never runs at all. `src/main.jsx` removes
+ * it the instant React is ready, so there is exactly one product on screen at a time.
  *
  * Everything is inline: the block has to render before any stylesheet or script loads, and
  * inline styles cannot be lost to a later cascade.
  *
- * @param {{ name: string, price: number, cover: string | null, pageSizes: string[] }} guide
+ * @param {{ name: string, description: string, price: number, cover: string | null,
+ *   pageSizes: string[] }} guide
  *   Facts from the catalog for one guide. `cover` is the same-origin artwork route the app
  *   asks for, so the browser holds one copy of the image instead of two.
  * @returns {string} The seed markup, or an empty string when there is nothing to show.
  */
-function guideSeed({ name, price, cover, pageSizes }) {
+function guideSeed({ name, description, price, cover, pageSizes }) {
   if (!name) return ''
   const sizes = pageSizes.length ? pageSizes.join(' + ') : 'PDF'
   // Every thumbnail is a 500x647 webp, so the seed declares that ratio up front: without a
@@ -187,6 +189,15 @@ function guideSeed({ name, price, cover, pageSizes }) {
       'margin:0 auto 20px;border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,0.16)" />'
     : ''
 
+  // The card copy is the only prose a guide page has. Leaving it out of the seed meant a
+  // crawler that does not run the bundle saw a name, a price and nothing else — 36 words
+  // for a page whose job is to answer a search. It also sat above the price in the app, so
+  // seeding it keeps the first layout closer to the one React commits.
+  const descriptionMarkup = description
+    ? `<p style="margin:0 auto 12px;max-width:34rem;font-size:1rem;line-height:1.5;color:#5A6068">` +
+      `${escapeHtml(description)}</p>`
+    : ''
+
   return `    <div data-product-seed style="min-height:100vh;box-sizing:border-box;background:#fbfaf7;color:#16181c;` +
     'font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
     '<div style="max-width:44rem;margin:0 auto;padding:32px 20px 8px;text-align:center">' +
@@ -194,6 +205,7 @@ function guideSeed({ name, price, cover, pageSizes }) {
     '<p style="margin:0 0 6px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#6b6f76">' +
     'SaveSimple by RealKevbase</p>' +
     `<h1 style="margin:0 0 10px;font-size:clamp(1.4rem,5vw,2rem);line-height:1.15;letter-spacing:-0.02em">${escapeHtml(name)}</h1>` +
+    `${descriptionMarkup}` +
     `<p style="margin:0;color:#5a6068">$${escapeHtml(formatPrice(price))} · Instant PDF download · ${escapeHtml(sizes)}</p>` +
     '</div></div>\n'
 }
