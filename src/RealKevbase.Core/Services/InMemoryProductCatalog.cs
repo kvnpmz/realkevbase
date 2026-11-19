@@ -41,7 +41,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("d0e1fe4f-9b25-52db-89ae-e971cb68ad07"),
             Name = "New Apartment Checklist",
-            Description = "The same first-apartment essentials condensed into a dense grid rather than spread down a page, so 172 items fit on one sheet without turning into a booklet: living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom sit side by side and can be ticked in a single pass while you walk the rooms.",
+            Description = "A first-apartment checklist condensed into a dense grid rather than spread down a page, so 172 items fit on one sheet without turning into a booklet: living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom sit side by side and can be ticked in a single pass while you walk the rooms.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -63,7 +63,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("f4c24033-d4db-571b-a703-5c5c2b9e615e"),
             Name = "Ultimate Baby Registry List",
-            Description = "The 76-item baby registry checklist in a light blue colourway, grouped by where each item will actually live, from nursery and decor through bath and potty, clothing, gear and travel, nursing and feeding, health and safety and toys, so it can be walked through one section at a time in the shop or at the kitchen table.",
+            Description = "A 76-item baby registry checklist grouped by where each item will actually live, from nursery and decor through bath and potty, clothing, gear and travel, nursing and feeding, health and safety and toys, so it can be walked through one section at a time in the shop or at the kitchen table.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -96,7 +96,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("c034f9ca-8086-5f11-8468-2f1f81b32b53"),
             Name = "Budget Planner",
-            Description = "A budget planner that reads like a statement of the month rather than a wish list: income rows, sixteen bill rows, savings, expenses, debt and a summary that adds up to what is actually left, with space per line instead of a single total at the bottom.",
+            Description = "A budget planner that reads like a statement of the month rather than a wish list: income, sixteen bill lines, savings, expenses, debt and a summary that adds up to what is actually left, with space per line instead of a single total at the bottom.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -129,7 +129,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("c1f641af-65f7-56e2-bfe3-507d4f733025"),
             Name = "Simple Cleaning Planner",
-            Description = "The same 77-job cleaning schedule in a pink colourway, still split between what happens daily, on each weekday, once a month and once a year across twelve groups, so the weekly reset stays a short list you can finish rather than a vague ambition.",
+            Description = "A 77-job cleaning schedule split between what happens daily, on each weekday, once a month and once a year across twelve groups, so the weekly reset stays a short list you can finish rather than a vague ambition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -140,7 +140,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("a074a908-1801-5e02-8e43-899706901998"),
             Name = "Diverticulitis Food Chart",
-            Description = "A diverticulitis chart organised by food group instead of by verdict: whole grains, fruits and vegetables, legumes, nuts and seeds, skinless poultry and fish each get their own row, with the diverticulitis-friendly choices and the ones to hold back marked side by side, so you can judge a meal by what is actually on the plate.",
+            Description = "A diverticulitis chart organised by food group instead of by verdict: whole grains, fruits and vegetables, legumes, nuts and seeds, skinless poultry and fish each get their own group, with the diverticulitis-friendly choices and the ones to hold back marked side by side.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -151,7 +151,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("06d8772d-5948-51fe-9833-1291c654a20d"),
             Name = "Simple Diverticulitis Food Chart",
-            Description = "The diverticulitis chart in an alternative layout built for the fridge door, keeping the food-group rows of whole grains, fruits and vegetables, legumes, nuts and seeds, skinless poultry and fish, with the friendly choices and the ones to hold back marked side by side.",
+            Description = "A diverticulitis chart built for the fridge door, keeping the food groups of whole grains, fruits and vegetables, legumes, nuts and seeds, skinless poultry and fish, with the friendly choices and the ones to hold back marked side by side.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -173,7 +173,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("a2e6b2c8-8501-581b-becc-2a67398563a8"),
             Name = "Flare-Up Diverticulitis Food List",
-            Description = "The 78-item diverticulitis list in a regal colourway, still divided into 24 foods that help, 28 that are fine in moderation and 26 that tend to trigger a flare, grouped by food type so a shopping list can be built straight off the eat list.",
+            Description = "A 78-item diverticulitis food list divided into 24 foods that help, 28 that are fine in moderation and 26 that tend to trigger a flare, grouped by food type so a shopping list can be built straight off the eat list.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -195,7 +195,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("db2a2f20-31d9-5f7c-8538-e32a8d9e8074"),
             Name = "Essential College Dorm Checklist",
-            Description = "The 104-item dorm checklist in a pink colourway, covering bedroom, kitchen, study, bathroom, cleaning supplies, electronics and decor for a room that has to be somewhere to sleep, somewhere to cook, somewhere to work and somewhere to hang a wet towel.",
+            Description = "A 104-item dorm checklist covering bedroom, kitchen, study, bathroom, cleaning supplies, electronics and decor, for a room that has to be somewhere to sleep, somewhere to cook, somewhere to work and somewhere to hang a wet towel.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -228,7 +228,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("0379d248-a229-5305-a47b-f4557fdafca5"),
             Name = "Starter Emergency Food List",
-            Description = "The same 86-item emergency food list in a teal colourway, organised by aisle logic from grains and cereals, ready-to-eat foods, canned and jarred goods and dairy alternatives through condiments, snacks and drinks, so a stockpile is built from food a family will actually eat.",
+            Description = "An 86-item emergency food list organised by aisle logic, from grains and cereals, ready-to-eat foods, canned and jarred goods and dairy alternatives through condiments, snacks and drinks, so a stockpile is built from food a family will actually eat.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -283,7 +283,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("7738b126-7165-513d-a89e-33d6d3787790"),
             Name = "First Apartment Master List",
-            Description = "A room-by-room first-apartment checklist in a blue colourway, with every item marked essential or optional and a small plan card for move-in date, budget and apartment size, so a first flat is stocked in the order that actually matters.",
+            Description = "A room-by-room first-apartment checklist with every item marked essential or optional and a small plan card for move-in date, budget and apartment size, so a first flat is stocked in the order that actually matters.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -294,7 +294,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("d42f1395-4b11-52d1-bb94-f3f045362ce9"),
             Name = "First Apartment Complete List",
-            Description = "The first-apartment checklist in a green colourway, keeping the room-by-room order from bedroom and kitchen through bathroom, laundry and home tools, with the kitchen carrying the most weight because that is where a first flat costs most to stock.",
+            Description = "A first-apartment checklist in room-by-room order from bedroom and kitchen through bathroom, laundry and home tools, with the kitchen carrying the most weight because that is where a first flat costs most to stock.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -305,7 +305,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("52e548ae-fada-5a9e-a9a8-7b5b3dde39b9"),
             Name = "First Apartment Starter List",
-            Description = "The first-apartment checklist in a pink colourway, arranged room by room from bedroom and kitchen to bathroom, laundry and home tools, so you can shop one room at a time instead of guessing what a new flat still needs.",
+            Description = "A first-apartment checklist arranged room by room from bedroom and kitchen to bathroom, laundry and home tools, so you can shop one room at a time instead of guessing what a new flat still needs.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -316,7 +316,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("6e98d208-5bbe-5b72-8658-82103808b932"),
             Name = "First Apartment Ultimate List",
-            Description = "The first-apartment checklist in a plum colourway, with the essentials for each room on one sheet so a move-in can be planned room by room, from the kitchen stock-up to the laundry corner, the bathroom cabinet and the toolbox.",
+            Description = "A first-apartment checklist with the essentials for each room on one sheet, so a move-in can be planned room by room, from the kitchen stock-up to the laundry corner, the bathroom cabinet and the toolbox.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -327,7 +327,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("e9d66e3e-bd43-5699-a955-3eae82709691"),
             Name = "First Apartment Everyday List",
-            Description = "The 112-item first-apartment list in a purple colourway, keeping the room-by-room layout and the list of optionals that can wait, so the first shop covers what a flat needs on day one and nothing more.",
+            Description = "A 112-item first-apartment checklist with the room-by-room layout and a list of optionals that can wait, so the first shop covers what a flat needs on day one and nothing more.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -338,7 +338,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("f1910970-0875-507b-a3cf-aa1fb67ec983"),
             Name = "Simple Folic Acid List",
-            Description = "The folic acid food list in a blue colourway, grouped by source with leafy greens and cruciferous vegetables first, then legumes, citrus, fortified grains and the rest, with the everyday portion noted so it answers what to eat this week.",
+            Description = "A folic acid food list grouped by source, with leafy greens and cruciferous vegetables first, then legumes, citrus, fortified grains and the rest, and the everyday portion noted so it answers what to eat this week.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -360,7 +360,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("4dad84a3-646a-5320-8199-9eddd4126280"),
             Name = "Complete Folic Acid List",
-            Description = "The folic acid food list in a pink colourway, arranged by source from leafy greens and cruciferous vegetables through legumes, citrus and fortified grains, with the everyday portion beside each entry so it can be shopped from directly.",
+            Description = "A folic acid food list arranged by source from leafy greens and cruciferous vegetables through legumes, citrus and fortified grains, with the everyday portion beside each entry so it can be shopped from directly.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -382,7 +382,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("e7ef1371-59f2-50d3-a3e3-6f75f26902b2"),
             Name = "Complete GLP-1 Food List",
-            Description = "The 117-item GLP-1 food list in a green colourway, ordered the way it matters on the medication: protein and high-fibre vegetables first, then low-sugar fruit, whole grains and healthy fats, with refined carbohydrates, sugary drinks and fried foods listed separately.",
+            Description = "A 117-item GLP-1 food list ordered the way it matters on the medication: protein and high-fibre vegetables first, then low-sugar fruit, whole grains and healthy fats, with refined carbohydrates, sugary drinks and fried foods listed separately.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -404,7 +404,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("c324e89c-6ffd-5a82-8765-72fe1ccf5578"),
             Name = "Essential Grocery Checklist",
-            Description = "The 317-item grocery list in a blue colourway, sorted into 21 supermarket aisles from fruit and vegetables through chilled goods, seasoning, drinks and household supplies, so the list follows the trolley instead of sending you back.",
+            Description = "A 317-item grocery list sorted into 21 supermarket aisles from fruit and vegetables through chilled goods, seasoning, drinks and household supplies, so the list follows the trolley instead of sending you back.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -459,7 +459,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("c2633263-6c12-576e-bdca-0e9f1e4544ef"),
             Name = "Complete Household Checklist",
-            Description = "The 62-item household checklist in a blue colourway, covering dishwashing, cleaning, organisation, laundry, floors, windows, trash, bathroom, hygiene, kitchen and supplies, the work that keeps a home running rather than the work that makes it look tidy.",
+            Description = "A 62-item household checklist covering dishwashing, cleaning, organisation, laundry, floors, windows, trash, bathroom, hygiene, kitchen and supplies, the work that keeps a home running rather than the work that makes it look tidy.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -470,7 +470,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("19e7d8d5-715d-59e4-9297-3443bbabaa29"),
             Name = "Simple Household Essentials",
-            Description = "The same 62-item household checklist in a pink colourway, eleven groups from dishwashing and laundry to windows, trash, bathroom, hygiene and supplies, so the upkeep of a home sits on one page instead of in your head.",
+            Description = "A 62-item household checklist in eleven groups, from dishwashing and laundry to windows, trash, bathroom, hygiene and supplies, so the upkeep of a home sits on one page instead of in your head.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -492,7 +492,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("e600d847-813c-58ec-b7db-65354afde0d3"),
             Name = "Complete Investment Goals Template",
-            Description = "The monthly investment goals sheet in a pink colourway, with space for what is being put in, what it is for and what the target is, one page per month so the contribution is decided before the month spends it.",
+            Description = "A monthly investment goals sheet with space for what is being put in, what it is for and what the target is, one page per month so the contribution is decided before the month spends it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -514,7 +514,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("b6408a1a-80a6-5a97-b89e-d817bd212140"),
             Name = "Quick-Scan Kidney Food List",
-            Description = "The kidney food list rebuilt as a bulleted sheet for quick scanning, keeping eat and avoid on one page with red pepper, cauliflower, green beans and cucumber on one side and the potassium and phosphorus heavy foods on the other.",
+            Description = "A kidney food list laid out as a bulleted sheet for quick scanning, keeping eat and avoid on one page with red pepper, cauliflower, green beans and cucumber on one side and the potassium and phosphorus heavy foods on the other.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -525,7 +525,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("ff53b218-d86a-56f5-8b29-ed17e9b91b0d"),
             Name = "Sectioned Kidney Food List",
-            Description = "The kidney food list rebuilt with tab dividers, so the 117 items across vegetables, fruits, lean proteins, grains and starch, healthy fats, dairy alternatives and the rest can be flipped to without hunting: a print-and-file edition of the same renal guidance.",
+            Description = "A kidney food list with tab dividers, so the 117 items across vegetables, fruits, lean proteins, grains and starch, healthy fats, dairy alternatives and the rest can be flipped to without hunting through a long sheet.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -536,7 +536,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("f05d66f0-b8b8-5345-bf38-32464fe1e542"),
             Name = "Sectioned Kidney Grocery List",
-            Description = "The kidney grocery list rebuilt with tab dividers and a dark header, so the 117 items across vegetables, fruit, lean proteins, grains and starch, healthy fats and dairy alternatives can be flipped to without hunting through a long sheet.",
+            Description = "A kidney grocery list with tab dividers and a dark header, so the 117 items across vegetables, fruit, lean proteins, grains and starch, healthy fats and dairy alternatives can be flipped to without hunting through a long sheet.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -602,7 +602,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("44283e65-6790-5154-b6a1-da1d29651411"),
             Name = "Simple Low Potassium List",
-            Description = "The low potassium list in a decorative edition, arranged in three descending tiers rather than a two-way split, so a daily allowance can be spent across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks instead of avoided outright.",
+            Description = "A low potassium list arranged in three descending tiers rather than a two-way split, so a daily allowance can be spent across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks instead of avoided outright.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -624,7 +624,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("0108d445-c20a-57e3-82f7-526d7f35b092"),
             Name = "Master Weekly Meal Plan",
-            Description = "The weekly meal plan in a plum colourway, with a slot for every meal of the seven days and room for the shopping that follows from it, so the plan and the list are written on the same page instead of being reconstructed in the supermarket.",
+            Description = "A weekly meal plan with a slot for every meal of the seven days and room for the shopping that follows from it, so the plan and the list are written on one page instead of being reconstructed in the supermarket.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -646,7 +646,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("bd0893a7-eb09-528a-966e-a9dc1b684301"),
             Name = "Complete Monthly Budget Template",
-            Description = "The monthly budget template in a green colourway, with all 33 household categories already named from rent or mortgage, property tax and utilities through groceries, transport, insurance, childcare, savings and subscriptions, so nothing is invented from scratch each month.",
+            Description = "A monthly budget template with all 33 household categories already named, from rent or mortgage, property tax and utilities through groceries, transport, insurance, childcare, savings and subscriptions, so nothing is invented from scratch each month.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -657,7 +657,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("1f498cd8-29be-589c-a25d-12135738a1a7"),
             Name = "Master Monthly Budget Template",
-            Description = "The monthly budget template in a pink colourway, pre-filled with 33 household categories for income and spending, from mortgage and utilities to medical, student loans, savings, investments and the miscellaneous line everyone forgets.",
+            Description = "A monthly budget template pre-filled with 33 household categories for income and spending, from mortgage and utilities to medical, student loans, savings, investments and the miscellaneous line everyone forgets.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -679,7 +679,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("07745ba1-0d00-5bf8-a6cb-76b3201ed725"),
             Name = "Simple Paycheck Budget",
-            Description = "The paycheck budget in a blue colourway, allocating one pay period at a time: bills with due date and amount, then spending, savings goal and extra debt, so the money is divided when it lands rather than when it runs out.",
+            Description = "A paycheck budget that allocates one pay period at a time: bills with due date and amount, then spending, savings goal and extra debt, so the money is divided when it lands rather than when it runs out.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -712,7 +712,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("4a6453b4-d7e7-5fd0-8ffc-3eac5c979691"),
             Name = "Complete Travel Packing List",
-            Description = "The 57-item travel packing list in a blue colourway, grouped by what tends to be forgotten: documents first, then toiletries, financials, gadgets, health and medical, and a misc list for the adapters, padlocks and spare bags that only matter once you are away.",
+            Description = "A 57-item travel packing list grouped by what tends to be forgotten: documents first, then toiletries, financials, gadgets, health and medical, and a misc list for the adapters, padlocks and spare bags that only matter once you are away.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -871,7 +871,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("5f899170-eda9-5d3c-bd3b-175467535afd"),
             Name = "Starter Emergency Go Bag",
-            Description = "If nothing is packed yet, this is the shortest useful version: the dozen items no household should be without in a bag by the door, and the extras to add once the first one is done.",
+            Description = "If nothing is packed yet, start here: the dozen items no household should be without in a bag by the door, and the extras to add once the first one is done.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -937,7 +937,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("2e69d05e-d671-56ed-930e-be4a9c7073d1"),
             Name = "Weekly Meal Plan Essentials",
-            Description = "The same page turns into the store list, produce, meat, dairy, bakery, pantry and freezer, each with a box to tick, so the week gets bought in one trip and nothing in the trolley lacks a meal behind it.",
+            Description = "One page carries the week from menu to store list, produce, meat, dairy, bakery, pantry and freezer, each with a box to tick, so the week gets bought in one trip and nothing in the trolley lacks a meal behind it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -959,7 +959,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("532c2723-5815-5043-8e57-eb41d7ef0200"),
             Name = "Grocery Shopping List",
-            Description = "A single-page grocery shopping list that sorts 348 supermarket items into aisles, stars the pantry staples to check at home first, and adds store, date, budget and total-spent fields plus write-in rows for anything extra.",
+            Description = "A single-page grocery shopping list that sorts 348 supermarket items into aisles, stars the pantry staples to check at home first, and adds store, date, budget and total-spent fields plus space to write in anything extra.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -1025,7 +1025,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("78d07102-03ba-5626-98a2-4b497d59f84c"),
             Name = "Complete Kidney Lab Tracker",
-            Description = "Each row is a date, so a year of results stacks into a trend you can hand across a nephrology desk, which is what turns a scatter of lab printouts into a conversation about what is actually changing.",
+            Description = "Each date gets its own line, so a year of results stacks into a trend you can hand across a nephrology desk, which is what turns a scatter of lab printouts into a conversation about what is actually changing.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
