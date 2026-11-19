@@ -524,7 +524,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("ff53b218-d86a-56f5-8b29-ed17e9b91b0d"),
-            Name = "Sectioned Kidney Food List",
+            Name = "Everyday Kidney Food List",
             Description = "A kidney food list split into sections for vegetables, fruits, lean proteins, grains and starch, healthy fats, dairy alternatives and the rest, so the food you want is found without hunting through a long sheet.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
@@ -689,7 +689,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         new()
         {
             Id = Guid.Parse("25baa9eb-c8f9-553e-8363-ebe4867a2556"),
-            Name = "Budget Planner Grid",
+            Name = "One Page Budget Planner",
             Description = "A budget planner that keeps the whole month on one page, covering income, bills, savings, expenses, debt and a summary, for people who want the full picture in front of them at once.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,

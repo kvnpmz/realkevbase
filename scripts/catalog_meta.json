@@ -203,7 +203,7 @@
     "name": "Quick-Scan Kidney Food List"
   },
   "kidney_checklist_tabbed": {
-    "name": "Sectioned Kidney Food List"
+    "name": "Everyday Kidney Food List"
   },
   "kidney_checklist_tabbed_dark": {
     "name": "Sectioned Kidney Grocery List"
@@ -289,6 +289,9 @@
   },
   "paycheck_budget_blue": {
     "name": "Simple Paycheck Budget"
+  },
+  "planner_grid": {
+    "name": "One Page Budget Planner"
   },
   "power_outage_foodlist": {
     "category": "guides",
