@@ -9,6 +9,8 @@
  *
  *   guides/<slug>.html  the shell with that guide's title, description, canonical URL,
  *                       Open Graph tags and Product JSON-LD in its <head>
+ *   art/<id>.webp       that guide's cover, copied out of the API so the storefront can
+ *                       serve the Largest Contentful Paint image as a static file
  *   sitemap.xml         the home page plus every published guide
  *   robots.txt          crawl rules pointing at the sitemap
  *
