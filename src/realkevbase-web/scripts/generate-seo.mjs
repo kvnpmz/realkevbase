@@ -37,6 +37,7 @@ import { fileURLToPath } from 'node:url'
 import { ACCENT, ACCENT_WASH, SITE_NAME, BRAND } from '../src/data/site.js'
 import { HOME_HERO } from '../src/data/home.js'
 import { HUBS } from '../src/data/hubs.js'
+import { HUB_LINKS } from '../src/data/hubLinks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DIST = resolve(HERE, '..', 'dist')
@@ -280,6 +281,17 @@ function homeSeed() {
     `color:#FFFFFF;font-weight:700;text-decoration:none">${escapeHtml(HOME_HERO.cta.label)}</a></p>` +
     '<p style="margin:32px 0 0;display:flex;flex-wrap:wrap;gap:20px;font-size:12px;color:#5A6068">' +
     `${captions}</p>` +
+    // The subject chips, as real <a> tags: a crawler reaches all nine hub pages from `/`
+    // without running the bundle. The box is measured to the same metrics the React row
+    // uses, so the gallery does not move when React takes the container over.
+    '<p style="margin:24px 0 0;display:flex;flex-wrap:wrap;gap:8px">' +
+    HUB_LINKS.map(
+      (hub) =>
+        `<a href="/${hub.slug}" style="display:inline-flex;align-items:center;height:34px;` +
+        'padding:0 14px;border-radius:999px;border:1px solid #E7E4DC;background:#FFFFFF;' +
+        `color:#14161A;font-size:13px;font-weight:600;text-decoration:none">${escapeHtml(hub.label)}</a>`,
+    ).join('') +
+    '</p>' +
     '</div></div></div></div>\n'
   )
 }
@@ -578,19 +590,23 @@ const LEGAL_PAGES = [
 const STATIC_PAGE_CSS = `      :root { color-scheme: light; }
       body { margin: 0; padding: 40px 20px; background: #fbf9f5; color: #16181c;
         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
-      main { max-width: 900px; margin: 0 auto; }
+      /* 680px is the measure Firefox's reader mode uses: ~80 characters a line at
+         16px. At 900px the hub copy ran to well over 100 and was hard to track. */
+      main { max-width: 680px; margin: 0 auto; }
       h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; }
       p.lede { color: #55595f; margin: 0 0 32px; }
       section { margin: 0 0 32px; }
       h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid #e2ded6; padding-bottom: 8px; }
-      h2 span { color: #8a8e94; font-weight: 400; font-size: 15px; }
+      /* 4.8:1 on this background. The count beside a section heading is real text,
+         not decoration, so it has to clear AA. */
+      h2 span { color: #6b6f76; font-weight: 400; font-size: 15px; }
       ul { list-style: none; margin: 0; padding: 0; }
       li { display: flex; justify-content: space-between; gap: 16px; padding: 7px 0;
         border-bottom: 1px solid #f0ece4; }
       li span { color: #55595f; white-space: nowrap; }
       a { color: inherit; text-decoration: none; border-bottom: 1px solid #cfc9bd; }
       a:hover { border-bottom-color: #16181c; }
-      footer { max-width: 900px; margin: 40px auto 0; color: #6b6f76; font-size: 14px; }
+      footer { max-width: 680px; margin: 40px auto 0; color: #6b6f76; font-size: 14px; }
 `
 
 function buildIndexPage(guides) {

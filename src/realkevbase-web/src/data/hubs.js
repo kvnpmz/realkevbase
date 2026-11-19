@@ -16,10 +16,25 @@
  * Copy lives here rather than in the generator because it is editorial, and because the
  * hubs are the only pages in the collection whose text is not derived from a listing.
  */
+import { HUB_LINKS } from './hubLinks.js'
+
+/**
+ * The label for a collection, taken from the shared link list so the navbar, the home page
+ * chips and the hub page itself can never disagree about what a hub is called.
+ *
+ * @param {string} slug Hub slug.
+ * @returns {string} Its label.
+ */
+function hubLabel(slug) {
+  const match = HUB_LINKS.find((hub) => hub.slug === slug)
+  if (!match) throw new Error(`no hub link is defined for ${slug}`)
+  return match.label
+}
+
 export const HUBS = [
   {
     slug: 'kidney',
-    label: 'Kidney & renal',
+    label: hubLabel('kidney'),
     title: 'Kidney-friendly food lists and renal diet printables',
     metaDescription:
       'Printable kidney food lists, CKD stage 3 charts, low-potassium swaps, dialysis and renal meal plans, lab logs and renal restaurant guides. Instant PDF, $5.',
@@ -33,7 +48,7 @@ export const HUBS = [
   },
   {
     slug: 'emergency',
-    label: 'Emergency & power outage',
+    label: hubLabel('emergency'),
     title: 'Emergency food and power outage printables',
     metaDescription:
       'Printable 72-hour emergency plans, go-bag checklists, pantry rotation lists, stock logs and no-power meal plans for when the fridge stops and the shop shuts.',
@@ -47,7 +62,7 @@ export const HUBS = [
   },
   {
     slug: 'moving',
-    label: 'First apartment & moving',
+    label: hubLabel('moving'),
     title: 'First apartment checklists and moving printables',
     metaDescription:
       'Printable room-by-room first apartment checklists, setup cost worksheets, move-out deposit checklists, dorm lists and move-in budgets. Instant PDF, $5.',
@@ -60,7 +75,7 @@ export const HUBS = [
   },
   {
     slug: 'budgeting',
-    label: 'Budgeting & money',
+    label: hubLabel('budgeting'),
     title: 'Budget planners and money printables',
     metaDescription:
       'Printable monthly budget templates, 50/30/20 worksheets, bill calendars, paycheck budgets, sinking fund trackers and yearly planners. Instant PDF, $5.',
@@ -85,7 +100,7 @@ export const HUBS = [
   },
   {
     slug: 'diet-sheets',
-    label: 'Food lists by condition',
+    label: hubLabel('diet-sheets'),
     title: 'Printable food lists and diet charts by condition',
     metaDescription:
       'Printable eat, limit and avoid food lists for fatty liver, diverticulitis, gout, GLP-1, low carb, heart health, folic acid, protein and cortisol.',
@@ -111,7 +126,7 @@ export const HUBS = [
   },
   {
     slug: 'meal-planning',
-    label: 'Meal planning & groceries',
+    label: hubLabel('meal-planning'),
     title: 'Weekly meal plans and grocery list printables',
     metaDescription:
       'Printable weekly meal plans with aisle-by-aisle grocery lists, plus warehouse club shopping sheets with pack counts and unit prices. Instant PDF, $5.',
@@ -124,7 +139,7 @@ export const HUBS = [
   },
   {
     slug: 'planners',
-    label: 'Planners & schedules',
+    label: hubLabel('planners'),
     title: 'Daily and weekly planner printables',
     metaDescription:
       'Printable half-hour daily planners, a half-hour weekly schedule and a plain weekly plan for the few things that have to happen.',
@@ -137,7 +152,7 @@ export const HUBS = [
   },
   {
     slug: 'household',
-    label: 'Home & cleaning',
+    label: hubLabel('household'),
     title: 'Household and cleaning schedule printables',
     metaDescription:
       'Printable household checklists and cleaning schedules split into daily, weekly, monthly and yearly work. Instant PDF, $5.',
@@ -150,7 +165,7 @@ export const HUBS = [
   },
   {
     slug: 'packing',
-    label: 'Packing & travel',
+    label: hubLabel('packing'),
     title: 'Travel and carry-on packing list printables',
     metaDescription:
       'Printable carry-on packing lists and travel checklists that set clothing counts by trip length and group what goes in each bag.',

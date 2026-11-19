@@ -9,6 +9,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { ProductGrid } from './ProductGrid.jsx'
 import { Reviews } from './Reviews.jsx'
 import { HOME_HERO } from '../data/home.js'
+import { HUB_LINKS } from '../data/hubLinks.js'
 import { ACCENT_WASH } from '../data/site.js'
 import { SITE_TITLE } from '../data/site.js'
 
@@ -83,6 +84,39 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
                 <Typography key={caption} variant="caption">
                   {caption}
                 </Typography>
+              ))}
+            </Stack>
+            {/*
+              One link per collection. These are plain anchors, not router links: the hubs
+              are prerendered HTML with no SPA route, so a `Link` would fall through to the
+              catch-all redirect. The box model here is repeated in `homeSeed()` so the
+              gallery below does not shift when React replaces the seeded hero.
+            */}
+            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', pt: 2 }}>
+              {HUB_LINKS.map((hub) => (
+                <Box
+                  key={hub.slug}
+                  component="a"
+                  href={`/${hub.slug}`}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    height: 34,
+                    px: 1.75,
+                    borderRadius: '999px',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    '&:hover': { borderColor: 'text.primary' },
+                  }}
+                >
+                  {hub.label}
+                </Box>
               ))}
             </Stack>
           </Stack>

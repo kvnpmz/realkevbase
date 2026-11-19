@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom'
 import { useCartContext } from '../cart/cartContext.js'
 import { formatMoney } from '../cart/formatMoney.js'
 import { BRAND } from '../data/site.js'
+import { HUB_LINKS } from '../data/hubLinks.js'
 
 /** Primary navigation targets, absolute so they also work from a guide page. */
 const NAV_LINKS = [
@@ -38,8 +39,10 @@ const NAV_LINKS = [
 export function Navbar() {
   const { totals, openCart } = useCartContext()
   const [menuAnchor, setMenuAnchor] = useState(null)
+  const [collectionsAnchor, setCollectionsAnchor] = useState(null)
 
   const isMenuOpen = Boolean(menuAnchor)
+  const isCollectionsOpen = Boolean(collectionsAnchor)
   const cartLabel =
     totals.itemCount > 0
       ? `Open cart, ${totals.itemCount} item${totals.itemCount === 1 ? '' : 's'}`
@@ -112,6 +115,20 @@ export function Navbar() {
                 {link.label}
               </Button>
             ))}
+            {/*
+              Collections live as prerendered HTML at `/<slug>`, not as SPA routes, so the
+              menu items are plain anchors and a full page load. A router `Link` would hit
+              the catch-all and bounce the reader back to the home page.
+            */}
+            <Button
+              color="inherit"
+              onClick={(event) => setCollectionsAnchor(event.currentTarget)}
+              aria-haspopup="true"
+              aria-expanded={isCollectionsOpen}
+              sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
+            >
+              Collections
+            </Button>
           </Stack>
 
           <Box sx={{ flexGrow: 1 }} />
@@ -166,6 +183,30 @@ export function Navbar() {
       </Container>
 
       <Menu
+        anchorEl={collectionsAnchor}
+        open={isCollectionsOpen}
+        onClose={() => setCollectionsAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { minWidth: 250, mt: 1 } } }}
+      >
+        {HUB_LINKS.map((hub) => (
+          <MenuItem
+            key={hub.slug}
+            component="a"
+            href={`/${hub.slug}`}
+            onClick={() => setCollectionsAnchor(null)}
+          >
+            {hub.label}
+          </MenuItem>
+        ))}
+        <Divider />
+        <MenuItem component="a" href="/all-guides" onClick={() => setCollectionsAnchor(null)}>
+          All printable guides
+        </MenuItem>
+      </Menu>
+
+      <Menu
         anchorEl={menuAnchor}
         open={isMenuOpen}
         onClose={() => setMenuAnchor(null)}
@@ -181,6 +222,23 @@ export function Navbar() {
             onClick={() => setMenuAnchor(null)}
           >
             {link.label}
+          </MenuItem>
+        ))}
+        <Divider />
+        <MenuItem
+          disabled
+          sx={{ opacity: 1, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase' }}
+        >
+          Collections
+        </MenuItem>
+        {HUB_LINKS.map((hub) => (
+          <MenuItem
+            key={hub.slug}
+            component="a"
+            href={`/${hub.slug}`}
+            onClick={() => setMenuAnchor(null)}
+          >
+            {hub.label}
           </MenuItem>
         ))}
         <Divider />
