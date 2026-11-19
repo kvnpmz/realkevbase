@@ -60,12 +60,22 @@ export function HomePage({ products = [], loading = false, error = null, onRetry
               `radial-gradient(60% 60% at 72% 0%, ${ACCENT_WASH}, transparent 62%)`,
           }}
         />
-        <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 4, md: 5 } }}>
-          <Stack spacing={3} sx={{ maxWidth: 720 }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', pt: { xs: 8, md: 12 }, pb: { xs: 2, md: 2.5 } }}>
+          <Stack spacing={3} sx={{ maxWidth: 900 }}>
             <Typography variant="overline" color="secondary.main">
               {HOME_HERO.overline}
             </Typography>
-            <Typography variant="h1">{HOME_HERO.title}</Typography>
+            {/*
+              54px in a 900px column, balanced: the theme's h1 tops out at 68px, which
+              pushed this headline onto three lines. `balance` splits it evenly instead
+              of leaving a word alone on the last line.
+            */}
+            <Typography
+              variant="h1"
+              sx={{ fontSize: 'clamp(2.3rem, 6vw, 3.4rem)', textWrap: 'balance' }}
+            >
+              {HOME_HERO.title}
+            </Typography>
             <Typography variant="h5" component="p" color="text.secondary" sx={{ maxWidth: 620 }}>
               {HOME_HERO.subtitle}
             </Typography>

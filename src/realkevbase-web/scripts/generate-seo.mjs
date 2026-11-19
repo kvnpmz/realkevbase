@@ -257,23 +257,25 @@ function homeSeed() {
     // of pixels down; an element that is off-screen both before and after contributes no
     // layout shift, whereas a footer parked in the first viewport scored 0.35 on its own.
     '[data-home-seed] .rk-wrap{box-sizing:border-box;max-width:1200px;margin:0 auto;' +
-    'padding:64px 16px 32px;min-height:calc(100vh - 65px)}' +
+    'padding:64px 16px 16px;min-height:calc(100vh - 65px)}' +
     '[data-home-seed] .rk-lede{font-size:1.5rem}' +
     '@media (min-width:600px){[data-home-seed] .rk-bar>div{padding:0 24px}' +
     '[data-home-seed] .rk-wrap{padding:64px 24px 32px}}' +
     '@media (min-width:900px){[data-home-seed] .rk-bar{height:77px}' +
     '[data-home-seed] .rk-bar>div{font-size:1.25rem}' +
-    '[data-home-seed] .rk-wrap{padding:96px 24px 40px;min-height:calc(100vh - 77px)}}' +
+    '[data-home-seed] .rk-wrap{padding:96px 24px 20px;min-height:calc(100vh - 77px)}}' +
     '</style>' +
     `<div class="rk-bar"><div>${logo}<span>${escapeHtml(BRAND.wordmark)}</span></div></div>` +
-    '<div class="rk-hero"><div class="rk-wrap"><div style="max-width:720px">' +
+    '<div class="rk-hero"><div class="rk-wrap"><div style="max-width:900px">' +
     // MUI's overline is 0.75rem on a 2.66 line box, and the hero Stack leaves 24px after
     // it; both numbers are copied so the headline starts on the same pixel after boot.
     '<p style="margin:0 0 24px;font-size:0.75rem;line-height:2.66;font-weight:700;' +
     `letter-spacing:0.12em;text-transform:uppercase;color:${ACCENT}">` +
     `${escapeHtml(HOME_HERO.overline)}</p>` +
-    '<h1 style="margin:0;font-size:clamp(2.6rem,6vw,4.25rem);font-weight:800;line-height:1.03;' +
-    `letter-spacing:-0.035em">${escapeHtml(HOME_HERO.title)}</h1>` +
+    // Same size and balancing as the React h1: 68px pushed this onto three lines, and
+    // a seed that disagreed with the app would move the headline on mount.
+    '<h1 style="margin:0;font-size:clamp(2.3rem,6vw,3.4rem);font-weight:800;line-height:1.03;' +
+    `letter-spacing:-0.035em;text-wrap:balance">${escapeHtml(HOME_HERO.title)}</h1>` +
     '<p class="rk-lede" style="margin:24px 0 0;max-width:620px;' +
     `color:#5A6068">${escapeHtml(HOME_HERO.subtitle)}</p>` +
     `<p style="margin:24px 0 0"><a href="${escapeHtml(HOME_HERO.cta.href)}" ` +

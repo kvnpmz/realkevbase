@@ -306,7 +306,9 @@ export function ProductGrid({ products = [], loading = false, error = null, onRe
     <Box
       component="section"
       id="products"
-      sx={{ py: { xs: 7, md: 10 }, scrollMarginTop: { xs: '72px', md: '88px' } }}
+      // The hero above already ends on its own padding, and stacked the two left
+      // ~120px of empty page between the chips and this headline.
+      sx={{ pt: { xs: 4, md: 5 }, pb: { xs: 7, md: 10 }, scrollMarginTop: { xs: '72px', md: '88px' } }}
     >
       <Container maxWidth="lg">
         <Stack spacing={{ xs: 2.5, md: 3 }} sx={{ mb: { xs: 4, md: 5 } }}>
