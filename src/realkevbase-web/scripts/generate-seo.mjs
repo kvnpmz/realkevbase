@@ -522,13 +522,8 @@ function guideHead({
 }
 
 /** Builds the sitemap with the home page first, then every guide. */
-/** Display order and labels for the catalog categories the shop uses. */
-const CATEGORIES = [
-  ['money-budgeting', 'Money & budgeting'],
-  ['healthy-living', 'Healthy living'],
-  ['moving-out', 'Moving out'],
-  ['guides', 'Everyday guides'],
-]
+/** Display order and labels, taken from the one list the chips and hubs share. */
+const CATEGORIES = HUB_LINKS.map((hub) => [hub.slug, hub.label])
 
 /**
  * File name of the crawlable index, which links every guide from plain HTML. Cloudflare
@@ -541,18 +536,19 @@ const INDEX_PATH = 'all-guides.html'
 const INDEX_URL = '/all-guides'
 
 /**
- * The collection page a guide belongs to, or null for a listing whose subject has no hub.
+ * The collection page that owns a guide.
  *
- * Hubs are tested in declaration order and the first prefix match wins, so `renal-meal-plan`
- * is a kidney guide rather than a meal-planning one and `no-power-meal-plan` is an emergency
- * guide rather than a meal plan. Membership is derived, never listed twice: a new colourway
- * or translation joins the hub its base guide belongs to as soon as it is published.
+ * Every guide declares its shelf in `zz_tp/documents/<listing>/config.tl`, the API returns
+ * it as `category`, and this is the single place that turns that value into a page. Nothing
+ * is inferred from the slug any more: the old prefix lists had to be fed every new name
+ * shape (`fatty_liver_food_list` beside `fattyliver_foodlist`), and a prefix like `house`
+ * quietly claimed `warehouse_bulk_list`.
  *
- * @param {string} slug Guide slug.
- * @returns {(typeof HUBS)[number] | null} The hub that owns this guide, if any.
+ * @param {{ category?: string | null }} guide A guide from the catalogue.
+ * @returns {(typeof HUBS)[number] | null} The hub that owns it, if any.
  */
-function hubForSlug(slug) {
-  return HUBS.find((hub) => hub.prefixes.some((prefix) => slug.startsWith(prefix))) ?? null
+function hubFor(guide) {
+  return HUBS.find((hub) => hub.slug === guide.category) ?? null
 }
 
 /**
@@ -768,7 +764,8 @@ function withIndexFooter(shell, hub = null) {
  * Cards carry the name, the listing's one-sentence description and the price, because those
  * are the three things a reader compares — and the description is already unique per
  * listing, so the page cannot read as the same paragraph repeated. Membership is resolved
- * from the live catalog through `hubForSlug`, so a hub can never list an unpublished guide
+ * from the live catalog through its declared category, so a hub can never list an
+ * unpublished guide
  * or miss one that is live.
  *
  * @param {(typeof HUBS)[number]} hub Hub definition, including its copy.
@@ -777,7 +774,7 @@ function withIndexFooter(shell, hub = null) {
  */
 function buildHubPage(hub, guides) {
   const owned = [...guides.values()]
-    .filter((guide) => hubForSlug(guide.slug)?.slug === hub.slug)
+    .filter((guide) => hubFor(guide)?.slug === hub.slug)
     .sort((a, b) => a.name.localeCompare(b.name))
 
   const cards = owned
@@ -954,7 +951,7 @@ async function main() {
             ),
             guide,
           ),
-          hubForSlug(guide.slug),
+          hubFor(guide),
         ),
       )
     }),

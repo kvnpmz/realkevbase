@@ -92,32 +92,24 @@ ACCENTS = {
     "slate": ("#ECEFF3", "#D4DAE2", "#334155"),
 }
 
-#: Fallback card colour per storefront category, used only for brand-new listings.
+#: Fallback card colour per shelf, used only for a listing with no accent of its own.
 CATEGORY_ACCENT = {
-    "moving-out": "blue",
-    "healthy-living": "green",
-    "money-budgeting": "amber",
-    "guides": "purple",
+    "budgeting": "amber",
+    "kidney": "green",
+    "diet-sheets": "green",
+    "meal-planning": "green",
+    "emergency": "slate",
+    "moving": "blue",
+    "household": "blue",
+    "planners": "purple",
+    "packing": "purple",
+    "baby": "pink",
 }
 
-#: Sales-report families grouped into the four storefront categories.
-FAMILY_CATEGORY = {
-    "kidney / renal": "healthy-living",
-    "diverticulitis": "healthy-living",
-    "fatty liver": "healthy-living",
-    "gallbladder": "healthy-living",
-    "low carb / keto": "healthy-living",
-    "folic acid": "healthy-living",
-    "blood sugar": "healthy-living",
-    "mediterranean": "healthy-living",
-    "glp-1": "healthy-living",
-    "kids / adhd": "healthy-living",
-    "baby": "healthy-living",
-    "heart health": "healthy-living",
-    "high protein": "healthy-living",
-    "budget / finance": "money-budgeting",
-    "home / move": "moving-out",
-}
+#: The shelves the shop has. A listing declares one in its own config.tl; nothing infers it
+#: from a name, which is what used to put a warehouse bulk list under moving-out ("house"
+#: inside "warehouse") and a third of the shop under the "guides" fallback.
+TAXONOMY = os.path.join(REPO_ROOT, "scripts", "taxonomy.json")
 
 INDENT = " " * 12
 ENTRY_PATTERN = re.compile(r"(?m)^        new\(\)\n        \{\n(?P<body>(?:.*\n)*?)        \},\n")
@@ -210,6 +202,8 @@ def rewrite_catalog(text: str, edits: list[tuple[dict, dict]], additions: list[d
             body = replace_field(body, "Name", desired["name"])
         if desired["description"] != entry["description"]:
             body = replace_field(body, "Description", desired["description"])
+        if desired["category"] != entry["category"]:
+            body = replace_field(body, "Category", desired["category"])
         text = text[: entry["body_start"]] + body + text[entry["body_end"] :]
 
     if additions:
@@ -257,13 +251,32 @@ def discover(families) -> tuple[list[tuple[str, str]], list[str]]:
     return listings, skipped
 
 
-def infer_category(title: str, families) -> str:
-    """Map a listing title to one of the four storefront categories."""
-    if families is not None:
-        family = families.family_of(title)
-        if family in FAMILY_CATEGORY:
-            return FAMILY_CATEGORY[family]
-    return "guides"
+def declared_categories() -> set[str]:
+    """Return the shelves the shop has, from the taxonomy file."""
+    with open(TAXONOMY, encoding="utf-8") as handle:
+        return set(json.load(handle)["buckets"])
+
+
+def category_of(slug: str, config: dict[str, str], shelves: set[str]) -> str:
+    """Return the shelf a document declares, refusing to guess when it declares none.
+
+    The declaration is one line in the document's own ``config.tl``, inherited by every
+    edition because a variant is created by copying its base config. Refusing here is the
+    point: the old fallback silently filed the unrecognised third of the shop under
+    ``guides``, where nothing could tell a mis-shelved product from an unclassified one.
+    """
+    category = (config.get("category") or "").strip()
+    if not category:
+        raise SystemExit(
+            f"{slug}: no category in its config.tl; add category = \"<shelf>\" "
+            f"(one of: {', '.join(sorted(shelves))})"
+        )
+    if category not in shelves:
+        raise SystemExit(
+            f"{slug}: category {category!r} is not a shelf the shop has "
+            f"(one of: {', '.join(sorted(shelves))})"
+        )
+    return category
 
 
 def accent_for(slug: str, category: str, meta: dict) -> tuple[str, str, str]:
@@ -376,6 +389,7 @@ def build_plan(listings, catalog_entries, rows, meta, families):
 
     slugs = [slug for slug, _ in listings]
     copy = desired_copy(slugs, meta)
+    shelves = declared_categories()
 
     new_items, edits = [], []
     for slug, pdf in listings:
@@ -384,7 +398,7 @@ def build_plan(listings, catalog_entries, rows, meta, families):
 
         if entry is None:
             chosen = copy.get(slug) or fallback_copy(slug, config)
-            category = meta.get(slug, {}).get("category") or infer_category(chosen["name"], families)
+            category = category_of(slug, config, shelves)
             new_items.append(
                 {
                     "slug": slug,
@@ -409,9 +423,14 @@ def build_plan(listings, catalog_entries, rows, meta, families):
         desired = {
             "name": chosen["name"] or entry["name"],
             "description": chosen["description"] or entry["description"],
+            "category": category_of(slug, config, shelves),
             "source": chosen["source"],
         }
-        if desired["name"] != entry["name"] or desired["description"] != entry["description"]:
+        if (
+            desired["name"] != entry["name"]
+            or desired["description"] != entry["description"]
+            or desired["category"] != entry["category"]
+        ):
             edits.append((entry, desired, slug))
 
     # Names the catalog will hold once the edits land: a renamed listing may reuse a
@@ -739,6 +758,13 @@ def describe(plan, args) -> None:
     print(f"descriptions to refresh   : {len(rewrites)}")
     for entry, desired, slug in rewrites[:3]:
         print(f"  ~ {slug:<32} {desired['description'][:72]}…")
+    reshelved = [item for item in plan["edits"] if item[1]["category"] != item[0]["category"]]
+    print(f"shelves to re-declare     : {len(reshelved)}")
+    moved = {}
+    for entry, desired, slug in reshelved:
+        moved[(entry["category"], desired["category"])] = moved.get((entry["category"], desired["category"]), 0) + 1
+    for (old, new), count in sorted(moved.items(), key=lambda item: -item[1]):
+        print(f"  ~ {count:>3} {old} -> {new}")
 
     if plan["conflicts"]:
         print("duplicate product names")
@@ -765,6 +791,9 @@ def dump_json(plan) -> None:
             if desired["name"] != entry["name"]
         ],
         "redescribed": [slug for entry, desired, slug in plan["edits"] if desired["description"] != entry["description"]],
+        "recategorised": [
+            slug for entry, desired, slug in plan["edits"] if desired["category"] != entry["category"]
+        ],
         "warnings": plan["warnings"],
     }
     print(json.dumps(payload, indent=2))

@@ -7,11 +7,11 @@
  * a crawler reaches from the home page — which is the part the catalogue index alone never
  * provided.
  *
- * Membership is a prefix list over the guide slug (a listing id with underscores turned
- * into dashes), so a new colourway or translation joins its hub the moment it is
- * published, with no second list to keep in step. `scripts/generate-seo.mjs` walks the
- * hubs in this order and gives each guide to the first one that claims it, which is why
- * `renal_meal_plan` lands in kidney rather than in meal planning: `renal` is tested first.
+ * Membership is the guide's `category`, declared once in its own
+ * `zz_tp/documents/<listing>/config.tl` and returned by the API. Nothing here infers a
+ * shelf from a name: an edition inherits the declaration from the config it was copied
+ * from, so a colourway or translation joins its hub the moment it is published, and the
+ * shop's filter chips read the same value.
  *
  * Copy lives here rather than in the generator because it is editorial, and because the
  * hubs are the only pages in the collection whose text is not derived from a listing.
@@ -44,7 +44,6 @@ export const HUBS = [
       'Start with the list that matches the constraint you have. The stage 3 food list is the general one, the dialysis sheet adds fluid and the minerals that matter on treatment, and the low-potassium list is for when a single number is the whole problem. The lab logs cover the other half of the job: eGFR, creatinine, potassium, phosphorus and blood pressure written down, so an appointment starts from a trend instead of a memory.',
       'These are general food guidance, not a treatment plan. The sheet your dietitian gave you always wins.',
     ],
-    prefixes: ['kidney', 'ckd', 'renal', 'dialysis', 'lowpotassium', 'holiday-kidney'],
   },
   {
     slug: 'emergency',
@@ -58,7 +57,6 @@ export const HUBS = [
       'The food lists cover the smaller version of the same problem. A power outage has an order to it, the fridge warms from the top down and the freezer holds longer than people expect, so what to eat first and what can wait is a decision that can be made in advance, on a normal Tuesday.',
       'Print one, fill it in, keep it where the torch is.',
     ],
-    prefixes: ['emergency', 'no-power', 'power-outage', 'pantry-meal'],
   },
   {
     slug: 'moving',
@@ -71,7 +69,6 @@ export const HUBS = [
       'The expensive mistakes in a first apartment are not the big purchases. They are the small things bought twice because nobody wrote them down, and the deposit deductions nobody photographed on the way in. These checklists walk the flat room by room: what to buy before day one, what can wait until the second month, and what to record before the keys go back.',
       'The cost sheets do the arithmetic that surprises people, deposit, first month, connection fees and the van, listed ahead of the furniture because that is the order the money actually leaves. The dorm sheets are the same idea for a room that has to be a bedroom, a kitchen and an office at once.',
     ],
-    prefixes: ['apartment', 'first-apartment', 'movein', 'move-out', 'dorm'],
   },
   {
     slug: 'budgeting',
@@ -84,18 +81,6 @@ export const HUBS = [
       'Every budget sheet here answers the same question in a different way: what is actually left. Some are built around the month, some around the payday, some around the three-way split of needs, wants and savings, and one is a single page for a household that has never budgeted before and needs to finish the first attempt.',
       'The bill calendar and the sinking funds tracker cover the other half of the problem, the costs that arrive on a schedule nobody chose: insurance, renewals, repairs, the subscription that renews annually. Funding them a little each month is the difference between a tight month and a crisis.',
       'All of them are PDFs you print and write on, so the month gets entered by hand and the number stays where you can see it.',
-    ],
-    prefixes: [
-      'bill',
-      'budget',
-      'monthly-template',
-      'paycheck',
-      'yearly',
-      'sinking',
-      'planner-grid',
-      'investment',
-      'simple-monthly-budget',
-      'split-budget',
     ],
   },
   {
@@ -110,19 +95,6 @@ export const HUBS = [
       'Where a number changes the answer, purine milligrams, portion sizes, calorie counts, the sheet carries it rather than leaving it to memory, so the decision in the aisle is a comparison instead of a guess.',
       'These sheets are general food guidance, not personalised advice.',
     ],
-    prefixes: [
-      'fatty',
-      'diverticulitis',
-      'gout',
-      'glp1',
-      'folicacid',
-      'lowcarb',
-      'heart-health',
-      'high-protein',
-      'cortisol',
-      'baby-first',
-      'bloodsugar',
-    ],
   },
   {
     slug: 'meal-planning',
@@ -135,7 +107,6 @@ export const HUBS = [
       'Meal planning fails at the shop, not at the table. These sheets carry the week from the menu to the trolley: seven days of breakfast, lunch and dinner written out first, then the produce, meat, dairy, bakery, pantry and freezer lists that follow from them, so nothing in the trolley is there without a meal behind it.',
       'The warehouse sheets are for buying a month at once. Pack counts and unit prices are on the page because the trip that was meant to save money is exactly the trip that ends with a year of something nobody wanted.',
     ],
-    prefixes: ['meal-plan', 'grocery', 'warehouse'],
   },
   {
     slug: 'planners',
@@ -148,7 +119,6 @@ export const HUBS = [
       'There are two kinds of planner here, on purpose. The half-hour sheets rule the day from morning to night, for days that are full and need a shape they can actually fit into. The weekly plan leaves the seven days plain, for the few things that must happen and nothing else.',
       'Neither is a productivity system. They are paper where the day gets written down before it is spent, which is most of the difference between a plan and an intention.',
     ],
-    prefixes: ['halfhour', 'weekly-plan'],
   },
   {
     slug: 'household',
@@ -161,7 +131,6 @@ export const HUBS = [
       'Housework is a set of jobs with different rhythms, daily, every weekday, monthly, once a year, and most lists mix them together so the Saturday reset looks as long as the spring clean. These sheets separate them by how often the work comes round, which is what makes a routine something you can finish rather than a list you abandon.',
       'The household checklist covers the same ground a second way, by type of work: dishwashing, laundry, floors, windows, bathroom, supplies.',
     ],
-    prefixes: ['household', 'cleaning'],
   },
   {
     slug: 'packing',
@@ -174,6 +143,17 @@ export const HUBS = [
       'Packing lists are worth writing once and keeping, because the things people forget are the same every trip: chargers, medication, the one adapter, the paperwork for the rental. These sheets set tops, bottoms, underwear and shoes by trip length, then group the load into the personal item, the clothing, what you wear on the plane and what to check before you zip.',
       'There is a carry-on version for a short trip and a longer-trip checklist for everything that does not fit in one.',
     ],
-    prefixes: ['travel', 'carryon'],
+  },
+  {
+    slug: 'baby',
+    label: hubLabel('baby'),
+    title: 'Baby registry checklists and first foods printables',
+    metaDescription:
+      'Printable baby registry checklists and a 150-first-foods tracker, so a shower list covers the gear a newborn needs and every new taste gets written down.',
+    lede: 'Two lists for the first year: what to put on the registry, and what to offer once they start eating.',
+    intro: [
+      'A registry is easiest to write once it is sorted by where the thing lives rather than by aisle: the nursery, feeding, bath and changing, out and about, and the paperwork nobody remembers until the hospital asks for it. The checklist puts the gear in those groups and leaves a column for who is buying what, so a shower list reads as a plan instead of a wish list.',
+      'The first foods tracker is the other half. It names the 150 foods worth offering before a first birthday, in roughly the order they are introduced, with a dot beside each common allergen and a space to note what happened, so a reaction is written down on the day it happens rather than remembered from a photo.',
+    ],
   },
 ]

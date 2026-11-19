@@ -22,7 +22,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Track every new food your baby tries, with the first foods worth offering grouped by type and a dot beside each common allergen, so you can check off each taste and note reactions as you go.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "baby",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/baby-first-foods.pdf"
         },
@@ -33,7 +33,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A room-by-room checklist of what a first apartment needs, organised room by room from entrance and dining area through the kitchen knife drawer and utensil pot to the office shelf, bathroom cabinet, laundry corner and toolbox, including the small things leases never mention, from power sockets and door mats to a toilet plunger and spare bulbs, so nothing is bought twice or discovered missing in the first fortnight.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/apartment-checklist.pdf"
         },
@@ -44,7 +44,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first-apartment checklist to work through in a single pass while you walk the rooms, taking in living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom, so the first shop covers what a flat needs on day one.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/apartment-checklist-grid.pdf"
         },
@@ -55,7 +55,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A registry checklist grouped by where each item will actually live, from nursery and decor through bath and potty, clothing, gear and travel, nursing and feeding, health and safety, toys and learning, and a short section for the mother herself, built to be walked through with a shop assistant or a pushchair in one hand.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "baby",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/baby-registrylist.pdf"
         },
@@ -66,7 +66,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A baby registry checklist grouped by where each item will actually live, from nursery and decor through bath and potty, clothing, gear and travel, nursing and feeding, health and safety and toys, so it can be walked through section by section in the shop or at the kitchen table.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "baby",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/baby-registrylist-lightblue.pdf"
         },
@@ -77,7 +77,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A bill tracker for the recurring payments that quietly run a household: a line per bill with what it is, when it is due and whether it has been paid, so the month is checked off in a single pass instead of a stream of app notifications.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/bill-tracker.pdf"
         },
@@ -88,7 +88,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A blood sugar log with a line per reading and a note of the date, time, level and what was happening, kept deliberately plain so it can be filled in at the kitchen table and handed to a doctor with a few minutes to read it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/bloodsugar-log.pdf"
         },
@@ -99,7 +99,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A budget planner built as a statement of the month rather than a wish list: income, bill lines, savings, expenses, debt and a summary that adds up to what is actually left, so each cost is recorded where it happens instead of in one lump figure.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/budget-planner.pdf"
         },
@@ -110,7 +110,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney diet sheet for stage 3 CKD with foods to eat freely, foods to limit and foods to avoid, arranged so each category lines up across the page and the swap from one group to the next is obvious at a glance rather than something you have to reason about.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/ckd-stage3-food-list.pdf"
         },
@@ -121,7 +121,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A cleaning schedule that separates what happens every day from what happens on each weekday, what waits for the month and what waits for the year, grouped so the weekly reset is a short list you can finish rather than a vague ambition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "household",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/cleaning-planner.pdf"
         },
@@ -132,7 +132,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A cleaning schedule split between what happens daily, on each weekday, once a month and once a year, grouped by how often it comes round, so the weekly reset stays a short list you can finish rather than a vague ambition.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "household",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/cleaning-planner-pink.pdf"
         },
@@ -143,7 +143,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A diverticulitis chart organised by food group instead of by verdict: whole grains, fruits and vegetables, legumes, nuts and seeds, skinless poultry and fish each get their own group, with the diverticulitis-friendly choices and the ones to hold back marked clearly.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-foodchart.pdf"
         },
@@ -154,7 +154,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A diverticulitis chart built for the fridge door, keeping the food groups of whole grains, fruits and vegetables, legumes, nuts and seeds, skinless poultry and fish, with the friendly choices and the ones to hold back marked clearly.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-foodchart-alternative.pdf"
         },
@@ -165,7 +165,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A diverticulitis list split into eat, limit and avoid: the foods that help, the ones that are fine in moderation and the ones that tend to trigger a flare, grouped by type so a shopping list can be built straight off the eat list without a second reference.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-foodlist.pdf"
         },
@@ -176,7 +176,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A diverticulitis food list divided into the foods that help, the ones that are fine in moderation and the ones that tend to trigger a flare, grouped by food type so a shopping list can be built straight off the eat list.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/diverticulitis-foodlist-regal.pdf"
         },
@@ -187,7 +187,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A dorm list across bedroom, kitchen, study, bathroom, cleaning supplies, electronics and decor, sized for a room that has to do everything at once: somewhere to sleep, somewhere to cook, somewhere to work and somewhere to put a wet towel.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/dorm-list.pdf"
         },
@@ -198,7 +198,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A dorm checklist covering bedroom, kitchen, study, bathroom, cleaning supplies, electronics and decor, for a room that has to be somewhere to sleep, somewhere to cook, somewhere to work and somewhere to hang a wet towel.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/dorm-list-pink.pdf"
         },
@@ -209,7 +209,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A 72-hour emergency plan built around what a household actually consumes in a few days: water and drinks, protein, carbs and fruit, and the tools and extras that make the rest usable, with quantities rather than vague encouragement.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/emergency-72hour-plan.pdf"
         },
@@ -220,7 +220,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An emergency food list organised by aisle logic: grains and cereals, ready-to-eat and instant foods, dry and dehydrated goods, canned and jarred goods, dairy alternatives, condiments and cooking essentials, snacks and sweets, and drinks, so a stockpile is built from food a family will actually eat rather than tins that expire untouched.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/emergency-foodlist.pdf"
         },
@@ -231,7 +231,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An emergency food list organised by aisle logic, from grains and cereals, ready-to-eat foods, canned and jarred goods and dairy alternatives through condiments, snacks and drinks, so a stockpile is built from food a family will actually eat.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/emergency-foodlist-teal.pdf"
         },
@@ -242,7 +242,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A fatty liver food list organised by what to eat freely and what to hold back, running through vegetables, whole grains, legumes, fish and oils with the everyday portion in mind, and naming the specific foods so the choice is obvious at the shelf.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/fatty-liver-food-list.pdf"
         },
@@ -253,7 +253,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A fatty liver list sorted into eat, limit and avoid across grains and pulses, vegetables, fruit, proteins and fats, with the items written out so it can be taken shopping rather than interpreted at the fridge.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/fattyliver-foodlist.pdf"
         },
@@ -264,7 +264,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A fatty liver eat, limit and avoid list across grains and pulses, vegetables, fruit, proteins and fats, so the verdict on each food is there when you need it while you are cooking.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/fattyliver-foodlist-alternative.pdf"
         },
@@ -275,7 +275,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first-apartment list with the kitchen carrying the most weight, because that is where a first flat is most expensive to stock from nothing, alongside bedroom, living room, bathroom, laundry, extra supplies, home tools and a short list of optionals that can wait.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment.pdf"
         },
@@ -286,7 +286,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A room-by-room first-apartment checklist with every item marked essential or optional and a small plan card for move-in date, budget and apartment size, so a first flat is stocked in the order that actually matters.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment-blue.pdf"
         },
@@ -297,7 +297,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first-apartment checklist in room-by-room order from bedroom and kitchen through bathroom, laundry and home tools, with the kitchen carrying the most weight because that is where a first flat costs most to stock.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/first-apartment-green.pdf"
         },
@@ -308,7 +308,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first-apartment checklist arranged room by room from bedroom and kitchen to bathroom, laundry and home tools, so you can shop one room at a time instead of guessing what a new flat still needs.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/first-apartment-pink.pdf"
         },
@@ -319,7 +319,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first-apartment checklist with the essentials for each room on one sheet, so a move-in can be planned room by room, from the kitchen stock-up to the laundry corner, the bathroom cabinet and the toolbox.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/first-apartment-plum.pdf"
         },
@@ -330,7 +330,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first-apartment checklist organised room by room, with the optionals that can wait listed separately, so the first shop covers what a flat needs on day one and nothing more.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/first-apartment-purple.pdf"
         },
@@ -341,7 +341,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A folic acid food list grouped by source, with leafy greens and cruciferous vegetables first, then legumes, citrus, fortified grains and the rest, and the everyday portion noted so it answers what to eat this week.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/folicacid-foodlist-blue.pdf"
         },
@@ -352,7 +352,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A folic acid food list grouped by source: leafy greens and cruciferous vegetables first, then legumes, citrus, fortified grains and the rest, with the everyday portion noted so the list answers what to eat this week rather than what contains folate in principle.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/folicacid-foodlist-green.pdf"
         },
@@ -363,7 +363,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A folic acid food list arranged by source from leafy greens and cruciferous vegetables through legumes, citrus and fortified grains, with the everyday portion beside each entry so it can be shopped from directly.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/folicacid-foodlist-pink.pdf"
         },
@@ -374,7 +374,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A food list for people on a GLP-1 medication, built around the order that matters on the drug: protein and high-fibre vegetables first, then low-sugar fruit, whole grains and healthy fats, with the refined carbohydrates, sugary drinks and fried foods that cause trouble listed separately in descending tiers.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/glp1-checklist.pdf"
         },
@@ -385,7 +385,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A GLP-1 food list ordered the way it matters on the medication: protein and high-fibre vegetables first, then low-sugar fruit, whole grains and healthy fats, with refined carbohydrates, sugary drinks and fried foods listed separately.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/glp1-checklist-green.pdf"
         },
@@ -396,7 +396,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A grocery list sorted the way a supermarket is: fruit and vegetables through breakfast, meat, seafood and frozen, then baking, snacks, bakery, pasta and rice, cans and jars, chilled goods, seasoning, sauces, drinks, paper goods, cleaning, personal care and a short misc list, so the list follows the trolley instead of sending you back.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "meal-planning",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/grocery-list.pdf"
         },
@@ -407,7 +407,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A grocery list sorted into supermarket aisles from fruit and vegetables through chilled goods, seasoning, drinks and household supplies, so the list follows the trolley instead of sending you back.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "meal-planning",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/grocery-list-blue.pdf"
         },
@@ -418,7 +418,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A weekly schedule cut into half-hour blocks, from waking to sleeping, for the weeks when the problem is not knowing what to do but fitting it into the hours that exist.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/halfhour-weeklyschedule.pdf"
         },
@@ -429,7 +429,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A heart health food list built around what the food does rather than which aisle it comes from: omega-3 sources such as salmon, herring, mackerel and tuna each carry a note on what they contribute, alongside the fibre, nut and oil choices that support the same goal.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/heart-health-food-list.pdf"
         },
@@ -440,7 +440,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A protein guide that gives the number rather than the adjective, with calories and grams per serving for chicken, turkey, beef and the rest, so a daily target can be hit by arithmetic instead of estimation.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/high-protein-food-guide.pdf"
         },
@@ -451,7 +451,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A household checklist covering the work that keeps a home running rather than the work that makes it look tidy: dishwashing, cleaning, organisation, laundry, floors, windows, trash, bathroom, hygiene, kitchen and supplies, grouped by the kind of job.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "household",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/household-checklist.pdf"
         },
@@ -462,7 +462,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A household checklist covering dishwashing, cleaning, organisation, laundry, floors, windows, trash, bathroom, hygiene, kitchen and supplies, the work that keeps a home running rather than the work that makes it look tidy.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "household",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/household-checklist-blue.pdf"
         },
@@ -473,7 +473,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A household checklist grouped by the kind of work, from dishwashing and laundry to windows, trash, bathroom, hygiene and supplies, so the upkeep of a home sits on one page instead of in your head.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "household",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/household-checklist-pink.pdf"
         },
@@ -484,7 +484,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A monthly investment goals sheet: what is being put in, what it is for and what the target is, one page per month so the contribution is decided before the month spends it rather than audited afterwards.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/investment-goals.pdf"
         },
@@ -495,7 +495,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A monthly investment goals sheet with space for what is being put in, what it is for and what the target is, one page per month so the contribution is decided before the month spends it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/investment-goals-pink.pdf"
         },
@@ -506,7 +506,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney disease food list that keeps eat and avoid on one page: red pepper, cauliflower, green beans, cucumber and arugula on the eat list, the potassium and phosphorus heavy foods in the other, written to live on a fridge door.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-checklist.pdf"
         },
@@ -517,7 +517,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney food list built for quick scanning, keeping eat and avoid on one page with red pepper, cauliflower, green beans and cucumber listed first and the potassium and phosphorus heavy foods after them.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-checklist-bullet.pdf"
         },
@@ -528,7 +528,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney food list split into sections for vegetables, fruits, lean proteins, grains and starch, healthy fats, dairy alternatives and the rest, so the food you want is found without hunting through a long sheet.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-checklist-tabbed.pdf"
         },
@@ -539,7 +539,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney grocery list split into sections for vegetables, fruit, lean proteins, grains and starch, healthy fats and dairy alternatives, so the food you want is found without hunting through a long sheet.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/kidney-checklist-tabbed-dark.pdf"
         },
@@ -550,7 +550,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney list that starts with the low-potassium, low-phosphorus foods worth leaning on, then the high-potassium, high-phosphorus and salty foods worth holding back, with dairy substitutes, herbs and drinks included because those are where hidden potassium usually hides.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-foodlist.pdf"
         },
@@ -561,7 +561,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "The kidney food list separates the foods worth leaning on from the high-potassium, high-phosphorus and salty foods worth holding back, with dairy substitutes, herbs and drinks included because that is where hidden potassium usually hides.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-foodlist-card.pdf"
         },
@@ -572,7 +572,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A low-carb list divided into what to eat, what to limit and what to avoid, running through meat, seafood, poultry and eggs, vegetables, fruit, dairy and dairy alternatives, pantry staples, fats and oils, nuts, seeds, fermented foods, sweeteners and drinks, so the boundary is visible instead of guessed.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/lowcarb-foodlist.pdf"
         },
@@ -583,7 +583,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A low-carb list that sorts meat, seafood, poultry and eggs, vegetables, fruit, dairy, pantry staples, fats, nuts, seeds and drinks into eat, limit and avoid, covering the whole shop so no aisle is left out.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/lowcarb-foodlist-alternative.pdf"
         },
@@ -594,7 +594,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A low potassium list arranged in descending tiers: the foods to lean on across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks, the middle ground, then the high-potassium foods to leave alone, so a daily allowance can be spent rather than avoided.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/lowpotassium-foodlist.pdf"
         },
@@ -605,7 +605,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A low potassium list arranged in descending tiers, so a daily allowance can be spent across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks instead of avoided outright.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/lowpotassium-foodlist-decorative.pdf"
         },
@@ -616,7 +616,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A weekly meal plan with a slot for every meal of the seven days, plus room for the shopping that follows from it, so the plan and the list are written on the same page instead of being reconstructed in the supermarket.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/meal-plan.pdf"
         },
@@ -627,7 +627,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A weekly meal plan with a slot for every meal of the seven days and room for the shopping that follows from it, so the plan and the list are written on one page instead of being reconstructed in the supermarket.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/meal-plan-plum.pdf"
         },
@@ -638,7 +638,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A monthly budget template with the household categories already named, from rent or mortgage, property tax and home insurance through utilities, groceries, transport, insurance, medical, childcare, student loans, savings, investments, subscriptions and the miscellaneous line everyone forgets, so nothing is invented from scratch each month.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/monthly-template.pdf"
         },
@@ -649,7 +649,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A monthly budget template with the household categories already named, from rent or mortgage, property tax and utilities through groceries, transport, insurance, childcare, savings and subscriptions, so nothing is invented from scratch each month.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/monthly-template-green.pdf"
         },
@@ -660,7 +660,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A monthly budget template pre-filled with the household categories for income and spending, from mortgage and utilities to medical, student loans, savings, investments and the miscellaneous line everyone forgets.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/monthly-template-pink.pdf"
         },
@@ -671,7 +671,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A paycheck budget that allocates one pay period at a time: bills with due date, amount and whether they are paid, then spending, savings goal and extra debt, so the money is divided when it lands rather than when it runs out.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/paycheck-budget.pdf"
         },
@@ -682,7 +682,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A paycheck budget that allocates one pay period at a time: bills with due date and amount, then spending, savings goal and extra debt, so the money is divided when it lands rather than when it runs out.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/paycheck-budget-blue.pdf"
         },
@@ -693,7 +693,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A budget planner that keeps the whole month on one page, covering income, bills, savings, expenses, debt and a summary, for people who want the full picture in front of them at once.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "budgeting",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/planner-grid.pdf"
         },
@@ -704,7 +704,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A packing list built around the things people forget rather than the things they remember: documents and money first, then toiletries, gadgets, health and medical, with a misc list for the adapters, padlocks and spare bags that only matter once you are away.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "packing",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/travel-list.pdf"
         },
@@ -715,7 +715,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A travel packing list grouped by what tends to be forgotten: documents first, then toiletries, financials, gadgets, health and medical, and a misc list for the adapters, padlocks and spare bags that only matter once you are away.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "packing",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/travel-list-blue.pdf"
         },
@@ -726,7 +726,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A weekly plan with the seven days left plain and room to write on each, a page for the week as it is, with the few things that must happen kept where they can be seen.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/weekly-plan.pdf"
         },
@@ -764,7 +764,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page month-end budget review worksheet that lines up budgeted and actual spending across needs, wants and savings, with the difference and the percent used on each line, rollover checkboxes, and takeaway lines that set next month's plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/budget-vs-actual.pdf"
         },
@@ -775,7 +775,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple budget versus actual review for the end of the month that pairs budgeted and actual spending across needs, wants and savings, with the difference and the percent used on every line, the rollover carried and a takeaway for next month.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/budget-vs-actual-green.pdf"
         },
@@ -786,7 +786,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete budget versus actual review that closes the month by comparing what was budgeted with what was actually spent across needs, wants and savings, recording the gap on every line before carrying a short set of takeaways into the next month's plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/budget-vs-actual-serif.pdf"
         },
@@ -797,7 +797,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A carry-on packing list that sets tops, bottoms, underwear and shoe counts by trip length, then sorts the load into personal-item, clothing, wear-on-plane and before-you-zip checklists.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "packing",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/carryon-packing.pdf"
         },
@@ -808,7 +808,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Keep dialysis meals and fluids on track with a guide that sorts foods into enjoy, limit and avoid, shows potassium, phosphorus, sodium and fluid targets, and includes a cup-by-cup fluid log for the week.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/dialysis-food-fluid.pdf"
         },
@@ -819,7 +819,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Map out a dorm room before move-in day with a to-scale floor plan grid, measured furniture footprints, clearance rules, fit checks and a roommate split sheet on one printable page.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/dorm-room-layout.pdf"
         },
@@ -830,7 +830,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An emergency go bag checklist covering three packs, home, car and work, with quantities, targets and a twice-yearly check so every bag is ready before you need it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/emergency-gobag.pdf"
         },
@@ -841,7 +841,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An essential emergency go bag for the three bags a household actually needs, one by the door, one in the car and one at work, with a target quantity beside every item so a bag is packed the same way twice.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/emergency-gobag-green.pdf"
         },
@@ -852,7 +852,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete emergency go bag listing water, food, batteries and first aid with the number each person needs for three days, so the bag is packed to a target instead of a feeling.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/emergency-gobag-pink.pdf"
         },
@@ -863,7 +863,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An ultimate emergency go bag with a twice-yearly check written in and a dated line for every item, so the food, water and medication in three bags get replaced before the expiry date rather than the night they are needed.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/emergency-gobag-plum.pdf"
         },
@@ -874,7 +874,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A starter emergency go bag for a household with nothing packed yet, holding the items no one should be without in a bag by the door and the extras to add once the first one is done.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/emergency-gobag-serif.pdf"
         },
@@ -885,7 +885,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Set a 30-day emergency food target, record what is already on hand, and keep every best-by date rotating with a single-page stock log built for pantry shelves.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/emergency-stock-log.pdf"
         },
@@ -896,7 +896,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A gout food list that keeps a purine budget on one sheet, with eat-freely, limit and avoid groups, milligram values, smart swaps and a daily tally against a purine target.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/gout-food-list.pdf"
         },
@@ -907,7 +907,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Plan seven days of meals around breakfast, lunch and dinner for each day, then take the list through the store with checkbox produce, meat, dairy, bakery, pantry and freezer lists plus quantity, budget and notes lines.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/grocery-mealplan.pdf"
         },
@@ -918,7 +918,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple weekly meal plan that fills in breakfast, lunch and dinner first, one day per line, so the shopping that follows has something to build from rather than being guesswork in an aisle.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/grocery-mealplan-blue.pdf"
         },
@@ -929,7 +929,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete weekly meal plan where planning, shopping and cooking are one loop, the week written out day by day, turned into aisle lists, with a notes line for what the week actually cost.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/grocery-mealplan-mustard.pdf"
         },
@@ -940,7 +940,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Weekly meal plan essentials that carry the week from menu to store list, produce, meat, dairy, bakery, pantry and freezer, so the week gets bought in one trip and nothing in the trolley lacks a meal behind it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/grocery-mealplan-pink.pdf"
         },
@@ -951,7 +951,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A weekly grocery meal plan that gives every line a quantity and a budget beside the aisle it belongs to, keeping a week of meals inside a number instead of discovering the total at the till.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "meal-planning",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/grocery-mealplan-plum.pdf"
         },
@@ -962,7 +962,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A single-page grocery shopping list that sorts supermarket items into aisles, stars the pantry staples to check at home first, and adds store, date, budget and total-spent fields plus space to write in anything extra.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "meal-planning",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/grocery-shopping-list.pdf"
         },
@@ -973,7 +973,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney friendly grocery list for supermarket aisles that separates low-potassium, low-phosphorus and low-sodium foods into enjoy, small-portion and skip picks for easier CKD meal planning.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-grocery-list.pdf"
         },
@@ -984,7 +984,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney lab log for eGFR, creatinine, potassium, phosphorus, blood pressure and between-visit symptoms, keeping the essentials in one place for nephrology appointments.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-lab-essential.pdf"
         },
@@ -995,7 +995,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A minimal kidney lab log for eGFR, creatinine, potassium, phosphorus and blood pressure, built for quick checkups between nephrology visits.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/kidney-lab-minimal.pdf"
         },
@@ -1006,7 +1006,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A kidney lab tracker for eGFR, creatinine, potassium, phosphorus, blood pressure and monthly symptoms, built to bring a clear trend to every nephrology appointment.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-lab-tracker.pdf"
         },
@@ -1017,7 +1017,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple kidney lab tracker for eGFR, creatinine, potassium, phosphorus, blood pressure and how the month felt, so each set of results has somewhere to sit instead of living in a phone note.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/kidney-lab-tracker-pink.pdf"
         },
@@ -1028,7 +1028,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete kidney lab tracker with a line for each date, so a year of results stacks into a trend you can hand across a nephrology desk and turns a scatter of printouts into a conversation about what is changing.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/kidney-lab-tracker-serif.pdf"
         },
@@ -1039,7 +1039,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Swap higher-potassium foods for lower-potassium alternatives at a glance, with typical milligram values, realistic serving sizes and kidney-friendly substitutes on one printable page.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/lowpotassium-swap-chart.pdf"
         },
@@ -1050,7 +1050,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A single-page move-in budget worksheet that breaks first-apartment setup into room-by-room items with buy-now versus can-wait priorities, estimated and actual cost lines, a bought checkbox, a before-you-move cash section for deposits and utilities, and a move-in basics shopping list.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "moving",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/movein-budget.pdf"
         },
@@ -1061,7 +1061,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page power-outage food list that sequences fridge and freezer food before it spoils, lists shelf-stable no-cook foods, and maps three days of no-heat meals with a stock-up checklist.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/power-outage-foodlist.pdf"
         },
@@ -1072,7 +1072,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An essential power outage list that treats the fridge and freezer as the clock, putting the food that spoils first at the head of the list in the order to eat it, so a long outage costs a week of groceries instead of a freezer full.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/power-outage-foodlist-blue.pdf"
         },
@@ -1083,7 +1083,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete power outage list to shop from before the lights go out, shelf-stable food worth keeping on hand, the quantities that make a difference and a tick for each one, so the cupboard is stocked on a normal Tuesday.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/power-outage-foodlist-green.pdf"
         },
@@ -1094,7 +1094,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple power outage list for the moment the power is already off, answering what to eat first and what can wait in short plain entries that can be read by torchlight.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/power-outage-foodlist-lightblue.pdf"
         },
@@ -1105,7 +1105,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An everyday power outage list that maps out three days of meals needing no heat and no fridge, because the first day of an outage is easy and the third is where a household runs out of ideas.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/power-outage-foodlist-pink.pdf"
         },
@@ -1116,7 +1116,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Order at any restaurant with less guesswork using cuisine cards that pair what to order, what to leave on the plate and the exact phrase to say, plus a spot to write in your own targets.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/renal-eating-out.pdf"
         },
@@ -1127,7 +1127,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete renal restaurant guide with a space on every cuisine card for your own targets, potassium, phosphorus, sodium and fluid, in the numbers your dietitian gave you, so the guidance and your limits sit together.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/renal-eating-out-babyblue.pdf"
         },
@@ -1138,7 +1138,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple renal restaurant guide that gives each cuisine its own card and the sentence to say to the server, so ordering on a kidney diet becomes a request you have made before.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/renal-eating-out-blue.pdf"
         },
@@ -1149,7 +1149,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An everyday renal restaurant guide that separates what to order from what to leave on the plate, the part menus never tell you and the reason a careful meal can still arrive with too much potassium.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/renal-eating-out-pink.pdf"
         },
@@ -1160,7 +1160,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A classic renal restaurant guide with a cuisine card for each kind of restaurant a household ends up in, all following the same order so the second time you eat out the answer is already familiar.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/renal-eating-out-serif.pdf"
         },
@@ -1171,7 +1171,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Plan a full week of kidney-friendly meals with a single-page PDF that pairs seven days of low-potassium, low-sodium menus with portion cues, typical mineral ranges and a matching aisle-by-aisle shopping list for simpler CKD grocery trips.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/renal-meal-plan.pdf"
         },
@@ -1182,7 +1182,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page 50/30/20 budget worksheet that splits take-home pay into needs, wants and savings, with plan and spent recorded for every category, a zero check that proves each dollar is assigned, and fixes for when the split does not fit.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/split-budget.pdf"
         },
@@ -1193,7 +1193,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page 50/30/20 budget worksheet with a dollar target for each share of needs, wants and savings, categories inside each, and a zero check that proves the month is fully assigned.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/split-budget-balanced.pdf"
         },
@@ -1204,7 +1204,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete 50/30/20 budget that splits take-home pay into its three shares before a single category is filled in, so needs, wants and savings each start with a dollar target instead of being guessed at until the money runs out.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/split-budget-balanced-blue.pdf"
         },
@@ -1215,7 +1215,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A starter 50/30/20 budget written for a first month, one income, categories in each share, and thirty percent allowed to be imperfect while the habit is being built.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FDF2F8", "#FBCFE8", "#BE185D"),
             PdfBlobName = "guides/split-budget-balanced-pink.pdf"
         },
@@ -1226,7 +1226,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A classic 50/30/20 budget in which the total has to match the pay that came in, with a zero check that proves every dollar is assigned before the month starts.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/split-budget-balanced-serif.pdf"
         },
@@ -1237,7 +1237,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A stripped-back 50/30/20 budget worksheet with each percentage given room, an amount line per category, and a single zero check that proves every dollar of take-home pay is assigned.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#ECEFF3", "#D4DAE2", "#334155"),
             PdfBlobName = "guides/split-budget-minimal.pdf"
         },
@@ -1248,7 +1248,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page warehouse club stock-up sheet with pack-buying rules, items grouped by aisle, pack sizes, and a pack-count box beside every item.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "meal-planning",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/warehouse-bulk-list.pdf"
         },
@@ -1259,7 +1259,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A yearly budget planner with a line for each month, so the annual picture sits on one sheet and the expensive months, insurance renewals and the run-up to December are visible in advance instead of arriving as a surprise.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/yearly-budget.pdf"
         },
@@ -1270,7 +1270,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Fill in each bill on its due date and carry the running balance down the page to see what is left before the next check arrives.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/bill-calendar-budget.pdf"
         },
@@ -1281,7 +1281,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Un calendario de pagos para anotar cada factura en su fecha de vencimiento y restar el saldo línea por línea, para ver cuánto queda antes del próximo pago.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/bill-calendar-budget-es.pdf"
         },
@@ -1292,7 +1292,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Each bill goes on the date it leaves the account and the balance is carried down the page, so the question a household actually asks, what is left before payday, has an answer on the page.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/bill-calendar-budget-green.pdf"
         },
@@ -1303,7 +1303,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete bill calendar planner that sets every due date for the month, rent through subscriptions, against one calendar, so a bill cannot slip through because it arrived in an inbox nobody opened on the right day.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/bill-calendar-budget-pink.pdf"
         },
@@ -1314,7 +1314,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A master bill calendar planner that lines the month up with the paydays that fund it, first half and second half, so each bill is attached to the money that will actually be in the account when it falls due.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/bill-calendar-budget-plum.pdf"
         },
@@ -1325,7 +1325,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page cortisol food list that sorts everyday foods into eat freely, keep small and leave out, with a steadier-day eating timeline, easy swaps, and the daily pattern that matters more than any single food.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/cortisol-foodlist.pdf"
         },
@@ -1336,7 +1336,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una hoja que ordena los alimentos de cada día en sin límite, con moderación y evitar, con un horario diario y cuatro cambios fáciles para estabilizar la energía.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/cortisol-foodlist-es.pdf"
         },
@@ -1347,7 +1347,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete cortisol food list built on straight swaps, each one a substitute for something already in the cupboard, with the daily eating pattern that matters more than any single food alongside.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/cortisol-foodlist-green.pdf"
         },
@@ -1358,7 +1358,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple cortisol food list that sorts everyday foods into eat freely, keep small and leave out, so a shop can be done from one sheet instead of from a search result that contradicts the last one.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/cortisol-foodlist-pink.pdf"
         },
@@ -1369,7 +1369,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An everyday cortisol food list that lays out a day meal by meal with the timing that keeps energy steadier, because when you eat matters as much as what.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/cortisol-foodlist-plum.pdf"
         },
@@ -1380,7 +1380,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Plan a run of gentle low-fiber days with breakfast, lunch, dinner and snacks, a one-page shopping list and a step-by-step return to high-fiber eating after a mild diverticulitis flare.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-meal-plan.pdf"
         },
@@ -1391,7 +1391,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Un plan de comidas para diverticulitis con cinco días suaves y bajos en fibra, desayuno, almuerzo, cena y meriendas, lista de compras y una guía paso a paso para volver a la fibra después de un brote leve.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-meal-plan-es.pdf"
         },
@@ -1402,7 +1402,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple diverticulitis meal plan that writes out low-fibre days meal by meal, breakfast through snacks, gentle enough to eat while a flare is settling and specific enough that nobody has to invent a menu while feeling unwell.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-meal-plan-green.pdf"
         },
@@ -1413,7 +1413,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete diverticulitis meal plan for coming off a flare, adding fibre back in stages with a day between each, so the return to ordinary food is a plan rather than a guess that ends in a second bad week.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-meal-plan-pink.pdf"
         },
@@ -1424,7 +1424,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An everyday diverticulitis meal plan with one shopping list for the whole stretch, grouped so it can be bought in a single short trip, because the last thing anyone wants during a flare is to work out in an aisle what a low-fibre week contains.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "diet-sheets",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/diverticulitis-meal-plan-plum.pdf"
         },
@@ -1435,7 +1435,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page first apartment budget sheet with a section for each room, a price box beside every item, a room total for each section, the move-in fees that come before signing, and a grand total to fill in.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment-costs.pdf"
         },
@@ -1446,7 +1446,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una lista de gastos del primer apartamento que pone precio a cada cosa, con total por cuarto, gastos de entrada y total general, para saber cuánto hace falta antes de firmar.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment-costs-es.pdf"
         },
@@ -1457,7 +1457,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first apartment cost breakdown that totals each room and then the whole setup, so the real number appears early enough to decide what can wait until the second month.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment-costs-green.pdf"
         },
@@ -1468,7 +1468,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first apartment cost worksheet with a price recorded against every item, so it becomes a record of what was actually spent rather than a wish list and the total comes from receipts instead of a guess.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment-costs-pink.pdf"
         },
@@ -1479,7 +1479,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A first apartment budget estimate that lists the costs arriving before the keys do, deposit, first month, connection fees and the van, ahead of the furniture, so the budget is built in the order the money actually leaves.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "moving",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/first-apartment-costs-plum.pdf"
         },
@@ -1490,7 +1490,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A single-page holiday menu sorts turkey, sides, desserts and drinks into enjoy, small-serving and skip picks, with portions and lower-sodium swaps for CKD and dialysis tables.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/holiday-kidney-table.pdf"
         },
@@ -1501,7 +1501,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una mesa festiva para el riñón que ordena pavo, acompañamientos, postres y bebidas en disfruta, porción pequeña y evita, con porciones y cambios bajos en sodio.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/holiday-kidney-table-es.pdf"
         },
@@ -1512,7 +1512,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete kidney holiday menu with a lower-sodium swap written beside every dish that can take one, from the gravy to the stuffing, so the host can cook one table instead of two.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/holiday-kidney-table-green.pdf"
         },
@@ -1523,7 +1523,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "The whole holiday table is sorted by what to enjoy, what to take a small serving of and what to skip, so a guest with kidney disease can fill a plate at a family dinner without asking the host to explain every dish.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/holiday-kidney-table-pink.pdf"
         },
@@ -1534,7 +1534,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An everyday kidney holiday menu with portion sizes beside each dish, because most holiday food is not forbidden so much as measured and a plate with a spoonful of a few things beats a plate with none.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "healthy-living",
+            Category = "kidney",
             Accent = new ProductAccent("#EAF7F1", "#C6EBDD", "#0F766E"),
             PdfBlobName = "guides/holiday-kidney-table-plum.pdf"
         },
@@ -1545,7 +1545,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A room-by-room move-out checklist for renters that records condition and photos in each room, logs damage and repair costs, and totals the deposit deductions so the security deposit comes back on time.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/move-out-deposit.pdf"
         },
@@ -1556,7 +1556,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una guía completa de mudanza imprimible para inquilinos que registra la condición y las fotos de cada habitación, anota daños y costos de reparación, y calcula el saldo del depósito para recuperarlo a tiempo.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/move-out-deposit-es.pdf"
         },
@@ -1567,7 +1567,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple move out checklist that gives each room a condition note and a place to record the photos taken on the day, so a deposit dispute is answered with a dated set of images instead of a memory.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/move-out-deposit-green.pdf"
         },
@@ -1578,7 +1578,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete move out checklist that logs every deduction with its repair cost and carries it to a total, the number a landlord has to argue against.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/move-out-deposit-pink.pdf"
         },
@@ -1589,7 +1589,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Move out essentials checklist in the order a flat is actually walked out of, room by room and last things last, so the final inspection is a list followed rather than an hour spent trying to remember the boiler cupboard.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "moving",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/move-out-deposit-plum.pdf"
         },
@@ -1600,7 +1600,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A 14 day emergency meal plan of breakfast, lunch, dinner and snacks built only from shelf-stable food, with household quantities and a two-week shopping list so the pantry gets bought once and eaten in order.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/no-power-meal-plan.pdf"
         },
@@ -1611,7 +1611,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Catorce días de desayuno, almuerzo, cena y merienda armados solo con comida de despensa, con raciones por persona y una lista de compras de dos semanas para comprar una vez y comer en orden.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/no-power-meal-plan-es.pdf"
         },
@@ -1622,7 +1622,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A two-week emergency meal plan built around what is already on the shelf, so a stockpile is worked through in the order it expires instead of restocked in a panic.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/no-power-meal-plan-green.pdf"
         },
@@ -1633,7 +1633,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Emergency meal plan essentials for when the power drops and the shop is shut, fourteen days of breakfast, lunch, dinner and snacks that need no stove and no electricity, built only from shelf-stable food with a two-week shopping list.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/no-power-meal-plan-pink.pdf"
         },
@@ -1644,7 +1644,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Every meal for fourteen days is written out with the quantities a household actually eats, breakfast through snacks, from shelf-stable food only, so one two-week shop covers the plan and nothing sits in the cupboard unaccounted for.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/no-power-meal-plan-plum.pdf"
         },
@@ -1655,7 +1655,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An emergency food list built as a four-week dinner rotation from shelf-stable staples, with calorie counts, no-power cooking notes and a monthly top-up routine so the pantry gets eaten and restocked instead of forgotten.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/pantry-meal-rotation.pdf"
         },
@@ -1666,7 +1666,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una rotación de cuatro semanas de cenas hechas solo con conservas y productos de despensa, con calorías contadas, notas para cocinar sin electricidad y una rutina mensual de reposición.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/pantry-meal-rotation-es.pdf"
         },
@@ -1677,7 +1677,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A master emergency food list with a monthly top-up routine, showing what four weeks of dinners consume so the shop each month replaces exactly what was eaten and the stock never quietly expires behind the rice.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/pantry-meal-rotation-green.pdf"
         },
@@ -1688,7 +1688,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete emergency food list of four weeks of dinners drawn from the same shelf-stable staples in a rotation, so the pantry is eaten rather than admired and the fourth week tastes different from the first.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/pantry-meal-rotation-pink.pdf"
         },
@@ -1699,7 +1699,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Emergency food list essentials with calorie counts beside every dinner, the detail most emergency pantries miss, because a rotation that leaves a household hungry is a shelf of ingredients rather than a plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "emergency",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/pantry-meal-rotation-plum.pdf"
         },
@@ -1710,7 +1710,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page sinking funds worksheet that gives every non-monthly bill its own line with target, saved and monthly set-aside amounts, plus a box to tick for each month, so insurance, repairs, holidays and annual subscriptions are funded before they arrive.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "budgeting",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/sinking-funds-tracker.pdf"
         },
@@ -1721,7 +1721,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una hoja para organizar los fondos de reserva: cada gasto que no es mensual tiene su meta, lo ahorrado y la cantidad mensual, con doce casillas numeradas para marcar cada apartado.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "budgeting",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/sinking-funds-tracker-es.pdf"
         },
@@ -1732,7 +1732,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple sinking funds tracker that starts with the list of what belongs there, anything paid quarterly, annually or once in a while, then gives each one a figure, covering the costs that never arrive on a direct debit.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "budgeting",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/sinking-funds-tracker-green.pdf"
         },
@@ -1743,7 +1743,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete sinking funds tracker that gives every bill which does not arrive monthly its own target and monthly set-aside, so insurance, repairs and the annual subscription are funded a little at a time.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "budgeting",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/sinking-funds-tracker-pink.pdf"
         },
@@ -1754,7 +1754,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A master sinking funds tracker with a record for every month and transfer, since a sinking fund is kept by the month it was paid into and the tick is what turns an intention into a balance.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "budgeting",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/sinking-funds-tracker-plum.pdf"
         },
@@ -1765,7 +1765,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una hoja imprimible para el club de compras con reglas para comprar por volumen, productos agrupados por pasillo, tamaños de paquete y una casilla para anotar cuántos paquetes llevar.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "meal-planning",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/warehouse-bulk-list-es.pdf"
         },
@@ -1776,7 +1776,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple warehouse shopping list that gives every item a pack count, so the trip meant to save money does not end with a year of something nobody wanted.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "meal-planning",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/warehouse-bulk-list-green.pdf"
         },
@@ -1787,7 +1787,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete warehouse shopping list covering the everyday items from the freezer cases to the household paper, so one walk through the store covers the month and nothing gets bought twice.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "meal-planning",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/warehouse-bulk-list-pink.pdf"
         },
@@ -1798,7 +1798,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A master warehouse shopping list that sets the rules first, on what is worth buying in bulk and what a unit price has to beat, then the items and how many packs, so the membership pays for itself.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "moving-out",
+            Category = "meal-planning",
             Accent = new ProductAccent("#E7EEFF", "#C7D8FF", "#1D4ED8"),
             PdfBlobName = "guides/warehouse-bulk-list-plum.pdf"
         },
@@ -1809,7 +1809,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A day ruled into half-hour blocks from early morning to late evening, with room at the top for the things that have to happen, so the plan for the day gets written down instead of held in your head.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/halfhour-daily-planner.pdf"
         },
@@ -1820,7 +1820,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Un día dividido en bloques de media hora desde la mañana hasta la noche, con espacio arriba para las cosas que tienen que pasar, para que el plan del día quede escrito y no en la cabeza.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/halfhour-daily-planner-es.pdf"
         },
@@ -1831,7 +1831,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple half hour planner, written at the start of the day and carried, that takes the plan out of your head and puts it where it can be looked at.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/halfhour-daily-planner-green.pdf"
         },
@@ -1842,7 +1842,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A complete half hour planner that settles the things that have to happen today before the half-hour blocks fill up, so the day is shaped around a decision already made rather than a list of everything anyone could do.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/halfhour-daily-planner-pink.pdf"
         },
@@ -1853,7 +1853,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "An everyday half hour planner that rules the day from morning to night in half-hour blocks, the amount of time a day actually contains, so an overfull plan is visible before it fails.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "guides",
+            Category = "planners",
             Accent = new ProductAccent("#F1ECFF", "#DCD0FF", "#6D28D9"),
             PdfBlobName = "guides/halfhour-daily-planner-plum.pdf"
         },
@@ -1864,7 +1864,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A one-page monthly budget sheet with planned and actual spending recorded for every line, bills, everyday spending and savings subtotals, and a left-to-spend total for beginner budgeters.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/simple-monthly-budget.pdf"
         },
@@ -1875,7 +1875,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "Una hoja de presupuesto mensual de una página con planeado y gastado uno al lado del otro, totales de cuentas, gastos diarios y ahorros, y un renglón destacado con el dinero que queda al final del mes.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/simple-monthly-budget-es.pdf"
         },
@@ -1886,7 +1886,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple monthly budget planner for a first household budget, with planned and actual spending entered line by line and one closing figure that says what is left to spend.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/simple-monthly-budget-green.pdf"
         },
@@ -1897,7 +1897,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple monthly budget sheet where planned and actual sit together for every line, so the month shows where the guess was wrong instead of only what was spent.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/simple-monthly-budget-pink.pdf"
         },
@@ -1908,7 +1908,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
             Description = "A simple monthly budget worksheet that subtotals bills, everyday spending and savings separately, so it is clear whether a tight month comes from fixed costs or from the small ones.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
-            Category = "money-budgeting",
+            Category = "budgeting",
             Accent = new ProductAccent("#FEF7E7", "#FBE3B5", "#92400E"),
             PdfBlobName = "guides/simple-monthly-budget-plum.pdf"
         },

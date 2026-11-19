@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""Check the storefront taxonomy in ``scripts/taxonomy.json`` against the real catalogue.
+"""Check that every printable declares a shelf the shop actually has.
 
-The taxonomy only holds up if every product lands in exactly one bucket and every sales
-family rolls into one, so this asserts both instead of trusting the prefix lists to stay
-tidy. It also prints where the two ways of classifying a product disagree — the listing id
-is matched by prefix, the shop name is matched by the sales keyword rules — because those
-disagreements are what put a warehouse bulk list under `moving-out` (the words "house" in
-"warehouse") and dumped a third of the shop into `guides`.
+The shelf is `category = "kidney"` in ``zz_tp/documents/<listing>/config.tl`` — declared
+once, next to the document's id, and inherited by every edition because a variant is
+created by copying its base config. This asserts the declarations rather than guessing a
+shelf from a listing name: the old prefix lists needed a new entry for every spelling the
+shop invented (`fatty_liver_food_list` beside `fattyliver_foodlist`), and a prefix like
+`house` quietly claimed `warehouse_bulk_list`.
 
-Read-only: it fetches the catalogue for names, or falls back to the listing copy on disk.
+It also re-checks the sales side: families.py's keyword families must each roll into one
+shelf, and where a product's family disagrees with its declared shelf that gets printed —
+as an audit of the two vocabularies, never as a decision.
 
-Usage:
-    python3 scripts/check-taxonomy.py            # assertions and a per-bucket count
-    python3 scripts/check-taxonomy.py --verbose   # also list every product and its bucket
+Read-only. Usage:
+    python3 scripts/check-taxonomy.py             # assertions and a per-shelf count
+    python3 scripts/check-taxonomy.py --verbose    # also list every document and its shelf
 """
 
 from __future__ import annotations
@@ -21,16 +23,16 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 import sys
-import urllib.error
-import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TAXONOMY = os.path.join(ROOT, "scripts", "taxonomy.json")
 FAMILIES = os.path.join(ROOT, "zz_tp", "scripts", "families.py")
-OUTPUT = os.path.join(ROOT, "zz_tp", "output")
 DOCUMENTS = os.path.join(ROOT, "zz_tp", "documents")
-API_URL = "https://api.realkevbase.com"
+HUB_LINKS = os.path.join(ROOT, "src", "realkevbase-web", "src", "data", "hubLinks.js")
+
+CATEGORY = re.compile(r"^\s*category\s*=\s*\"([^\"]+)\"", re.M)
 
 
 def load_taxonomy() -> dict:
@@ -46,135 +48,107 @@ def load_families():
     return module
 
 
-def shop_names() -> dict[str, str]:
-    """Return the catalogue's name per listing id, or the folder name when offline."""
-    url = f"{API_URL}/api/products"
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            payload = json.load(response)
-        return {
-            str(item["listingId"]): str(item.get("name") or "")
-            for item in payload
-            if item.get("listingId")
-        }
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError):
-        print(f"could not read {url}; names fall back to the listing folders", file=sys.stderr)
-        return {}
+def shop_labels() -> dict[str, str]:
+    """Return slug -> label from the module the chips and hubs share."""
+    with open(HUB_LINKS, encoding="utf-8") as handle:
+        source = handle.read()
+    return dict(re.findall(r"slug:\s*'([^']+)',\s*label:\s*'([^']+)'", source))
 
 
-def listings() -> list[str]:
-    """Return every rendered listing, which is the set the shop actually sells."""
-    return sorted(
-        name
-        for name in os.listdir(OUTPUT)
-        if os.path.isdir(os.path.join(OUTPUT, name))
-    )
-
-
-def slug_of(listing: str) -> str:
-    return listing.replace("_", "-")
-
-
-def buckets_for(listing: str, buckets: list[dict]) -> list[str]:
-    """Every bucket whose prefix matches; more than one is an ambiguity to fix."""
-    slug = slug_of(listing)
-    return [
-        bucket["slug"]
-        for bucket in buckets
-        if any(slug.startswith(prefix) for prefix in bucket["prefixes"])
-    ]
-
-
-def bucket_of_family(families, buckets: list[dict], name: str) -> tuple[str, str]:
-    """Return the sales family and the bucket it rolls into, for one shop name."""
-    family = families.family_of(name) if name else "other"
-    for bucket in buckets:
-        if family in bucket.get("families", []):
-            return family, bucket["slug"]
-    return family, ""
+def declared() -> tuple[dict[str, str], list[str]]:
+    """Return the shelf declared in each document's config, and the folders that lack one."""
+    found: dict[str, str] = {}
+    missing: list[str] = []
+    for name in sorted(os.listdir(DOCUMENTS)):
+        path = os.path.join(DOCUMENTS, name, "config.tl")
+        if not os.path.exists(path):
+            missing.append(name)
+            continue
+        with open(path, encoding="utf-8") as handle:
+            match = CATEGORY.search(handle.read())
+        if match:
+            found[name] = match.group(1)
+        else:
+            missing.append(name)
+    return found, missing
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate the storefront taxonomy.")
-    parser.add_argument("--verbose", action="store_true", help="list every product and bucket")
+    parser.add_argument("--verbose", action="store_true", help="list every document and shelf")
     args = parser.parse_args(argv)
 
     taxonomy = load_taxonomy()
-    buckets = taxonomy["buckets"]
+    buckets: list[str] = taxonomy["buckets"]
+    mapping: dict[str, str] = taxonomy["families"]
     unmapped = {item["family"] for item in taxonomy.get("unmappedFamilies", [])}
+    labels = shop_labels()
     families = load_families()
-    names = shop_names()
-    products = listings()
+    shelves, missing = declared()
 
     failures: list[str] = []
 
-    # A slug or a prefix defined twice makes the answer depend on list order, not on intent.
-    slugs = [bucket["slug"] for bucket in buckets]
-    for slug in {slug for slug in slugs if slugs.count(slug) > 1}:
-        failures.append(f"bucket {slug!r} is defined twice")
-    seen_prefix: dict[str, str] = {}
-    for bucket in buckets:
-        for prefix in bucket["prefixes"]:
-            if prefix in seen_prefix:
-                failures.append(
-                    f"prefix {prefix!r} is in both {seen_prefix[prefix]!r} and {bucket['slug']!r}"
-                )
-            seen_prefix[prefix] = bucket["slug"]
+    # The shop's chip list and this file must name the same shelves, in either order.
+    if set(labels) != set(buckets):
+        only_shop = sorted(set(labels) - set(buckets))
+        only_file = sorted(set(buckets) - set(labels))
+        failures.append(
+            f"taxonomy.json and hubLinks.js disagree: {only_file} only in the file, "
+            f"{only_shop} only in the shop"
+        )
+    for slug in {slug for slug in buckets if buckets.count(slug) > 1}:
+        failures.append(f"shelf {slug!r} is listed twice")
 
-    # Every product, exactly one bucket.
-    counts: dict[str, int] = {bucket["slug"]: 0 for bucket in buckets}
-    assigned: dict[str, str] = {}
-    for listing in products:
-        matched = buckets_for(listing, buckets)
-        if not matched:
-            failures.append(f"{listing}: matches no bucket")
+    # Every document declares a shelf the shop has.
+    counts: dict[str, int] = {slug: 0 for slug in buckets}
+    for name, missing_one in [(name, True) for name in missing]:
+        failures.append(f"{name}: no category in config.tl")
+    for name, shelf in sorted(shelves.items()):
+        if shelf not in counts:
+            failures.append(f"{name}: category {shelf!r} is not a shelf the shop has")
             continue
-        if len(matched) > 1:
-            failures.append(f"{listing}: matches {len(matched)} buckets ({', '.join(matched)})")
-            continue
-        assigned[listing] = matched[0]
-        counts[matched[0]] += 1
-
+        counts[shelf] += 1
     for slug, count in counts.items():
         if count == 0:
-            failures.append(f"bucket {slug!r} holds no product")
+            failures.append(f"shelf {slug!r} holds no document")
 
-    # Every sales family either rolls into a bucket or says why it does not.
+    # Every sales family rolls into one shelf, or says why it does not.
     known = {family for family, _ in getattr(families, "RULES", [])}
-    placed = {family for bucket in buckets for family in bucket.get("families", [])}
-    for family in sorted(placed - known):
+    for family in sorted(set(mapping) - known):
         failures.append(f"family {family!r} is mapped but families.py does not define it")
-    for family in sorted(known - placed - unmapped):
-        failures.append(f"family {family!r} rolls into no bucket and is not declared unmapped")
-    for family in sorted(placed & unmapped):
+    for family in sorted(known - set(mapping) - unmapped):
+        failures.append(f"family {family!r} rolls into no shelf and is not declared unmapped")
+    for family in sorted(set(mapping) & unmapped):
         failures.append(f"family {family!r} is both mapped and declared unmapped")
+    for family, shelf in sorted(mapping.items()):
+        if shelf not in counts:
+            failures.append(f"family {family!r} rolls into {shelf!r}, which is not a shelf")
 
-    # The two classifiers should agree; where they do not, the id prefix wins (it is the
-    # deliberate choice) but the name is evidence the shop copy disagrees with the shelf.
+    # Audit, not decision: does the sales vocabulary agree with the declared shelf?
     disagree = []
-    for listing, bucket in sorted(assigned.items()):
-        family, other = bucket_of_family(families, buckets, names.get(listing, ""))
-        if other and other != bucket:
-            disagree.append((listing, bucket, other, family, names.get(listing, "")))
+    for name, shelf in sorted(shelves.items()):
+        family = families.family_of(name.replace("_", " "))
+        other = mapping.get(family, "")
+        if other and other != shelf:
+            disagree.append((name, shelf, other, family))
 
-    # Report.
-    print(f"{len(products)} listings · {len(buckets)} buckets · {len(valid_prefixes(buckets))} prefixes")
+    print(f"{len(shelves)} documents · {len(buckets)} shelves · {len(mapping)} sales families")
     print()
-    for bucket in buckets:
-        print(f"  {counts[bucket['slug']]:>4}  {bucket['slug']:<14} {bucket['label']}")
+    for slug in buckets:
+        label = labels.get(slug, "(no label)")
+        print(f"  {counts.get(slug, 0):>4}  {slug:<14} {label}")
     if unmapped:
         print(f"\n  unmapped families: {', '.join(sorted(unmapped))}")
 
     if args.verbose:
-        print("\nassignments")
-        for listing, bucket in sorted(assigned.items()):
-            print(f"  {bucket:<14} {listing}")
+        print("\ndeclarations")
+        for name, shelf in sorted(shelves.items()):
+            print(f"  {shelf:<14} {name}")
 
     if disagree:
-        print(f"\nname and id disagree on {len(disagree)} listing(s) (id prefix wins)")
-        for listing, bucket, other, family, name in disagree:
-            print(f"  {listing:<32} id→{bucket:<13} name→{other:<13} [{family}] {name}")
+        print(f"\nname and shelf disagree on {len(disagree)} document(s) — the declaration wins")
+        for name, shelf, other, family in disagree:
+            print(f"  {name:<32} shelf {shelf:<13} family {family} → {other}")
 
     if failures:
         print(f"\n{len(failures)} problem(s)")
@@ -182,12 +156,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  FAIL {failure}")
         return 1
 
-    print("\ntaxonomy holds: one bucket per product, one bucket per family")
+    print("\ntaxonomy holds: every document declares one shelf, every family rolls into one")
     return 0
-
-
-def valid_prefixes(buckets: list[dict]) -> set[str]:
-    return {prefix for bucket in buckets for prefix in bucket["prefixes"]}
 
 
 if __name__ == "__main__":

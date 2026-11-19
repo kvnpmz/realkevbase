@@ -1,104 +1,68 @@
 {
   "_comment": [
-    "The storefront's subject taxonomy: one bucket per thing a shopper is looking for.",
-    "This is the only place a bucket is defined. Prefixes are matched against a listing id",
-    "with underscores turned into hyphens (kidney_foodlist_pink -> kidney-foodlist-pink), so",
-    "a colourway, a serif edition or a translation inherits its parent's bucket and never",
-    "needs its own entry.",
+    "The sales-report half of the storefront taxonomy. The shelf a product sits on is",
+    "declared once, in zz_tp/documents/<listing>/config.tl as `category = \"kidney\"`, and",
+    "that declaration is what the catalogue, the shop's filter chips and the collection",
+    "pages all read. Nothing here decides a product's shelf.",
     "",
-    "Order matters twice: a listing joins the first bucket whose prefix matches, so the more",
-    "specific prefixes come first (baby before diet-sheets), and the same order is the order",
-    "the buckets appear in the shop's chip row. check-taxonomy.py fails if a listing matches",
-    "two buckets, so an ambiguous prefix cannot sit here unnoticed.",
+    "What lives here is the other direction: which sales-report keyword family rolls up into",
+    "which shelf, so a report and the shop can be read side by side. The families stay",
+    "finer than the shelf on purpose - 'diverticulitis outsold gout' is worth keeping, and",
+    "it costs nothing to keep above a shelf that both feed.",
     "",
-    "families are the sales-report keyword families from zz_tp/scripts/families.py that roll",
-    "up into this bucket. They stay finer than the bucket on purpose: 'diverticulitis outsold",
-    "gout' is worth keeping, and it costs nothing to keep above a bucket that both feed.",
+    "buckets lists the shelves the shop has, in display order, so a checker can catch a",
+    "config.tl that names one the shop does not have, and a docs page that names one the",
+    "config never uses. The labels live in src/realkevbase-web/src/data/hubLinks.js; the two",
+    "lists are asserted equal rather than copied.",
     "",
     "The four Etsy-era categories (healthy-living, money-budgeting, moving-out, guides) are",
     "deliberately absent. They were the sales report's groupings, and 'guides' was the",
     "fallback for a family the report did not recognise, not a subject."
   ],
   "buckets": [
-    {
-      "slug": "baby",
-      "label": "Baby & kids",
-      "prefixes": ["baby"],
-      "families": ["baby"]
-    },
-    {
-      "slug": "kidney",
-      "label": "Kidney & renal",
-      "prefixes": ["kidney", "ckd", "renal", "dialysis", "lowpotassium", "holiday-kidney"],
-      "families": ["kidney / renal"]
-    },
-    {
-      "slug": "diet-sheets",
-      "label": "Diet & food lists",
-      "prefixes": [
-        "fatty", "diverticulitis", "gout", "glp1", "folicacid", "lowcarb",
-        "heart-health", "high-protein", "cortisol", "bloodsugar"
-      ],
-      "families": [
-        "diverticulitis", "fatty liver", "gallbladder", "cortisol / adrenal",
-        "low carb / keto", "folic acid", "blood sugar", "mediterranean", "glp-1",
-        "kids / adhd", "heart health", "high protein"
-      ]
-    },
-    {
-      "slug": "meal-planning",
-      "label": "Meal planning & groceries",
-      "prefixes": ["meal-plan", "grocery", "warehouse"],
-      "families": ["grocery / meal"]
-    },
-    {
-      "slug": "emergency",
-      "label": "Emergency & power outage",
-      "prefixes": ["emergency", "no-power", "power-outage", "pantry-meal"],
-      "families": ["emergency / survival"]
-    },
-    {
-      "slug": "budgeting",
-      "label": "Budgeting & money",
-      "prefixes": [
-        "bill", "budget", "monthly-template", "paycheck", "yearly", "sinking",
-        "planner-grid", "investment", "simple-monthly-budget", "split-budget"
-      ],
-      "families": ["budget / finance"]
-    },
-    {
-      "slug": "moving",
-      "label": "Moving & first apartment",
-      "prefixes": ["apartment", "first-apartment", "movein", "move-out", "dorm"],
-      "families": ["home / move"]
-    },
-    {
-      "slug": "household",
-      "label": "Home & cleaning",
-      "prefixes": ["household", "cleaning"],
-      "families": ["cleaning / upkeep"]
-    },
-    {
-      "slug": "planners",
-      "label": "Planners & schedules",
-      "prefixes": ["halfhour", "weekly-plan"],
-      "families": ["planner / productivity"]
-    },
-    {
-      "slug": "packing",
-      "label": "Packing & travel",
-      "prefixes": ["travel", "carryon"],
-      "families": ["travel"]
-    }
+    "kidney",
+    "emergency",
+    "moving",
+    "budgeting",
+    "diet-sheets",
+    "meal-planning",
+    "planners",
+    "household",
+    "packing",
+    "baby"
   ],
+  "families": {
+    "kidney / renal": "kidney",
+    "emergency / survival": "emergency",
+    "home / move": "moving",
+    "budget / finance": "budgeting",
+    "diverticulitis": "diet-sheets",
+    "fatty liver": "diet-sheets",
+    "gallbladder": "diet-sheets",
+    "cortisol / adrenal": "diet-sheets",
+    "low carb / keto": "diet-sheets",
+    "folic acid": "diet-sheets",
+    "blood sugar": "diet-sheets",
+    "mediterranean": "diet-sheets",
+    "glp-1": "diet-sheets",
+    "kids / adhd": "diet-sheets",
+    "heart health": "diet-sheets",
+    "high protein": "diet-sheets",
+    "grocery / meal": "meal-planning",
+    "planner / productivity": "planners",
+    "cleaning / upkeep": "household",
+    "travel": "packing",
+    "baby": "baby",
+    "gout / uric acid": "diet-sheets"
+  },
   "unmappedFamilies": [
     {
       "family": "wedding",
-      "reason": "No wedding product exists or is planned; the family stays in the sales rules so historical rows still group, but it has no bucket to roll into."
+      "reason": "No wedding product exists or is planned; the family stays in the sales rules so historical rows still group, but it has no shelf to roll into."
     },
     {
       "family": "other",
-      "reason": "families.py's own catch-all: a title that matched no keyword. A bucket for it would be the 'guides' mistake again."
+      "reason": "families.py's own catch-all: a title that matched no keyword. A shelf for it would be the 'guides' mistake again."
     }
   ]
 }

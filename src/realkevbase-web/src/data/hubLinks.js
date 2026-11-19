@@ -18,4 +18,5 @@ export const HUB_LINKS = [
   { slug: 'planners', label: 'Planners & schedules' },
   { slug: 'household', label: 'Home & cleaning' },
   { slug: 'packing', label: 'Packing & travel' },
+  { slug: 'baby', label: 'Baby & kids' },
 ]
