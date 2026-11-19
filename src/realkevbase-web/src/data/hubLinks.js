@@ -13,7 +13,7 @@ export const HUB_LINKS = [
   { slug: 'emergency', label: 'Emergency & power outage' },
   { slug: 'moving', label: 'First apartment & moving' },
   { slug: 'budgeting', label: 'Budgeting & money' },
-  { slug: 'diet-sheets', label: 'Food lists by condition' },
+  { slug: 'diet-sheets', label: 'Diet & food lists' },
   { slug: 'meal-planning', label: 'Meal planning & groceries' },
   { slug: 'planners', label: 'Planners & schedules' },
   { slug: 'household', label: 'Home & cleaning' },

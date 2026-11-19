@@ -101,14 +101,14 @@ export const HUBS = [
   {
     slug: 'diet-sheets',
     label: hubLabel('diet-sheets'),
-    title: 'Printable food lists and diet charts by condition',
+    title: 'Printable food lists and diet charts',
     metaDescription:
-      'Printable eat, limit and avoid food lists for fatty liver, diverticulitis, gout, GLP-1, low carb, heart health, folic acid, protein and cortisol.',
-    lede: 'Eat, limit and avoid charts for one condition at a time, with the numbers where they matter.',
+      'Printable eat, limit and avoid food lists and diet charts, from low carb and high protein to liver-friendly, gut-friendly, low purine and heart-friendly eating.',
+    lede: 'Eat, limit and avoid charts for one way of eating at a time, with the numbers where they matter.',
     intro: [
-      'A condition changes which foods are worth buying, and a general healthy-eating list does not tell you which. Each sheet takes one condition and sorts real foods into eat, limit and avoid: fatty liver and diverticulitis, gout and purines, low carb, appetite on a GLP-1 medication, folic acid, heart health, protein and cortisol.',
+      'Which foods are worth buying depends on what you are eating for, and a general healthy-eating list does not tell you which. Each sheet takes one way of eating and sorts real foods into eat, limit and avoid: low carb and high protein, liver-friendly and gut-friendly, low purine, low cholesterol, steady blood sugar and folate, plus first foods for a baby starting solids.',
       'Where a number changes the answer, purine milligrams, portion sizes, calorie counts, the sheet carries it rather than leaving it to memory, so the decision in the aisle is a comparison instead of a guess.',
-      'These are general food guidance, not a treatment plan, and nothing here replaces the advice you were given for your own case.',
+      'These sheets are general food guidance, not personalised advice.',
     ],
     prefixes: [
       'fatty',
