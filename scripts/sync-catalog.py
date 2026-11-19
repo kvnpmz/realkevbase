@@ -13,7 +13,8 @@ mismatch fails silently. This script diffs all three and repairs the mechanical 
 
   1. Registers unlisted folders — database row, PDF upload and catalog entry — with a
      product GUID derived from the listing id, so a re-run produces the same product
-     instead of a duplicate.
+     instead of a duplicate. A new listing also gets its cover renders and its gallery
+     clip, so one command is all a listing needs before the deploy.
   2. Refreshes names and descriptions from ``zz_tp/documents/<listing>/listing.txt``,
      the canonical shop copy. Only the first pipe segment becomes the product name;
      colour editions keep their ``— Green``-style suffix.
@@ -27,10 +28,12 @@ commit, so a failed upload cannot leave a product selling a PDF that is not stor
 
 Usage:
     python3 scripts/sync-catalog.py                     # dry run, prints the diff
-    python3 scripts/sync-catalog.py --apply             # rows, uploads, catalog source, images
+    python3 scripts/sync-catalog.py --apply             # rows, uploads, catalog, images, clips
     python3 scripts/sync-catalog.py --apply --no-upload # when the PDFs are already up
     python3 scripts/sync-catalog.py --apply --no-images # skip thumbnail publishing
     python3 scripts/sync-catalog.py --apply --images    # republish images for old listings too
+    python3 scripts/sync-catalog.py --apply --no-videos # skip gallery clip rendering
+    python3 scripts/sync-catalog.py --apply --videos    # re-render every gallery clip
     python3 scripts/sync-catalog.py --json              # machine-readable diff
 """
 
@@ -677,16 +680,42 @@ def publish_a4_editions(source: str, container: str = CONTAINER) -> bool:
     return True
 
 
+def image_interpreter() -> str:
+    """Return the venv Python that has Pillow, falling back to this interpreter.
+
+    The image and clip scripts both need Pillow, and the system ``python3`` does not
+    have it — a fallback that silently picks it turns a missing package into
+    ``ModuleNotFoundError`` halfway through a publish.
+    """
+    interpreter = os.path.join(REPO_ROOT, "venv", "bin", "python")
+    return interpreter if os.path.exists(interpreter) else sys.executable
+
+
 def publish_images(excluded=()) -> bool:
     """Publish covers and gallery renders, skipping the generator's probe folders."""
     script = os.path.join(REPO_ROOT, "scripts", "build-thumbnails.py")
-    interpreter = os.path.join(REPO_ROOT, "venv", "bin", "python")
-    if not os.path.exists(interpreter):
-        interpreter = sys.executable
-    command = [interpreter, script, "--upload"]
+    command = [image_interpreter(), script, "--upload"]
     for listing in excluded:
         command += ["--exclude", listing]
     print("\npublishing thumbnails and gallery renders…")
+    return subprocess.call(command) == 0
+
+
+def publish_videos(listings) -> bool:
+    """Render and upload the gallery clip for each listing.
+
+    An empty list means every listing, which is what ``--videos`` asks for; the clip
+    script skips any clip that is already newer than its page render, so a full pass
+    only pays for what actually changed.
+    """
+    script = os.path.join(REPO_ROOT, "scripts", "build-gallery-video.py")
+    command = [image_interpreter(), script, "--upload"]
+    if listings:
+        for listing in listings:
+            command += ["--only", listing]
+    else:
+        command.append("--all")
+    print("\nrendering gallery clips…")
     return subprocess.call(command) == 0
 
 
@@ -756,6 +785,16 @@ def main() -> int:
         "--no-images",
         action="store_true",
         help="skip thumbnail publishing with --apply",
+    )
+    parser.add_argument(
+        "--videos",
+        action="store_true",
+        help="re-render gallery clips for every listing, not just the new ones",
+    )
+    parser.add_argument(
+        "--no-videos",
+        action="store_true",
+        help="skip gallery clip rendering with --apply",
     )
     parser.add_argument("--json", action="store_true", help="print the diff as JSON")
     args = parser.parse_args()
@@ -847,6 +886,19 @@ def main() -> int:
         if not publish_images(sorted(getattr(families, "EXCLUDED_DOCS", ()))):
             print("error: thumbnail publishing failed", file=sys.stderr)
             return 1
+
+    # A listing that was just registered has no clip in storage either, and the catalog
+    # only advertises a `videoUrl` when the blob is listed. Unlike a missing cover, a
+    # missing clip is not a broken page — the guide falls back to its still cover and no
+    # play button — so this step warns instead of failing the sync. ffmpeg is the only
+    # thing here that may not be installed, and a listing without a clip is still sellable.
+    if not args.no_videos and (plan["new"] or args.videos):
+        targets = [] if args.videos else [item["slug"] for item in plan["new"]]
+        if not publish_videos(targets):
+            print(
+                "warning: clip rendering failed; those listings will show a still cover",
+                file=sys.stderr,
+            )
 
     print("\nnext: dotnet build, then ./scripts/deploy.sh --yes (not run by this script)")
     return 0
