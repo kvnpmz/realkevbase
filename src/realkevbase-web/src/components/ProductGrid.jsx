@@ -235,8 +235,10 @@ function ProductCard({ product }) {
             <Typography component="p" variant="h6" sx={{ fontWeight: 800 }}>
               {formatMoney(product.unitPrice)}
             </Typography>
+            {/* A label under a price, so it starts a sentence and takes a capital; the
+                delivery promises further down the card are prose and stay lowercase. */}
             <Typography variant="caption" color="text.secondary">
-              {isDigital ? 'instant download' : 'plus shipping'}
+              {isDigital ? 'Instant download' : 'Plus shipping'}
             </Typography>
           </Box>
 

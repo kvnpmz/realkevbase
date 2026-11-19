@@ -352,8 +352,10 @@ function GuideDetail({ product }) {
                 <Typography variant="h4" component="p" sx={{ fontWeight: 800 }}>
                   {formatMoney(product.unitPrice)}
                 </Typography>
+                {/* Sentence case, matching the chip above: the same phrase twice on one
+                    screen in two cases reads as a mistake, not as a style. */}
                 <Typography variant="caption" color="text.secondary">
-                  instant download
+                  Instant download
                 </Typography>
               </Stack>
 
