@@ -30,7 +30,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("45531eb6-0be8-5b97-86dd-710b271bde70"),
             Name = "First Apartment Checklist",
-            Description = "A room-by-room checklist of 173 things a first apartment needs, laid out in five columns that run from entrance and dining area through the kitchen knife drawer and utensil pot to the office shelf, bathroom cabinet, laundry corner and toolbox, so nothing is bought twice or discovered missing in week two. Includes the small things leases never mention, from power sockets and door mats to a toilet plunger and spare bulbs.",
+            Description = "A room-by-room checklist of 173 things a first apartment needs, organised room by room, running from entrance and dining area through the kitchen knife drawer and utensil pot to the office shelf, bathroom cabinet, laundry corner and toolbox, so nothing is bought twice or discovered missing in week two. Includes the small things leases never mention, from power sockets and door mats to a toilet plunger and spare bulbs.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -41,7 +41,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("d0e1fe4f-9b25-52db-89ae-e971cb68ad07"),
             Name = "New Apartment Checklist",
-            Description = "The same first-apartment essentials condensed into a dense grid rather than long columns, so 172 items fit on one sheet without turning into a booklet: living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom sit side by side and can be ticked in a single pass while you walk the rooms.",
+            Description = "The same first-apartment essentials condensed into a dense grid rather than spread down a page, so 172 items fit on one sheet without turning into a booklet: living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom sit side by side and can be ticked in a single pass while you walk the rooms.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -85,7 +85,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("7cfc9806-9705-520d-a553-f61a12fc909e"),
             Name = "Blood Sugar Log",
-            Description = "A blood sugar log with one line per reading and columns for date, time, level and context, kept deliberately plain so it can be filled in at the kitchen table and handed to a doctor who has five minutes to read it.",
+            Description = "A blood sugar log with one line per reading and a note of the date, time, level and what was happening, kept deliberately plain so it can be filled in at the kitchen table and handed to a doctor who has five minutes to read it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -96,7 +96,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("c034f9ca-8086-5f11-8468-2f1f81b32b53"),
             Name = "Budget Planner",
-            Description = "A six-column budget planner that reads like a statement of the month rather than a wish list: income rows, sixteen bill rows, savings and expenses columns, a debt column and a summary that adds up to what is actually left, with space per line instead of a single total at the bottom.",
+            Description = "A budget planner that reads like a statement of the month rather than a wish list: income rows, sixteen bill rows, savings, expenses, debt and a summary that adds up to what is actually left, with space per line instead of a single total at the bottom.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -107,7 +107,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("2d7690e6-c133-5a77-9484-c3c7158e811d"),
             Name = "CKD Stage 3 Food List",
-            Description = "A three-column kidney diet sheet for stage 3 CKD: 40 foods to eat freely, 40 to limit and 40 to avoid, 120 in total, arranged so the same categories line up across all three columns and the swap from one column to the next is obvious at a glance rather than something you have to reason about.",
+            Description = "A kidney diet sheet for stage 3 CKD: 40 foods to eat freely, 40 to limit and 40 to avoid, 120 in total, arranged so the same categories line up across the page and the swap from one group to the next is obvious at a glance rather than something you have to reason about.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -162,7 +162,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("37b475bd-f4c8-5abc-9da3-69f078916500"),
             Name = "Diverticulitis Food List",
-            Description = "A 78-item diverticulitis list split into eat, limit and avoid: 24 foods that help, 28 that are fine in moderation and 26 that tend to trigger a flare, grouped by type so a shopping list can be built straight off the eat column without a second reference.",
+            Description = "A 78-item diverticulitis list split into eat, limit and avoid: 24 foods that help, 28 that are fine in moderation and 26 that tend to trigger a flare, grouped by type so a shopping list can be built straight off the eat list without a second reference.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -173,7 +173,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("a2e6b2c8-8501-581b-becc-2a67398563a8"),
             Name = "Flare-Up Diverticulitis Food List",
-            Description = "The 78-item diverticulitis list in a regal colourway, still divided into 24 foods that help, 28 that are fine in moderation and 26 that tend to trigger a flare, grouped by food type so a shopping list can be built straight off the eat column.",
+            Description = "The 78-item diverticulitis list in a regal colourway, still divided into 24 foods that help, 28 that are fine in moderation and 26 that tend to trigger a flare, grouped by food type so a shopping list can be built straight off the eat list.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -272,7 +272,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("d4caf8e3-ca74-5876-8c2e-2a2ac8b21a0c"),
             Name = "First Apartment Essentials",
-            Description = "A 112-item first-apartment list with the kitchen carrying the most weight at 35 items, because that is where a first flat is most expensive to stock from nothing, alongside bedroom, living room, bathroom, laundry, extra supplies, home tools and a short column of optionals that can wait.",
+            Description = "A 112-item first-apartment list with the kitchen carrying the most weight at 35 items, because that is where a first flat is most expensive to stock from nothing, alongside bedroom, living room, bathroom, laundry, extra supplies, home tools and a short list of optionals that can wait.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -327,7 +327,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("e9d66e3e-bd43-5699-a955-3eae82709691"),
             Name = "First Apartment Everyday List",
-            Description = "The 112-item first-apartment list in a purple colourway, keeping the room-by-room layout and the column of optionals that can wait, so the first shop covers what a flat needs on day one and nothing more.",
+            Description = "The 112-item first-apartment list in a purple colourway, keeping the room-by-room layout and the list of optionals that can wait, so the first shop covers what a flat needs on day one and nothing more.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -393,7 +393,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("b0ea529e-c7cb-5d90-aaf0-cb49d1d17c16"),
             Name = "Grocery List",
-            Description = "A 317-item grocery list sorted the way a supermarket is: 21 aisles from fruit and vegetables through breakfast, meat, seafood and frozen, then baking, snacks, bakery, pasta and rice, cans and jars, chilled goods, seasoning, sauces, drinks, paper goods, cleaning, personal care and a short misc column, so the list follows the trolley instead of sending you back.",
+            Description = "A 317-item grocery list sorted the way a supermarket is: 21 aisles from fruit and vegetables through breakfast, meat, seafood and frozen, then baking, snacks, bakery, pasta and rice, cans and jars, chilled goods, seasoning, sauces, drinks, paper goods, cleaning, personal care and a short misc list, so the list follows the trolley instead of sending you back.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -503,7 +503,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("3012c022-9d0c-5a00-826f-b043f12f414e"),
             Name = "Kidney Disease Food List",
-            Description = "A kidney disease food list that keeps eat and avoid on one page: red pepper, cauliflower, green beans, cucumber and arugula in the eat column, the potassium and phosphorus heavy foods in the other, written for a fridge door rather than a folder.",
+            Description = "A kidney disease food list that keeps eat and avoid on one page: red pepper, cauliflower, green beans, cucumber and arugula on the eat list, the potassium and phosphorus heavy foods in the other, written for a fridge door rather than a folder.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -591,7 +591,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("98fc08c4-75d6-53d1-95a6-f4791af80643"),
             Name = "Low Potassium Food List",
-            Description = "A low potassium list arranged in three descending tiers rather than two columns: the foods to lean on across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks, the middle ground, then the high-potassium foods to leave alone, so a daily allowance can be spent rather than avoided.",
+            Description = "A low potassium list arranged in three descending tiers rather than a two-way split: the foods to lean on across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks, the middle ground, then the high-potassium foods to leave alone, so a daily allowance can be spent rather than avoided.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -602,7 +602,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("44283e65-6790-5154-b6a1-da1d29651411"),
             Name = "Simple Low Potassium List",
-            Description = "The low potassium list in a decorative edition, arranged in three descending tiers rather than two columns, so a daily allowance can be spent across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks instead of avoided outright.",
+            Description = "The low potassium list in a decorative edition, arranged in three descending tiers rather than a two-way split, so a daily allowance can be spent across vegetables, fruit, proteins, grains, dairy alternatives, fats and snacks instead of avoided outright.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -701,7 +701,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("2ba0a7ad-4c18-569f-b456-f8d093ba2775"),
             Name = "Travel Packing Checklist",
-            Description = "A 57-item travel packing list grouped by what tends to be forgotten: documents first, then toiletries at 22 items, financials, gadgets, health and medical, and a misc column for the adapters, padlocks and spare bags that only matter once you are away.",
+            Description = "A 57-item travel packing list grouped by what tends to be forgotten: documents first, then toiletries at 22 items, financials, gadgets, health and medical, and a misc list for the adapters, padlocks and spare bags that only matter once you are away.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -712,7 +712,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("4a6453b4-d7e7-5fd0-8ffc-3eac5c979691"),
             Name = "Complete Travel Packing List",
-            Description = "The 57-item travel packing list in a blue colourway, grouped by what tends to be forgotten: documents first, then toiletries, financials, gadgets, health and medical, and a misc column for the adapters, padlocks and spare bags that only matter once you are away.",
+            Description = "The 57-item travel packing list in a blue colourway, grouped by what tends to be forgotten: documents first, then toiletries, financials, gadgets, health and medical, and a misc list for the adapters, padlocks and spare bags that only matter once you are away.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -761,7 +761,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("8a40c675-c20f-515a-8c25-68f1f9b01b48"),
             Name = "Budget vs Actual Worksheet",
-            Description = "A one-page month-end budget review worksheet that lines up budgeted and actual spending across needs, wants, and savings, with difference and percent-used columns, rollover checkboxes, and three takeaway lines that set next month's plan.",
+            Description = "A one-page month-end budget review worksheet that lines up budgeted and actual spending across needs, wants, and savings, with the difference and the percent used on each line, rollover checkboxes, and three takeaway lines that set next month's plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -772,7 +772,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("3c03c110-87ef-5e1a-913c-f3eae6058352"),
             Name = "Simple Budget vs Actual",
-            Description = "A one-page month-end review sheet in a green serif style that pairs budgeted and actual spending across needs, wants, and savings, with difference and percent-used columns, rollover boxes, and three takeaway lines for next month's plan.",
+            Description = "A one-page month-end review sheet in a green serif style that pairs budgeted and actual spending across needs, wants, and savings, with the difference and the percent used on each line, rollover boxes, and three takeaway lines for next month's plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -783,7 +783,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("c280a457-9a17-5e5e-a1d5-71c0541902d7"),
             Name = "Complete Budget vs Actual",
-            Description = "A one-page month-end review sheet with a serif title that pairs budgeted and actual spending across needs, wants, and savings, with difference and percent-used columns, rollover boxes, and three takeaway lines for next month's plan.",
+            Description = "A one-page month-end review sheet with a serif title that pairs budgeted and actual spending across needs, wants, and savings, with the difference and the percent used on each line, rollover boxes, and three takeaway lines for next month's plan.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -805,7 +805,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("71d3b629-1419-5171-8ae4-57a361ab5011"),
             Name = "Dialysis Food List",
-            Description = "Keep dialysis meals and fluids on track with a single-page large-print guide that sorts foods into enjoy, limit, and avoid columns, shows potassium, phosphorus, sodium, and fluid targets, and includes a seven-day cup-by-cup fluid log.",
+            Description = "Keep dialysis meals and fluids on track with a single-page large-print guide that sorts foods into enjoy, limit and avoid, shows potassium, phosphorus, sodium, and fluid targets, and includes a seven-day cup-by-cup fluid log.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "healthy-living",
@@ -959,7 +959,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("532c2723-5815-5043-8e57-eb41d7ef0200"),
             Name = "Grocery Shopping List",
-            Description = "A single-page grocery shopping list that sorts 348 supermarket items into six aisle columns, stars the pantry staples to check at home first, and adds store, date, budget and total-spent fields plus write-in rows for anything extra.",
+            Description = "A single-page grocery shopping list that sorts 348 supermarket items into aisles, stars the pantry staples to check at home first, and adds store, date, budget and total-spent fields plus write-in rows for anything extra.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -1047,7 +1047,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("fc341164-bed2-5c31-b979-16c10326cf2f"),
             Name = "First Apartment Move-In Budget Planner",
-            Description = "A single-page move-in budget worksheet that breaks first-apartment setup into room-by-room items with buy-now versus can-wait priorities, estimated and actual cost columns, a bought checkbox, a before-you-move cash section for deposits and utilities, and a move-in basics shopping list.",
+            Description = "A single-page move-in budget worksheet that breaks first-apartment setup into room-by-room items with buy-now versus can-wait priorities, estimated and actual cost lines, a bought checkbox, a before-you-move cash section for deposits and utilities, and a move-in basics shopping list.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1179,7 +1179,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("4ce64c3b-166d-5bdd-b408-a64ac15fe060"),
             Name = "50 30 20 Budget Worksheet",
-            Description = "A one-page 50/30/20 budget worksheet that splits take-home pay into needs, wants and savings, with plan and spent columns for every category, a zero check that proves each dollar is assigned, and three fixes for when the split does not fit.",
+            Description = "A one-page 50/30/20 budget worksheet that splits take-home pay into needs, wants and savings, with plan and spent side by side for every category, a zero check that proves each dollar is assigned, and three fixes for when the split does not fit.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1190,7 +1190,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("8c9570db-9d8c-557b-b923-6e672bdf3e52"),
             Name = "All-In-One 50 30 20 Budget",
-            Description = "A one-page 50/30/20 budget worksheet with a colour-coded needs, wants and savings column, a dollar target for each share, nine categories per column and a zero check that proves the month is fully assigned.",
+            Description = "A one-page 50/30/20 budget worksheet with needs, wants and savings colour coded, a dollar target for each share, nine categories in each and a zero check that proves the month is fully assigned.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1212,7 +1212,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("a8a80324-6198-5188-9df4-60c10ea2b48e"),
             Name = "Starter 50 30 20 Budget",
-            Description = "Written for a first month: one income, nine categories per column, and thirty percent allowed to be imperfect while the habit is being built, rather than a worksheet that assumes a budget already exists.",
+            Description = "Written for a first month: one income, nine categories in each, and thirty percent allowed to be imperfect while the habit is being built, rather than a worksheet that assumes a budget already exists.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1223,7 +1223,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("0b112974-018e-5265-ac71-6fd014055d38"),
             Name = "Classic 50 30 20 Budget",
-            Description = "The total at the bottom has to match the pay that came in, nine categories per column and a zero check that proves every dollar is assigned, which is the only thing that makes a 50/30/20 split honest.",
+            Description = "The total at the bottom has to match the pay that came in, nine categories in each and a zero check that proves every dollar is assigned, which is the only thing that makes a 50/30/20 split honest.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1234,7 +1234,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("5c366176-ca6a-5907-bac6-8c3fb1891d03"),
             Name = "Minimal 50 30 20 Budget",
-            Description = "A stripped-back 50/30/20 budget worksheet with three oversized percentage columns, one amount line per category, and a single zero check that proves every dollar of take-home pay is assigned.",
+            Description = "A stripped-back 50/30/20 budget worksheet with the three percentages given room, one amount line per category, and a single zero check that proves every dollar of take-home pay is assigned.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1245,7 +1245,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("62ef6a04-a14b-5734-94ee-4ae8e1e89b4b"),
             Name = "Warehouse Club Shopping List",
-            Description = "A one-page warehouse club stock-up sheet with three pack-buying rules, four aisle columns of 112 items, pack sizes, and a pack-count box beside every item.",
+            Description = "A one-page warehouse club stock-up sheet with three pack-buying rules, 112 items grouped by aisle, pack sizes, and a pack-count box beside every item.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "guides",
@@ -1256,7 +1256,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("d9b9ae8e-7899-56f0-ae51-07064d4e0f09"),
             Name = "Yearly Budget Planner",
-            Description = "A yearly budget planner with a column for each of the twelve months, so the annual picture sits on one sheet and the expensive months, insurance renewals and the run-up to December are visible in advance instead of arriving as a surprise.",
+            Description = "A yearly budget planner with a line for each of the twelve months, so the annual picture sits on one sheet and the expensive months, insurance renewals and the run-up to December are visible in advance instead of arriving as a surprise.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1267,7 +1267,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("9abe51fa-5b3c-55f1-b360-47b968ab35fd"),
             Name = "Bill Calendar Budget Planner",
-            Description = "Fill in each bill on its due date and carry the running balance down the column to see what is left before the next check arrives.",
+            Description = "Fill in each bill on its due date and carry the running balance down the page to see what is left before the next check arrives.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1289,7 +1289,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("27ef762d-55bf-595f-bf00-8f49a91ca3b0"),
             Name = "Simple Bill Calendar Planner",
-            Description = "Each bill goes on the date it leaves the account and the balance is carried down the column, so the question a household actually asks, what is left before payday, has an answer on the page.",
+            Description = "Each bill goes on the date it leaves the account and the balance is carried down the page, so the question a household actually asks, what is left before payday, has an answer on the page.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1300,7 +1300,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("f839654c-af7e-59b5-9a78-141c6d5ee76c"),
             Name = "Complete Bill Calendar Planner",
-            Description = "Every due date for the month sits in one column, rent through subscriptions, so a bill cannot slip through because it arrived in an inbox nobody opened on the right day.",
+            Description = "Every due date for the month sits on one page, rent through subscriptions, so a bill cannot slip through because it arrived in an inbox nobody opened on the right day.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1762,7 +1762,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("33c5bff3-4e54-5c26-af55-dfef29d3e0ad"),
             Name = "Lista de Compras al Por Mayor",
-            Description = "Una hoja imprimible para el club de compras con tres reglas para comprar por volumen, cuatro columnas de 112 productos, tamaños de paquete y una casilla para anotar cuántos paquetes llevar.",
+            Description = "Una hoja imprimible para el club de compras con tres reglas para comprar por volumen, 112 productos agrupados por pasillo, tamaños de paquete y una casilla para anotar cuántos paquetes llevar.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -1784,7 +1784,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("29fa06a3-d064-592b-9abc-47e1d709918e"),
             Name = "Complete Warehouse Shopping List",
-            Description = "Four aisle columns hold 112 everyday items, from the freezer cases to the household paper, so one walk through the warehouse covers the month and nothing gets bought twice because it sat in a different aisle.",
+            Description = "The aisles hold 112 everyday items, from the freezer cases to the household paper, so one walk through the warehouse covers the month and nothing gets bought twice because it sat in a different aisle.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving-out",
@@ -1861,7 +1861,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("79199fac-9db1-592f-81c4-3925becefd1d"),
             Name = "Simple Monthly Budget Template",
-            Description = "A one-page monthly budget sheet with planned and actual columns, bills, everyday spending and savings subtotals, and a bold left-to-spend total for beginner budgeters.",
+            Description = "A one-page monthly budget sheet with planned and actual spending side by side, bills, everyday spending and savings subtotals, and a bold left-to-spend total for beginner budgeters.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1872,7 +1872,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("ce1b0190-94f6-5d78-922e-36a011f6f802"),
             Name = "Presupuesto Mensual Simple",
-            Description = "Una hoja de presupuesto mensual de una página con columnas de planeado y gastado, totales de cuentas, gastos diarios y ahorros, y un renglón destacado con el dinero que queda al final del mes.",
+            Description = "Una hoja de presupuesto mensual de una página con planeado y gastado uno al lado del otro, totales de cuentas, gastos diarios y ahorros, y un renglón destacado con el dinero que queda al final del mes.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
@@ -1894,7 +1894,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("3e62e5fe-0380-5489-b305-ec0fd7a3442a"),
             Name = "Simple Monthly Budget Sheet",
-            Description = "Two columns, planned and actual, sit side by side for every line, so the month shows where the guess was wrong instead of only what was spent, and next month's plan gets better because of it.",
+            Description = "Planned and actual sit side by side for every line, so the month shows where the guess was wrong instead of only what was spent, and next month's plan gets better because of it.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "money-budgeting",
