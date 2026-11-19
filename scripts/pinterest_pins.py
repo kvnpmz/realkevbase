@@ -186,6 +186,11 @@ def pin_title(name: str, segments: list[str]) -> str:
 
     Phrases are added in the shop's own priority order until the next one would not fit
     with :data:`TITLE_SUFFIX`, so a title is never truncated mid-phrase.
+
+    Every dash in a title becomes a pipe, which is the separator Pinterest boards already
+    read as a phrase break: "First Apartment Essentials — Plum | Printable PDF" would
+    otherwise carry two different separator characters in one line. Descriptions keep
+    their dashes, where they punctuate a sentence instead of listing phrases.
     """
     chosen: list[str] = []
     for segment in segments:
@@ -198,23 +203,35 @@ def pin_title(name: str, segments: list[str]) -> str:
             break
 
     if not chosen:
-        return clip(f"{name}{TITLE_SUFFIX}", TITLE_LIMIT)
+        return piped(clip(f"{name}{TITLE_SUFFIX}", TITLE_LIMIT))
     joined = " | ".join(chosen)
     if len(joined) + len(TITLE_SUFFIX) <= TITLE_LIMIT:
-        return f"{joined}{TITLE_SUFFIX}"
-    return clip(joined, TITLE_LIMIT)
+        return piped(f"{joined}{TITLE_SUFFIX}")
+    return piped(clip(joined, TITLE_LIMIT))
+
+
+def piped(title: str) -> str:
+    """Turns every dash separator in a title into a pipe and tidies the spacing.
+
+    The em dash reaches a title from two places: the suffix, and a product name such as
+    "First Apartment Essentials — Costs". Both become "|", and repeated pipes collapse so a
+    name that already ends in a dash cannot produce " | | ".
+    """
+    text = title.replace("\u2014", "|").replace("\u2013", "|")
+    text = re.sub(r"\s*(\|\s*)+", " | ", text)
+    return text.strip(" |")
 
 
 def pin_description(lead: str, name: str, tags: list[str], price_text: str) -> str:
-    """Build a description that leads with the subject, then keywords, then the offer.
+    """Build a description that leads with the subject, then the offer.
 
     Pinterest weighs the opening of a description most, so the shop's own sentence goes
-    first, the tags follow as searchable phrases, and the price and delivery promise stay
-    at the end where they are read but do not crowd out the subject.
+    first and the price and delivery promise stay at the end where they are read but do not
+    crowd out the subject. The tags are not repeated here: they are the guide's own TAGS
+    line, and the manual queue prints them directly under the description, so repeating six
+    of them as a "Keywords:" sentence read as keyword stuffing twice over.
     """
     parts = [lead] if lead else [f"{name} from SaveSimple."]
-    if tags:
-        parts.append(f"Keywords: {', '.join(tags[:6])}.")
     parts.append(
         f"Instant PDF download from SaveSimple, {price_text}."
         if lead

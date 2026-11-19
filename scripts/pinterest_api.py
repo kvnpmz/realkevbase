@@ -11,6 +11,10 @@ The token is the only secret this module touches. It is stored outside the repos
 can be committed. Pinterest rotates the refresh token on every refresh, so both tokens
 are written back after each exchange.
 
+Sandbox is a separate host with a token of its own (``pinterest-token-sandbox.json``).
+A Trial app may read in production but may only create pins in the sandbox, so the two
+cannot be mixed: pass ``environment="sandbox"`` to work there instead.
+
 Image pins take their artwork in one of two ways: ``image_url``, where Pinterest fetches
 a public URL itself, or ``image_base64``, where the bytes travel inside the request. The
 second is what lets the storefront pin the PNGs the generator already rendered locally,
@@ -39,10 +43,17 @@ from typing import Any, Iterator
 #: Root of the v5 API, without a trailing slash.
 API_ROOT = "https://api.pinterest.com/v5"
 
+#: Sandbox is a separate host with a separate token, and it is the only place a Trial app
+#: may create pins: production answers 403 "Apps with Trial access may not create Pins".
+API_ROOT_SANDBOX = "https://api-sandbox.pinterest.com/v5"
+
+#: The two environments Pinterest runs, keyed by the name used on the command line.
+API_ROOTS = {"production": API_ROOT, "sandbox": API_ROOT_SANDBOX}
+
 #: Where the browser is sent to approve the app.
 OAUTH_PAGE = "https://www.pinterest.com/oauth/"
 
-#: Token endpoint, shared by the authorization-code and refresh grants.
+#: Token endpoint, shared by the authorization-code and refresh grants. Sandbox has its own.
 TOKEN_ENDPOINT = f"{API_ROOT}/oauth/token"
 
 #: Everything pin creation and de-duplication need, and nothing more.
@@ -104,9 +115,14 @@ def _config_root(environment: str, fallback: str) -> str:
     return root
 
 
-def default_token_path() -> str:
-    """Return the default token location, outside the repository."""
-    return os.path.join(_config_root("XDG_CONFIG_HOME", "~/.config"), "realkevbase", "pinterest-token.json")
+def default_token_path(environment: str = "production") -> str:
+    """Return the default token location, outside the repository.
+
+    Sandbox tokens are not interchangeable with production ones, so each environment keeps
+    its own file; authorising the sandbox can never overwrite the account's real token.
+    """
+    name = "pinterest-token.json" if environment == "production" else f"pinterest-token-{environment}.json"
+    return os.path.join(_config_root("XDG_CONFIG_HOME", "~/.config"), "realkevbase", name)
 
 
 def default_state_path() -> str:
@@ -267,8 +283,14 @@ class Pinterest:
         app_id: str | None = None,
         app_secret: str | None = None,
         timeout: int = REQUEST_TIMEOUT,
+        environment: str = "production",
     ) -> None:
-        self.store = TokenStore(token_path)
+        if environment not in API_ROOTS:
+            raise ValueError(f"unknown Pinterest environment {environment!r}; expected one of {sorted(API_ROOTS)}")
+        self.environment = environment
+        self.api_root = API_ROOTS[environment]
+        self.token_endpoint = f"{self.api_root}/oauth/token"
+        self.store = TokenStore(token_path or default_token_path(environment))
         self.app_id = app_id
         self.app_secret = app_secret
         self.timeout = timeout
@@ -304,7 +326,7 @@ class Pinterest:
         basic = base64.b64encode(f"{app_id}:{app_secret}".encode()).decode("ascii")
         status, raw, _ = _http(
             "POST",
-            TOKEN_ENDPOINT,
+            self.token_endpoint,
             body=urllib.parse.urlencode(fields).encode("ascii"),
             headers={
                 "Authorization": f"Basic {basic}",
@@ -324,6 +346,7 @@ class Pinterest:
         now = int(time.time())
         token = dict(self.token)
         token["access_token"] = payload["access_token"]
+        token["environment"] = self.environment
         token["expires_at"] = now + int(payload.get("expires_in", 2592000))
         token["updated_at"] = now
         token["scope"] = payload.get("scope", token.get("scope", ""))
@@ -387,7 +410,7 @@ class Pinterest:
         expect: tuple[int, ...] = (200, 201),
     ) -> Any:
         """Call an endpoint, retrying throttling and outages and refreshing once on 401."""
-        url = f"{API_ROOT}{path}"
+        url = f"{self.api_root}{path}"
         if params:
             url = f"{url}?{urllib.parse.urlencode(params)}"
 

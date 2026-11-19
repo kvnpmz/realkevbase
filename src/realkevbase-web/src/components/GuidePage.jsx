@@ -142,13 +142,15 @@ function GuideDetail({ product }) {
   // starts it as the bytes arrive. Later presses are an ordinary play/pause on a clip that
   // is already downloaded.
   const toggleVideo = () => {
-    const node = videoRef.current
-    if (!node) return
-
+    // Arming is a render, not a method call: there is no element to play yet, so this press
+    // only asks React for one. Every later press finds the node it just mounted.
     if (!videoArmed) {
       setVideoArmed(true)
       return
     }
+
+    const node = videoRef.current
+    if (!node) return
 
     if (node.paused) {
       node.muted = true

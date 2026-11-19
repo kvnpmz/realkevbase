@@ -1,15 +1,9 @@
-# RealKevbase hints — always-on rules. Full manual: AGENTS.md.
+RealKevbase is the brand store; SaveSimple is its printable-PDF collection. .NET 10 API (`src/RealKevbase.Api` + `Core`), React 19 + Vite + MUI SPA (`src/realkevbase-web`), PDFs rendered by `zz_tp/` (own rules: `zz_tp/AGENTS.md`; never run `tpr`).
 
-RealKevbase is the brand store; SaveSimple is its printable-PDF collection. .NET 10 API
-(`src/RealKevbase.Api` + `Core`), React 19 + Vite + MUI SPA (`src/realkevbase-web`),
-PDFs rendered by `zz_tp/` (own rules: `zz_tp/AGENTS.md`; never run `tpr`).
-
-- Products are C# seed data plus a DB row: change them with
-  `python3 scripts/sync-catalog.py`.
+- Products are C# seed data plus a DB row: change them with `python3 scripts/sync-catalog.py`.
 - Shop copy is `zz_tp/documents/<listing>/listing.txt`, not the C#.
 - Never copy `zz_tp/projects.db` over `src/RealKevbase.Api/Data/projects.db`.
 - No secrets in the repo; the browser sees only `/api/...`.
-- Ship with `./scripts/deploy.sh --yes` after a clean build; it refuses while the
-  catalog is out of sync.
-- Navigate with `lua scripts/repo-intel.lua overview|symbol <Name>|deps <X>` before
-  opening whole files.
+- Ship with `./scripts/deploy.sh --yes` after a clean build; it refuses while the catalog is out of sync.
+- Navigate with `lua scripts/repo-intel.lua overview|symbol <Name>|deps <X>` before opening whole files.
+

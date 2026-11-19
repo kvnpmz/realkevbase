@@ -21,6 +21,7 @@ Usage:
     python3 scripts/pinterest_auth.py --manual         # same, pasting the redirect by hand
     python3 scripts/pinterest_auth.py --show           # what is stored, and when it expires
     python3 scripts/pinterest_auth.py --refresh        # renew now instead of waiting
+    python3 scripts/pinterest_auth.py --sandbox        # authorise the test environment
 """
 
 from __future__ import annotations
@@ -147,13 +148,13 @@ def _authorise(args: argparse.Namespace) -> int:
             print(f"no authorization code in the redirect: {result}", file=sys.stderr)
             return 1
 
-    client = Pinterest(args.token_file)
+    client = Pinterest(args.token_file, environment=args.environment)
     client.exchange_code(code, args.redirect_uri)
     account = client.get_account()
     username = account.get("username", "")
     client.record_account(username)
 
-    print(f"\nconnected as {username or 'unknown account'}")
+    print(f"\nconnected as {username or 'unknown account'} ({client.environment})")
     _describe_token(client.store)
     return 0
 
@@ -183,7 +184,16 @@ def main(argv: list[str] | None = None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    parser.add_argument("--token-file", help=f"token location (default {default_token_path()})")
+    parser.add_argument(
+        "--environment",
+        choices=("production", "sandbox"),
+        default="production",
+        help="production reads and (after Standard access) writes; sandbox is the only place a Trial app may create pins",
+    )
+    parser.add_argument(
+        "--token-file",
+        help="token location (default: one file per environment under ~/.config/realkevbase/)",
+    )
     parser.add_argument("--redirect-uri", default=DEFAULT_REDIRECT_URI, help="must match the app setting exactly")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="local port for the redirect listener")
     parser.add_argument("--manual", action="store_true", help="paste the redirect URL instead of using a local server")
@@ -192,7 +202,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--refresh", action="store_true", help="renew the access token now")
     args = parser.parse_args(argv)
 
-    store = TokenStore(args.token_file)
+    store = TokenStore(args.token_file or default_token_path(args.environment))
 
     if args.show:
         _describe_token(store)
@@ -200,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.refresh:
         try:
-            client = Pinterest(args.token_file)
+            client = Pinterest(args.token_file, environment=args.environment)
             client.refresh()
         except PinterestError as error:
             print(error, file=sys.stderr)
