@@ -13,6 +13,14 @@ export default defineConfig({
         target: 'https://api.realkevbase.com',
         changeOrigin: true,
       },
+      // Guide covers are copied into the deployment by `scripts/generate-seo.mjs`, which a
+      // dev server never runs, so `/art/<id>.webp` resolves to the API's own thumbnail route
+      // instead. Development sees the same picture; production sees a static file.
+      '/art': {
+        target: 'https://api.realkevbase.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/art\/([^./]+)\.webp$/, '/api/products/$1/thumbnail'),
+      },
     },
   },
 })

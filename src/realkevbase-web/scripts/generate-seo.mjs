@@ -287,6 +287,77 @@ function withHomeSeed(shell) {
   return shell.replace(emptyRoot, `<div id="root">\n${homeSeed()}    </div>`)
 }
 
+/** Where the build copies each guide's cover so the storefront can serve it as a static file. */
+const ART_DIR = join(DIST, 'art')
+
+/**
+ * Downloads one cover, retrying a transport blip.
+ *
+ * The covers are the only part of the build that makes 170 requests, so a single hiccup
+ * should not end an otherwise good deploy.
+ *
+ * @param {string} url Absolute artwork route on the API.
+ * @returns {Promise<Uint8Array>} The image bytes.
+ */
+async function fetchCover(url) {
+  let lastError
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await fetch(url, { headers: { Accept: 'image/webp,image/*' } })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const bytes = new Uint8Array(await response.arrayBuffer())
+      if (bytes.byteLength === 0) throw new Error('empty response')
+      return bytes
+    } catch (cause) {
+      lastError = cause
+    }
+  }
+  throw new Error(`could not download ${url} (${lastError?.message ?? 'unknown error'})`)
+}
+
+/**
+ * Copies every guide's cover into the deployment as a static asset.
+ *
+ * The cover is the Largest Contentful Paint element on a guide page, and the API that owns
+ * it is one B1 worker in West US 2 that spends over a second before the first byte of a
+ * 16KB image. A Pages Function in front of it caches the answer, but only for the
+ * datacentres that have already asked: Cloudflare caches a static file through a shared
+ * upper tier, so the first visitor to a new location gets it from Cloudflare rather than
+ * from Azure. Measured from a location that had never requested the file, that difference
+ * was the difference between a 1.8s and a 3.6s Largest Contentful Paint.
+ *
+ * The file is named after the product id and keeps the route the app asks for, so the
+ * prerendered cover, its preload and the gallery all resolve to one static URL — and the
+ * catalog record baked into the page does not need rewriting to say so.
+ *
+ * @param {Map<string, Record<string, any>>} guides Guide facts keyed by slug.
+ * @returns {Promise<number>} How many covers were published.
+ */
+async function publishCovers(guides) {
+  await mkdir(ART_DIR, { recursive: true })
+  const pending = [...guides.values()].filter((guide) => guide.id && guide.cover)
+  let written = 0
+
+  // Eight at a time: enough to finish in a few seconds, few enough that the API's single
+  // worker is not asked to serve a hundred connections at once.
+  await Promise.all(
+    Array.from({ length: 8 }, async () => {
+      for (;;) {
+        const guide = pending.pop()
+        if (!guide) return
+        await writeFile(join(ART_DIR, `${guide.id}.webp`), await fetchCover(`${API_BASE}${guide.cover}`))
+        // From here on the page, its preload and the app all name the static copy. `image`
+        // is absolute because og:image cannot be relative.
+        guide.cover = `/art/${guide.id}.webp`
+        guide.image = `${SITE_URL}${guide.cover}`
+        written += 1
+      }
+    }),
+  )
+
+  return written
+}
+
 /** Loads the catalog from the API, or from a saved JSON file when `--catalog=` is given. */
 async function loadCatalog(catalogFile) {
   if (catalogFile) {
@@ -630,6 +701,8 @@ async function main() {
     '<meta name="twitter:card" content="summary_large_image" />',
   ])
 
+  const coverCount = await publishCovers(guides)
+
   await writeFile(SHELL_PATH, withIndexFooter(withHomeSeed(homeShell)))
   await writeFile(join(DIST, INDEX_PATH), buildIndexPage(guides))
   await mkdir(join(DIST, 'guides'), { recursive: true })
@@ -650,7 +723,8 @@ async function main() {
   }
 
   console.log(
-    `seo: prerendered ${guides.size} guide pages plus the all-guides index, sitemap with ` +
+    `seo: prerendered ${guides.size} guide pages plus the all-guides index, ${coverCount} covers ` +
+      `beside them, sitemap with ` +
       `${guides.size + 2 + LEGAL_PAGES.length} URLs, ` +
       'robots.txt and the www redirect middleware',
   )

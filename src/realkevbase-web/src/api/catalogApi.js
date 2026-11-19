@@ -190,14 +190,20 @@ export function normalizeProducts(rawProducts, baseUrl) {
       const listingId = typeof record.listingId === 'string' ? record.listingId : null
       // Artwork is resolved against the storefront's own origin, not the API's: the Pages
       // Function at /api/* proxies these reads and caches them at the edge, which costs a
-      // round trip instead of the API's ~1.3s before the first byte. The cover is the
-      // Largest Contentful Paint element on a guide page, so that difference is the
-      // difference between a green and an amber score.
+      // round trip instead of the API's ~1.3s before the first byte.
       const artworkBase = ''
+      // A guide's cover is copied into the deployment at build time, so it is not proxied at
+      // all — `dist/art/<id>.webp` is a static file Cloudflare serves from its shared cache,
+      // including from a datacentre that has never seen it. The cover is the Largest
+      // Contentful Paint element on a guide page, so this is the one image whose host
+      // matters: the API would answer it after a second of TLS. Merch keeps its own route,
+      // because nothing publishes a static copy for a product that is not a PDF.
       const thumbnailUrl =
-        typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
-          ? joinUrl(artworkBase, record.thumbnailUrl)
-          : null
+        fulfillment === 'DigitalPdf' && id
+          ? `/art/${id}.webp`
+          : typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
+            ? joinUrl(artworkBase, record.thumbnailUrl)
+            : null
       // The API returns a relative route, not a storage URL, so the browser is redirected
       // to the clip rather than handed a blob name or a signature.
       const videoUrl =

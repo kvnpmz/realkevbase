@@ -20,3 +20,12 @@
 /sitemap.xml
   Content-Type: application/xml; charset=utf-8
   Cache-Control: public, max-age=3600
+
+# Guide covers, copied out of the API and into the deployment by scripts/generate-seo.mjs.
+# They are static files on purpose: a cover is the Largest Contentful Paint element on a
+# guide page, and Cloudflare serves a static file from its shared cache even to a datacentre
+# that has never requested it, where a proxied read would have to wake the API first. The
+# name is the product id rather than a content hash, so a re-rendered cover reaches a
+# returning visitor within the day instead of needing a new URL.
+/art/*
+  Cache-Control: public, max-age=86400
