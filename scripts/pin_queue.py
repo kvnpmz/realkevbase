@@ -100,6 +100,12 @@ def choose(cards: list[dict], pinned: set[str], limit: int, new_share: float) ->
     A listing counts as new while none of its cards has been posted; that is what gives a
     product its first pin promptly instead of queueing behind a year of backlog. Variety is
     enforced per product family first and relaxed only when the batch cannot be filled.
+
+    Which of a family's three cards is taken is decided by the batch rather than by the
+    listing: cards arrive page, block, text per listing, so taking the lowest-numbered one
+    every time produced a batch of nothing but page cards. The style the batch is shortest
+    of wins, which spreads the three designs across a day's feed while staying
+    deterministic — the same ledger and the same cards always yield the same batch.
     """
     posted_listings = {key.split("@")[0] for key in pinned}
     unseen = [card for card in cards if f"{card['listing']}@{card['variant']}" not in pinned]
@@ -109,42 +115,50 @@ def choose(cards: list[dict], pinned: set[str], limit: int, new_share: float) ->
     listings = sorted({card["listing"] for card in cards})
     families = {listing: family_of(listing, listings) for listing in listings}
 
-    # One card per new product family, so a fresh product is not used up before it is seen.
-    fresh_first: list[dict] = []
-    seen_families: set[str] = set()
-    for card in fresh:
-        family = families[card["listing"]]
-        if family in seen_families:
-            continue
-        seen_families.add(family)
-        fresh_first.append(card)
+    by_family: dict[str, list[dict]] = {}
+    for card in unseen:
+        by_family.setdefault(families[card["listing"]], []).append(card)
 
-    wanted_fresh = min(len(fresh_first), max(1, round(limit * new_share)))
-    batch = fresh_first[:wanted_fresh]
+    batch: list[dict] = []
+    taken: set[str] = set()
+    styles: dict[str, int] = {}
 
-    taken = {id(card) for card in batch}
-    counts: dict[str, int] = {}
-    for card in batch:
-        counts[families[card["listing"]]] = counts.get(families[card["listing"]], 0) + 1
+    def take(family: str) -> None:
+        """Add that family's next unseen card, in the style the batch is shortest of."""
+        if len(batch) >= limit:
+            return
+        pool = [card for card in by_family.get(family, []) if id(card) not in taken]
+        if not pool:
+            return
+        card = min(
+            pool,
+            key=lambda item: (
+                styles.get(item["style"], 0),
+                STYLE_ORDER.get(item["style"], 9),
+                item["listing"],
+            ),
+        )
+        batch.append(card)
+        taken.add(id(card))
+        styles[card["style"]] = styles.get(card["style"], 0) + 1
 
-    def take(pool: list[dict], cap: int) -> None:
-        """Add unseen cards from ``pool`` while no family exceeds ``cap`` and room remains."""
-        for card in pool:
-            if len(batch) >= limit:
-                return
-            if id(card) in taken:
-                continue
-            family = families[card["listing"]]
-            if counts.get(family, 0) >= cap:
-                continue
-            batch.append(card)
-            taken.add(id(card))
-            counts[family] = counts.get(family, 0) + 1
+    # One card per product family, so five colourways of one bill calendar cannot eat the
+    # batch. A share of that goes to products that have never been pinned; the rest is the
+    # back catalogue, oldest posting first.
+    fresh_families = list(dict.fromkeys(families[card["listing"]] for card in fresh))
+    backlog_families = list(dict.fromkeys(families[card["listing"]] for card in backlog))
+    wanted_fresh = min(len(fresh_families), max(1, round(limit * new_share)))
 
-    take(backlog, 1)
-    take(fresh_first[wanted_fresh:], 1)
-    take(unseen, 2)
-    take(unseen, len(cards))
+    for family in fresh_families[:wanted_fresh]:
+        take(family)
+    for family in backlog_families:
+        take(family)
+    for family in fresh_families[wanted_fresh:]:
+        take(family)
+    # Still short: a second card from a family, allowing two but no more.
+    for family in dict.fromkeys(backlog_families + fresh_families):
+        take(family)
+
     return batch[:limit]
 
 
