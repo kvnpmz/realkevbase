@@ -13,6 +13,10 @@ preview. Further variants crop a full-width band or a single column and take the
 from another of the guide's own keyword phrases. The choice is seeded by listing and
 variant number, so a re-run reproduces the same pins instead of quietly inventing new ones.
 
+Every card carries the company logo in the bottom-left corner, level with the price pill:
+a pin reposted by someone else is then still branded, and a grid of them reads as one shop.
+``--no-wordmark`` renders a bare card and ``--wordmark PATH`` swaps in another file.
+
 Each card is recorded with its SHA-256 in ``pins/manifest.json``: that hash is what the pin
 ledger uses to tell two artworks apart, and what stops a byte-identical repost being counted
 as fresh.
@@ -33,6 +37,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import urllib.request
 
@@ -60,6 +65,19 @@ PRICE_HEIGHT = 84
 
 BACKGROUND = "#FBF9F5"
 INK = "#16181C"
+
+#: The mark stamped on every card. The asset is the SaveSimple company logo, drawn on a
+#: cream field with a drop shadow, so it is keyed to transparency before it is composited
+#: (see :func:`wordmark_args`) rather than dropped on the card as a pale rectangle.
+WORDMARK_SOURCE = os.path.join(ROOT, "zz_tp", "assets", "company_logo.png")
+
+#: 24% of the card width. Smaller than this and the oval's lettering stops resolving in a
+#: 236px feed tile; larger and it competes with the price pill beside it.
+WORDMARK_WIDTH = 240
+
+#: The green the logo is drawn in, sampled from the asset, flattened onto one colour so the
+#: mark reads the same on the cream card and on any of the pastel backdrops.
+WORDMARK_INK = "#436636"
 
 #: Backdrops for the colour-block card. Eight pastels spread round the wheel so that two
 #: neighbouring pins in a grid rarely share a look; the colour is picked from the listing
@@ -212,6 +230,58 @@ def run(arguments: list[str], what: str) -> None:
         raise SystemExit(f"{what} failed: {result.stderr.strip()}")
 
 
+#: Keyed wordmarks, by source path and width, so the work happens once per run.
+_WORDMARKS: dict[tuple[str, int], tuple[str, int]] = {}
+
+
+def wordmark_args(source: str, width: int = WORDMARK_WIDTH) -> list[str]:
+    """Compose the company logo into the card's bottom-left corner.
+
+    Keying the asset by luma does the work of removing its field: the cream goes fully
+    transparent, the drop shadow survives as partial alpha and is then thresholded away, and
+    what is left is one flat green mark. Without that, a pastel card would carry a cream
+    rectangle around the logo and the shadow would read as dirt.
+
+    It is placed level with the price pill inside the same margin, so a page card, a block
+    card and a text card all carry the brand in the same spot. Keyed once per run, not once
+    per card.
+    """
+    if not source:
+        return []
+    key = (source, width)
+    if key not in _WORDMARKS:
+        if not os.path.exists(source):
+            raise SystemExit(f"wordmark not found: {source}")
+        target = os.path.join(tempfile.gettempdir(), f"pin-wordmark-{width}.png")
+        run(
+            [
+                source,
+                # Cream (luma 240) → 0 after the negate, the green line (91) → 255, so the
+                # level drops the field without eating the thinner parts of the lettering.
+                "-colorspace", "gray", "-negate", "-level", "8%,64%",
+                "-alpha", "copy", "-fill", WORDMARK_INK, "-colorize", "100%",
+                "-channel", "A", "-threshold", "45%", "+channel",
+                "-trim", "+repage", "-resize", f"{width}x", "-depth", "8",
+                target,
+            ],
+            "wordmark",
+        )
+        height = int(
+            subprocess.check_output(
+                ["magick", "identify", "-format", "%h", target], text=True
+            ).strip()
+        )
+        _WORDMARKS[key] = (target, height)
+    path, height = _WORDMARKS[key]
+    pill_top = HEIGHT - PADDING - PRICE_HEIGHT
+    return [
+        "(", path, ")",
+        "-gravity", "northwest",
+        "-geometry", f"+{PADDING}+{pill_top + round((PRICE_HEIGHT - height) / 2)}",
+        "-composite",
+    ]
+
+
 def build_card(
     image_path: str,
     headline: str,
@@ -220,6 +290,7 @@ def build_card(
     destination: str,
     backdrop: str = BACKGROUND,
     family: str = "Inter",
+    wordmark: str = "",
 ) -> None:
     """Compose one card: artwork on top, headline under it, price pill at the foot.
 
@@ -261,6 +332,7 @@ def build_card(
             "-annotate", f"+0+{round((PRICE_HEIGHT - 42) / 2)}",
             f"{price_text}  ·  Instant PDF", ")",
             "-gravity", "north", "-geometry", f"+0+{price_top}", "-composite",
+            *wordmark_args(wordmark),
             "-strip", "-sampling-factor", "4:2:0", "-quality", "90",
             destination,
         ],
@@ -282,6 +354,7 @@ def build_text_card(
     destination: str,
     family: str = "Inter",
     paragraph: bool = False,
+    wordmark: str = "",
 ) -> None:
     """Compose a card with no page artwork: a headline, the guide's own words, a price.
 
@@ -318,6 +391,7 @@ def build_text_card(
             f"{price_text}  ·  Instant PDF", ")",
             "-gravity", "north",
             "-geometry", f"+0+{HEIGHT - PADDING - PRICE_HEIGHT}", "-composite",
+            *wordmark_args(wordmark),
             "-strip", "-sampling-factor", "4:2:0", "-quality", "90",
             destination,
         ],
@@ -359,6 +433,7 @@ def render_listing(
     family: str = "Inter",
     accent_override: str = "",
     seen: set[str] | None = None,
+    wordmark: str = "",
 ) -> list[dict]:
     """Render ``count`` variants of one guide and return their manifest entries."""
     image = find_cover_image(os.path.join(output_dir, listing, "images"))
@@ -403,7 +478,7 @@ def render_listing(
                 for attempt in range(len(PASTELS)):
                     build_text_card(
                         headline, [paragraph], price_text, accent, destination, family,
-                        paragraph=True,
+                        paragraph=True, wordmark=wordmark,
                     )
                     sha = digest(destination)
                     if sha not in seen:
@@ -436,7 +511,8 @@ def render_listing(
                 start = (offset + attempt) % len(pool)
                 rotated = pool[start:] + pool[:start]
                 build_text_card(
-                    headline, rotated[:3], price_text, accent, destination, family
+                    headline, rotated[:3], price_text, accent, destination, family,
+                    wordmark=wordmark,
                 )
                 sha = digest(destination)
                 if sha not in seen:
@@ -465,6 +541,7 @@ def render_listing(
                     pastel_for(listing, variant) if style == "block" else BACKGROUND
                 ),
                 family=family,
+                wordmark=wordmark,
             )
 
         sha = digest(destination)
@@ -499,6 +576,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--price", default="5")
     parser.add_argument("--font", default="Inter", help="fontconfig family for headlines")
     parser.add_argument("--accent", default="", help="force one accent colour for every card")
+    parser.add_argument(
+        "--wordmark", default=WORDMARK_SOURCE, metavar="PATH",
+        help="logo stamped on every card (default: the company logo)",
+    )
+    parser.add_argument(
+        "--no-wordmark", action="store_true", help="render cards without the logo",
+    )
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     parser.add_argument("--documents", default=DEFAULT_DOCUMENTS)
     parser.add_argument("--meta", default=META_PATH)
@@ -524,12 +608,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     price_text = f"${args.price}"
+    wordmark = "" if args.no_wordmark else args.wordmark
     rendered = 0
     seen: set[str] = set()
     for listing in listings:
         entries = render_listing(
             listing, args.output, args.documents, names, meta, price_text, args.variants,
-            args.font, args.accent, seen,
+            args.font, args.accent, seen, wordmark,
         )
         if not entries:
             print(f"{listing}: no cover render, skipped")

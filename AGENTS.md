@@ -49,6 +49,8 @@ Social bios use short links handled by `src/realkevbase-web/functions/_middlewar
 
 Pins are generated from the catalog with `python3 scripts/pinterest_pins.py` (dry run by default; `--apply --limit N` creates). The token lives outside the repo — `scripts/pinterest_auth.py --show` — and `docs/pinterest.md` covers setup, de-duplication and the Trial-visibility caveat. Never commit app credentials or the token.
 
+The card artwork behind those pins comes from `scripts/pin_cards.py`, which renders three 1000×1500 cards per listing into `zz_tp/output/<listing>/pins/`. Every card carries the SaveSimple logo bottom-left, level with the price pill: the asset is the company logo on a cream field, so the script keys its luma to transparency (cream out, shadow thresholded, one flat green mark) rather than compositing a pale rectangle onto a pastel. `--no-wordmark` renders bare cards, `--wordmark PATH` swaps the file, and each card's SHA-256 in `pins/manifest.json` is what stops a byte-identical repost counting as new.
+
 ## Traps
 
 - Catalog `max-age=60` + gzip (~53 KB → ~14 KB); images `max-age=86400` + ETag; a missing image 404s from one blob download, not an `ExistsAsync` probe. CORS is an allow-list in `Cors/CorsPolicies.cs`; no CSP yet (MUI injects runtime styles).
