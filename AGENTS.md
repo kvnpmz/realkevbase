@@ -4,6 +4,7 @@ RealKevbase is the personal brand store; SaveSimple is its printable-PDF collect
 
 ## Rules
 
+- **`zz_tp/` is an independent project, not part of this one.** It has its own manual (`zz_tp/AGENTS.md`), its own scripts and its own database. Add a file inside it when a task genuinely needs one; never overwrite, rewrite or delete anything already there — not a document, not a template, not `projects.db`, not a `.goosehints`. If a change inside `zz_tp/` is needed, stop and ask.
 - Products are code (`Core/Services/InMemoryProductCatalog.cs` plus a row in `src/RealKevbase.Api/Data/projects.db`). Change them only with `scripts/sync-catalog.py`.
 - Shop copy is `zz_tp/documents/<listing>/listing.txt` (first pipe segment = name, `DESCRIPTION` = card copy); edit it, then sync.
 - Never copy `zz_tp/projects.db` over the shipped database — it has titles on only 45 of 116 rows and would blank most names.
