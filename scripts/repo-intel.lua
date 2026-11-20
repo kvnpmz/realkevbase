@@ -7,7 +7,7 @@
   token-budgeted Markdown that an LLM can consume instead of re-reading files.
 
   Structural parsing is done with the official tree-sitter CLI and real
-  grammars (C#, JavaScript/JSX, Python). The CLI emits an XML CST with exact
+  grammars (C#, JavaScript/JSX, TypeScript/TSX, Python). The CLI emits an XML CST with exact
   row/column ranges and field names; this script parses that into an index.
 
   Dependencies (Lua 5.1 compatible):
@@ -257,6 +257,18 @@ local LANGS = {
     grammar = "tree-sitter-javascript",
     url = "https://github.com/tree-sitter/tree-sitter-javascript.git",
   },
+  -- One grammar, two parsers: tree-sitter-typescript ships `source.ts` and
+  -- `source.tsx`, and the extension decides which one can read the file. TSX is not
+  -- TS with more syntax — `<T>(x)` reads as a type assertion in one and an element in
+  -- the other — so the scope is resolved per file rather than per language.
+  ts = {
+    label = "TypeScript",
+    extensions = { [".ts"] = true, [".tsx"] = true, [".mts"] = true, [".cts"] = true },
+    scope = "source.ts",
+    scopes = { [".tsx"] = "source.tsx" },
+    grammar = "tree-sitter-typescript",
+    url = "https://github.com/tree-sitter/tree-sitter-typescript.git",
+  },
   py = {
     label = "Python",
     extensions = { [".py"] = true },
@@ -266,7 +278,14 @@ local LANGS = {
   },
 }
 
-local LANG_ORDER = { "cs", "js", "py" }
+local LANG_ORDER = { "cs", "js", "ts", "py" }
+
+-- JS and TS share one extractor: the declaration nodes (`function_declaration`,
+-- `class_declaration`, `lexical_declaration`, class members) are named the same in both
+-- grammars, and `extract_javascript` handles the TS-only ones on top.
+local function is_js_family(lang)
+  return lang == "js" or lang == "ts"
+end
 
 local function language_for(path)
   local ext = path:match("(%.[^./]+)$")
@@ -653,6 +672,11 @@ local CS_BODY_TAGS = {
 local JS_BODY_TAGS = {
   ["statement_block"] = true,
   ["class_body"] = true,
+  -- TypeScript declares its members inside a dedicated body node instead of a block, so
+  -- an interface signature would otherwise swallow every member it has.
+  ["interface_body"] = true,
+  ["object_type"] = true,
+  ["enum_body"] = true,
 }
 
 local function cs_header_end(node)
@@ -703,7 +727,7 @@ local function make_signature(lines, node, lang, kind)
   local br, bc
   if lang == "cs" then
     br, bc = cs_header_end(node)
-  elseif lang == "js" then
+  elseif is_js_family(lang) then
     br, bc = js_header_end(node)
   end
   if br then er, ec = br, bc end
@@ -1134,7 +1158,45 @@ local function extract_javascript(tree, source)
               base_types = {},
             })
           end
-        elseif tag == "class_declaration" then
+        elseif tag == "interface_declaration" then
+          local name_node = field_child(child, "name")
+          local name = name_node and norm_ws(subtree_text(name_node)) or ""
+          if name ~= "" then
+            local bases = {}
+            for _, clause in ipairs(child.children) do
+              if not clause.is_text and clause.tag == "extends_type_clause" then
+                for _, base in ipairs(clause.children) do
+                  if not base.is_text and (base.tag == "type_identifier" or base.tag == "generic_type") then
+                    bases[#bases + 1] = compact_name(subtree_text(base))
+                  end
+                end
+              end
+            end
+            local qualified = build_qualified("", ctx.container, name)
+            add_symbol(child, ctx, {
+              name = name,
+              qualified = qualified,
+              kind = "interface",
+              is_type = true,
+              signature = make_signature(lines, child, "js", "interface"),
+              base_types = bases,
+            })
+          end
+        elseif tag == "type_alias_declaration" or tag == "enum_declaration" then
+          local name_node = field_child(child, "name")
+          local name = name_node and norm_ws(subtree_text(name_node)) or ""
+          if name ~= "" then
+            local qualified = build_qualified("", ctx.container, name)
+            add_symbol(child, ctx, {
+              name = name,
+              qualified = qualified,
+              kind = tag == "enum_declaration" and "enum" or "type",
+              is_type = true,
+              signature = make_signature(lines, child, "js", "type"),
+              base_types = {},
+            })
+          end
+        elseif tag == "class_declaration" or tag == "abstract_class_declaration" then
           local name_node = field_child(child, "name")
           local name = name_node and norm_ws(subtree_text(name_node)) or ""
           if name ~= "" then
@@ -1338,9 +1400,11 @@ end
 
 local function run_tree_sitter(path, lang, rebuild)
   local spec = LANGS[lang]
+  local ext = path:match("(%.[^./]+)$")
+  local scope = (spec.scopes and ext and spec.scopes[ext]) or spec.scope
   local cmd = "cd " .. shell_quote(ROOT) ..
     " && timeout 60 tree-sitter parse --config-path " .. shell_quote(TS_CONFIG_PATH) ..
-    " -x --scope " .. shell_quote(spec.scope) ..
+    " -x --scope " .. shell_quote(scope) ..
     (rebuild and " -r" or "") ..
     " " .. shell_quote(path) .. " 2>/dev/null"
   return run_capture(cmd)
@@ -1366,7 +1430,7 @@ local function parse_source_file(path, source, lang)
   local result
   if lang == "cs" then
     result = extract_csharp(tree, source)
-  elseif lang == "js" then
+  elseif is_js_family(lang) then
     result = extract_javascript(tree, source)
   elseif lang == "py" then
     result = extract_python(tree, source)
@@ -1506,7 +1570,9 @@ local function resolve_js_import(from_path, source, by_path)
   local base = normalize_path(dirname(from_path) .. "/" .. source)
   local candidates = {
     base,
+    base .. ".ts", base .. ".tsx", base .. ".mts", base .. ".cts",
     base .. ".js", base .. ".jsx", base .. ".mjs", base .. ".cjs",
+    base .. "/index.ts", base .. "/index.tsx",
     base .. "/index.js", base .. "/index.jsx",
   }
   local out = {}
@@ -1555,7 +1621,7 @@ local function resolve_import(from_path, lang, entry, lookups)
       return by_type_name[simple]
     end
     return {}
-  elseif lang == "js" then
+  elseif is_js_family(lang) then
     return resolve_js_import(from_path, entry.source, by_path)
   elseif lang == "py" then
     return resolve_python_import(from_path, entry.source, by_path, by_basename)
@@ -1596,7 +1662,7 @@ local function is_key_symbol(symbol)
   end
   if symbol.is_type then return true end
   if symbol.kind == "method" or symbol.kind == "function" then return true end
-  if symbol.kind == "const" and symbol.lang == "js" and symbol.exported then return true end
+  if symbol.kind == "const" and is_js_family(symbol.lang) and symbol.exported then return true end
   return false
 end
 
@@ -2082,11 +2148,11 @@ local function build_overview(index, derived, symbol_limit, include_docs)
     project_stats[project].loc = project_stats[project].loc + (file.loc or 0)
     project_stats[project].symbols = project_stats[project].symbols + #(file.symbols or {})
     project_stats[project].rank = project_stats[project].rank + (derived.file_rank[path] or 0)
-    if file.lang == "cs" or file.lang == "js" then
+    if file.lang == "cs" or is_js_family(file.lang) then
       project_stats[project].kind = file.lang == "cs" and ".NET" or "React"
     end
     local base = basename(path)
-    if base == "Program.cs" or base == "main.jsx" or base == "main.js" then
+    if base == "Program.cs" or base == "main.tsx" or base == "main.ts" or base == "main.jsx" or base == "main.js" then
       project_stats[project].entry = path
     end
   end
@@ -2183,7 +2249,7 @@ local function build_overview(index, derived, symbol_limit, include_docs)
   local externals = {}
   for i = 1, math.min(#derived.external, 5) do
     local ext = derived.external[i]
-    if ext.lang == "js" and ext.name:sub(1, 1) ~= "." then externals[#externals + 1] = ext.name end
+    if is_js_family(ext.lang) and ext.name:sub(1, 1) ~= "." then externals[#externals + 1] = ext.name end
   end
   if #externals > 0 then
     add("")
