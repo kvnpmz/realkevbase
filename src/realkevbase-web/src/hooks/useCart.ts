@@ -12,25 +12,15 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 
-import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi.js'
-import { trackBeginCheckout } from '../analytics/ga.js'
-import {
-  initialCartState,
-  normalizeCartItem,
-  cartReducer,
-  selectTotals,
-} from '../cart/cartReducer.js'
-import {
-  DEFAULT_CART_STORAGE_KEY,
-  getDefaultStorage,
-  readStoredCart,
-  writeStoredCart,
-} from '../cart/cartStorage.js'
+import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi'
+import type { CheckoutSession } from '../api/checkoutApi'
+import { trackBeginCheckout } from '../analytics/ga'
+import { cartReducer, initialCartState, normalizeCartItem, selectTotals } from '../cart/cartReducer'
+import type { CartItem, CartState } from '../cart/cartReducer'
+import { DEFAULT_CART_STORAGE_KEY, getDefaultStorage, readStoredCart, writeStoredCart } from '../cart/cartStorage'
 
 /**
  * Lifecycle of a checkout attempt.
- * @readonly
- * @enum {string}
  */
 export const CHECKOUT_STATUS = Object.freeze({
   /** Nothing submitted yet, or the last attempt was reset. */
@@ -43,51 +33,75 @@ export const CHECKOUT_STATUS = Object.freeze({
   ERROR: 'error',
 })
 
+/** One of the values in CHECKOUT_STATUS. */
+export type CheckoutStatus = (typeof CHECKOUT_STATUS)[keyof typeof CHECKOUT_STATUS]
+
+/** The state machine behind `checkoutStatus`, `checkoutError` and `checkoutSession`. */
+interface CheckoutState {
+  status: CheckoutStatus
+  error: Error | null
+  session: CheckoutSession | null
+}
+
+/** A cart line before it is given a quantity. */
+export type CartItemInput = Omit<CartItem, 'quantity'>
+
+/** Options accepted by `useCart`, mainly overrides for tests. */
+export interface UseCartOptions {
+  /** Checkout client override (defaults to the shared client). */
+  api?: typeof defaultCheckoutApi
+  /** Redirect function override (defaults to window.location.assign). */
+  navigate?: (url: string) => void
+  /** localStorage key for the cart. */
+  storageKey?: string
+  /** Set false to disable persistence. */
+  persist?: boolean
+  /** Storage override, mainly for tests. */
+  storage?: Storage | null
+  /** Seed items instead of reading storage. */
+  initialItems?: CartItem[]
+}
+
+/** Everything `useCart` returns. */
+export interface UseCartResult {
+  /** Current cart lines. */
+  items: CartItem[]
+  /** Aggregated totals. */
+  totals: ReturnType<typeof selectTotals>
+  /** Whether the cart holds no lines. */
+  isEmpty: boolean
+  addItem: (item: CartItemInput, quantity?: number) => void
+  removeItem: (id: string) => void
+  updateQuantity: (id: string, quantity: number) => void
+  increment: (id: string) => void
+  decrement: (id: string) => void
+  clearCart: () => void
+  checkout: (options?: { signal?: AbortSignal }) => Promise<CheckoutSession | null>
+  /** One of CHECKOUT_STATUS. */
+  checkoutStatus: CheckoutStatus
+  /** Last checkout failure (a CheckoutApiError when the API responded). */
+  checkoutError: Error | null
+  /** Most recent session. */
+  checkoutSession: CheckoutSession | null
+  /** Clear checkout error/session state. */
+  resetCheckout: () => void
+}
+
 /**
  * Default redirect implementation: leave the SPA for Stripe's hosted page.
- * @param {string} url Stripe Checkout URL.
- * @returns {void}
+ * @param url Stripe Checkout URL.
  */
-function defaultNavigate(url) {
+function defaultNavigate(url: string): void {
   window.location.assign(url)
 }
 
 /**
- * @typedef {Object} UseCartOptions
- * @property {ReturnType<typeof import('../api/checkoutApi').createCheckoutApi>} [api]
- *   Checkout client override (defaults to the shared client).
- * @property {(url: string) => void} [navigate] Redirect function override (defaults to window.location.assign).
- * @property {string} [storageKey] localStorage key for the cart.
- * @property {boolean} [persist] Set false to disable persistence.
- * @property {Storage | null} [storage] Storage override, mainly for tests.
- * @property {import('../cart/cartReducer').CartItem[]} [initialItems] Seed items instead of reading storage.
- */
-
-/**
- * @typedef {Object} UseCartResult
- * @property {import('../cart/cartReducer').CartItem[]} items Current cart lines.
- * @property {import('../cart/cartReducer').CartTotals} totals Aggregated totals.
- * @property {boolean} isEmpty Whether the cart holds no lines.
- * @property {(item: Omit<import('../cart/cartReducer').CartItem, 'quantity'>, quantity?: number) => void} addItem
- * @property {(id: string) => void} removeItem
- * @property {(id: string, quantity: number) => void} updateQuantity
- * @property {(id: string) => void} increment
- * @property {(id: string) => void} decrement
- * @property {() => void} clearCart
- * @property {(options?: { signal?: AbortSignal }) => Promise<import('../api/checkoutApi').CheckoutSession | null>} checkout
- * @property {string} checkoutStatus One of CHECKOUT_STATUS.
- * @property {Error | null} checkoutError Last checkout failure (a CheckoutApiError when the API responded).
- * @property {import('../api/checkoutApi').CheckoutSession | null} checkoutSession Most recent session.
- * @property {() => void} resetCheckout Clear checkout error/session state.
- */
-
-/**
  * Cart hook for the RealKevbase storefront.
  *
- * @param {UseCartOptions} [options] Optional overrides.
- * @returns {UseCartResult} Cart state, totals and actions.
+ * @param options Optional overrides.
+ * @returns Cart state, totals and actions.
  */
-export function useCart(options = {}) {
+export function useCart(options: UseCartOptions = {}): UseCartResult {
   const {
     api = defaultCheckoutApi,
     navigate = defaultNavigate,
@@ -97,7 +111,7 @@ export function useCart(options = {}) {
     initialItems,
   } = options
 
-  const [state, dispatch] = useReducer(cartReducer, undefined, () => {
+  const [state, dispatch] = useReducer(cartReducer, undefined, (): CartState => {
     const items = initialItems
       ? initialItems.map((item) => normalizeCartItem(item))
       : persist
@@ -106,13 +120,11 @@ export function useCart(options = {}) {
     return { ...initialCartState, items }
   })
 
-  const [checkoutState, setCheckoutState] = useState(
-    /** @type {{ status: string, error: Error | null, session: import('../api/checkoutApi').CheckoutSession | null }} */ ({
-      status: CHECKOUT_STATUS.IDLE,
-      error: null,
-      session: null,
-    }),
-  )
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>({
+    status: CHECKOUT_STATUS.IDLE,
+    error: null,
+    session: null,
+  })
 
   const submittingRef = useRef(false)
 
@@ -123,21 +135,21 @@ export function useCart(options = {}) {
 
   const totals = useMemo(() => selectTotals(state.items), [state.items])
 
-  const addItem = useCallback((item, quantity = 1) => {
+  const addItem = useCallback((item: CartItemInput, quantity = 1) => {
     const normalized = normalizeCartItem({ ...item, quantity })
     dispatch({ type: 'cart/addItem', item: normalized })
   }, [])
 
-  const removeItem = useCallback((id) => {
+  const removeItem = useCallback((id: string) => {
     dispatch({ type: 'cart/removeItem', id })
   }, [])
 
-  const updateQuantity = useCallback((id, quantity) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     dispatch({ type: 'cart/setQuantity', id, quantity })
   }, [])
 
   const increment = useCallback(
-    (id) => {
+    (id: string) => {
       const item = state.items.find((candidate) => candidate.id === id)
       if (!item) return
       dispatch({ type: 'cart/setQuantity', id, quantity: item.quantity + 1 })
@@ -146,7 +158,7 @@ export function useCart(options = {}) {
   )
 
   const decrement = useCallback(
-    (id) => {
+    (id: string) => {
       const item = state.items.find((candidate) => candidate.id === id)
       if (!item) return
       dispatch({ type: 'cart/setQuantity', id, quantity: item.quantity - 1 })
@@ -164,7 +176,7 @@ export function useCart(options = {}) {
   }, [])
 
   const checkout = useCallback(
-    async ({ signal } = {}) => {
+    async ({ signal }: { signal?: AbortSignal } = {}): Promise<CheckoutSession | null> => {
       if (submittingRef.current) return null
 
       if (state.items.length === 0) {

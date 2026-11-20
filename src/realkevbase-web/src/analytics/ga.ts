@@ -9,9 +9,21 @@
  * @see https://developers.google.com/analytics/devguides/collection/ga4
  */
 
+import type { CartItem } from '../cart/cartReducer'
+import { isRecord } from '../api/json'
+
+declare global {
+  interface Window {
+    /** Queue gtag.js drains once it loads; Google's snippet creates it. */
+    dataLayer?: unknown[]
+    /** Set by the shim below, then replaced by gtag.js itself. */
+    gtag?: (...args: unknown[]) => void
+  }
+}
+
 /** Measurement id baked in at build time; empty when analytics is not configured. */
 const ENV_MEASUREMENT_ID =
-  typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_GA_ID ?? '' : ''
+  typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.VITE_GA_ID ?? '') : ''
 
 /** Browser storage key for the order details needed by the post-redirect purchase event. */
 export const PENDING_ORDER_KEY = 'realkevbase.pendingOrder'
@@ -22,13 +34,24 @@ let initialized = false
 /** True once the tag has been injected; every tracking helper no-ops until then. */
 let active = false
 
+/** One cart line in the GA4 `items` shape. */
+export type GaItem = {
+  item_id: string
+  item_name: string
+  price: number
+  quantity: number
+}
+
+/** Event parameters GA4 accepts; values are whatever the event documents. */
+export type GaParams = Record<string, unknown>
+
 /**
  * Loads the Google tag and configures a page view.
  *
- * @param {{ measurementId?: string }} [options] Override, mainly for tests.
- * @returns {boolean} True when analytics is active after this call.
+ * @param options Override, mainly for tests.
+ * @returns True when analytics is active after this call.
  */
-export function initAnalytics({ measurementId = ENV_MEASUREMENT_ID } = {}) {
+export function initAnalytics({ measurementId = ENV_MEASUREMENT_ID }: { measurementId?: string } = {}): boolean {
   if (initialized) return active
   initialized = true
 
@@ -36,14 +59,16 @@ export function initAnalytics({ measurementId = ENV_MEASUREMENT_ID } = {}) {
     return false
   }
 
-  window.dataLayer = window.dataLayer || []
+  const dataLayer: unknown[] = window.dataLayer ?? []
+  window.dataLayer = dataLayer
   // Google's documented shim: queue calls until gtag.js arrives and replaces it.
-  window.gtag = function gtag() {
-    window.dataLayer.push(arguments)
+  const shim = (...args: unknown[]): void => {
+    dataLayer.push(args)
   }
+  window.gtag = shim
 
-  window.gtag('js', new Date())
-  window.gtag('config', measurementId, {
+  shim('js', new Date())
+  shim('config', measurementId, {
     // GA4 anonymises by default; stated explicitly so the intent survives edits.
     anonymize_ip: true,
     send_page_view: true,
@@ -61,11 +86,10 @@ export function initAnalytics({ measurementId = ENV_MEASUREMENT_ID } = {}) {
 /**
  * Sends a GA4 event. Safe to call anywhere: it no-ops when analytics is not configured.
  *
- * @param {string} name Event name, for example `begin_checkout`.
- * @param {Record<string, unknown>} [params] Event parameters.
- * @returns {void}
+ * @param name Event name, for example `begin_checkout`.
+ * @param params Event parameters.
  */
-export function trackEvent(name, params = {}) {
+export function trackEvent(name: string, params: GaParams = {}): void {
   if (!active || typeof window === 'undefined' || typeof window.gtag !== 'function') return
   window.gtag('event', name, params)
 }
@@ -73,10 +97,10 @@ export function trackEvent(name, params = {}) {
 /**
  * Maps cart lines to the GA4 `items` shape.
  *
- * @param {import('../cart/cartReducer.js').CartItem[]} items Cart lines.
- * @returns {Array<Record<string, unknown>>} GA4 items.
+ * @param items Cart lines.
+ * @returns GA4 items.
  */
-export function toGaItems(items) {
+export function toGaItems(items: readonly CartItem[]): GaItem[] {
   return (items ?? []).map((item) => ({
     item_id: item.id,
     item_name: item.name,
@@ -92,11 +116,13 @@ export function toGaItems(items) {
  * survives that navigation in the same tab, which is what makes the purchase event carry a
  * value. Nothing personally identifying is stored.
  *
- * @param {import('../cart/cartReducer.js').CartItem[]} items Cart lines being purchased.
- * @param {{ subtotal: number, currency?: string }} totals Cart totals.
- * @returns {void}
+ * @param items Cart lines being purchased.
+ * @param totals Cart totals.
  */
-export function trackBeginCheckout(items, totals) {
+export function trackBeginCheckout(
+  items: readonly CartItem[],
+  totals: { subtotal: number; currency?: string },
+): void {
   const currency = totals.currency ?? 'USD'
   const params = {
     currency,
@@ -120,17 +146,19 @@ export function trackBeginCheckout(items, totals) {
 /**
  * Records the purchase once, using the value stashed before the Stripe redirect.
  *
- * @param {string} transactionId Stripe Checkout Session id, used for deduplication in GA4.
- * @returns {boolean} True when a purchase event was sent.
+ * @param transactionId Stripe Checkout Session id, used for deduplication in GA4.
+ * @returns True when a purchase event was sent.
  */
-export function trackPurchase(transactionId) {
+export function trackPurchase(transactionId: string): boolean {
   if (!active || !transactionId || typeof sessionStorage === 'undefined') return false
 
-  /** @type {{ currency?: string, value?: number, items?: Array<Record<string, unknown>> } | null} */
-  let order = null
+  let order: Record<string, unknown> | null = null
   try {
     const raw = sessionStorage.getItem(PENDING_ORDER_KEY)
-    if (raw) order = JSON.parse(raw)
+    if (raw) {
+      const parsed: unknown = JSON.parse(raw)
+      order = isRecord(parsed) ? parsed : null
+    }
     sessionStorage.removeItem(PENDING_ORDER_KEY)
   } catch {
     order = null

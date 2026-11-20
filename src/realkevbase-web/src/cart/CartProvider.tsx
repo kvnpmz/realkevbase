@@ -1,16 +1,21 @@
 import { useCallback, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 
-import { useCart } from '../hooks/useCart.js'
-import { CartContext } from './cartContext.js'
+import type { CheckoutSession } from '../api/checkoutApi'
+import type { CartItem } from './cartReducer'
+import { useCart } from '../hooks/useCart'
+import { CartContext } from './cartContext'
+
+/** The provider takes the app's children and nothing else. */
+export interface CartProviderProps {
+  children: ReactNode
+}
 
 /**
  * Provides one cart instance to the whole storefront and opens the drawer when an item is
  * added, so every "Add to cart" click has immediate, visible feedback.
- *
- * @param {{ children: React.ReactNode }} props Provider children.
- * @returns {React.JSX.Element} The context provider.
  */
-export function CartProvider({ children }) {
+export function CartProvider({ children }: CartProviderProps) {
   const {
     items,
     totals,
@@ -34,7 +39,7 @@ export function CartProvider({ children }) {
   const closeCart = useCallback(() => setIsCartOpen(false), [])
 
   const addItem = useCallback(
-    (item, quantity = 1) => {
+    (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
       addToCart(item, quantity)
       setIsCartOpen(true)
     },
@@ -42,7 +47,7 @@ export function CartProvider({ children }) {
   )
 
   const startCheckout = useCallback(
-    async (options) => {
+    async (options?: { signal?: AbortSignal }): Promise<CheckoutSession | null> => {
       const session = await checkout(options)
       // With a redirect URL the browser is leaving for Stripe; otherwise let the
       // consumer drive Stripe.js from a closed drawer.

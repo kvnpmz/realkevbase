@@ -36,7 +36,7 @@ const VALUE_PROPS = [
  * Landing page: hero, the browseable catalog and the reassurance section.
  *
  * @param {Object} props Component props.
- * @param {import('../hooks/useCatalog.js').CatalogProduct[]} [props.products] Products to render.
+ * @param {import('../hooks/useCatalog').CatalogProduct[]} [props.products] Products to render.
  * @param {boolean} [props.loading] Whether the catalog request is still in flight.
  * @param {Error | null} [props.error] Catalog load failure, when there is one.
  * @param {() => void} [props.onRetry] Retries the catalog request.

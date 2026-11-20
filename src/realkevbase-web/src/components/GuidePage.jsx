@@ -11,11 +11,11 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PauseRoundedIcon from '@mui/icons-material/PauseRounded'
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded'
 
-import { trackEvent } from '../analytics/ga.js'
-import { readInlineProduct } from '../api/catalogApi.js'
-import { useCartContext } from '../cart/cartContext.js'
-import { FULFILLMENT } from '../cart/cartReducer.js'
-import { formatMoney } from '../cart/formatMoney.js'
+import { trackEvent } from '../analytics/ga'
+import { readInlineProduct } from '../api/catalogApi'
+import { useCartContext } from '../cart/cartContext'
+import { FULFILLMENT } from '../cart/cartReducer'
+import { formatMoney } from '../cart/formatMoney'
 import { CATEGORIES } from '../data/categories'
 import { SITE_NAME, SITE_TITLE } from '../data/site'
 
@@ -69,7 +69,7 @@ function PageMessage({ title, copy, action }) {
  * Kept separate from the route so its state resets when the visitor moves from one guide
  * to another without the component unmounting.
  *
- * @param {{ product: import('../hooks/useCatalog.js').CatalogProduct }} props Component props.
+ * @param {{ product: import('../hooks/useCatalog').CatalogProduct }} props Component props.
  * @returns {React.JSX.Element} The detail layout.
  */
 function GuideDetail({ product }) {
@@ -398,7 +398,7 @@ function GuideDetail({ product }) {
  *
  * @param {Object} props Component props.
  * @param {{
- *   products: import('../hooks/useCatalog.js').CatalogProduct[],
+ *   products: import('../hooks/useCatalog').CatalogProduct[],
  *   loading: boolean,
  *   error: Error | null,
  *   reload: () => void,

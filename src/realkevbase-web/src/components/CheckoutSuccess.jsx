@@ -7,8 +7,8 @@ import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded'
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded'
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 
-import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi.js'
-import { trackPurchase } from '../analytics/ga.js'
+import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi'
+import { trackPurchase } from '../analytics/ga'
 
 /**
  * Stages the success panel can be in.

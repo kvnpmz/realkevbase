@@ -24,9 +24,9 @@ import CheckroomRoundedIcon from '@mui/icons-material/CheckroomRounded'
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 
-import { useCartContext } from '../cart/cartContext.js'
-import { FULFILLMENT } from '../cart/cartReducer.js'
-import { formatMoney } from '../cart/formatMoney.js'
+import { useCartContext } from '../cart/cartContext'
+import { FULFILLMENT } from '../cart/cartReducer'
+import { formatMoney } from '../cart/formatMoney'
 import { CATEGORIES } from '../data/categories'
 
 /** Cards rendered per page. Phones get a shorter first page so the grid stays scannable. */
@@ -59,7 +59,7 @@ const joinLabels = (labels) =>
  * A single product card. Digital PDFs and physical merchandise share the layout but
  * differ in badge, artwork and delivery promise.
  *
- * @param {{ product: import('../hooks/useCatalog.js').CatalogProduct }} props Component props.
+ * @param {{ product: import('../hooks/useCatalog').CatalogProduct }} props Component props.
  * @returns {React.JSX.Element} The card.
  */
 function ProductCard({ product }) {
@@ -263,7 +263,7 @@ function ProductCard({ product }) {
  * page of cards at a time and a `Show more` control for the rest.
  *
  * @param {Object} props Component props.
- * @param {import('../hooks/useCatalog.js').CatalogProduct[]} [props.products] Products to render.
+ * @param {import('../hooks/useCatalog').CatalogProduct[]} [props.products] Products to render.
  * @param {boolean} [props.loading] Whether the catalog request is still in flight.
  * @param {Error | null} [props.error] Catalog load failure, when there is one.
  * @param {() => void} [props.onRetry] Retries the catalog request.

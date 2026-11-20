@@ -6,7 +6,9 @@
  * or hand-edited payload can never reach checkout.
  */
 
-import { normalizeCartItem } from './cartReducer.js'
+import { isRecord } from '../api/json'
+import { normalizeCartItem } from './cartReducer'
+import type { CartItem } from './cartReducer'
 
 /** Version of the persisted payload shape. Bump when the stored schema changes. */
 export const CART_STORAGE_VERSION = 1
@@ -17,9 +19,9 @@ export const DEFAULT_CART_STORAGE_KEY = 'realkevbase.cart'
 /**
  * Returns the browser's localStorage, or null when it is unavailable
  * (server-side rendering, disabled storage, privacy mode).
- * @returns {Storage | null} The storage instance or null.
+ * @returns The storage instance or null.
  */
-export function getDefaultStorage() {
+export function getDefaultStorage(): Storage | null {
   try {
     return typeof window !== 'undefined' && window.localStorage ? window.localStorage : null
   } catch {
@@ -30,23 +32,23 @@ export function getDefaultStorage() {
 /**
  * Reads and validates a persisted cart.
  *
- * @param {Storage | null} storage Storage to read from.
- * @param {string} [storageKey] Key the cart was stored under.
- * @returns {import('./cartReducer').CartItem[]} Valid items; empty when nothing usable is stored.
+ * @param storage Storage to read from.
+ * @param storageKey Key the cart was stored under.
+ * @returns Valid items; empty when nothing usable is stored.
  */
-export function readStoredCart(storage, storageKey = DEFAULT_CART_STORAGE_KEY) {
+export function readStoredCart(storage: Storage | null, storageKey: string = DEFAULT_CART_STORAGE_KEY): CartItem[] {
   if (!storage) return []
 
   try {
     const raw = storage.getItem(storageKey)
     if (!raw) return []
 
-    const payload = JSON.parse(raw)
-    if (payload?.version !== CART_STORAGE_VERSION || !Array.isArray(payload.items)) {
+    const payload: unknown = JSON.parse(raw)
+    if (!isRecord(payload) || payload.version !== CART_STORAGE_VERSION || !Array.isArray(payload.items)) {
       return []
     }
 
-    const items = []
+    const items: CartItem[] = []
     for (const candidate of payload.items) {
       try {
         items.push(normalizeCartItem(candidate))
@@ -63,12 +65,16 @@ export function readStoredCart(storage, storageKey = DEFAULT_CART_STORAGE_KEY) {
 /**
  * Persists the cart. Failures (quota exceeded, storage disabled) are non-fatal.
  *
- * @param {Storage | null} storage Storage to write to.
- * @param {string} [storageKey] Key to store the cart under.
- * @param {import('./cartReducer').CartItem[]} [items] Items to persist.
- * @returns {boolean} True when the write succeeded.
+ * @param storage Storage to write to.
+ * @param storageKey Key to store the cart under.
+ * @param items Items to persist.
+ * @returns True when the write succeeded.
  */
-export function writeStoredCart(storage, storageKey = DEFAULT_CART_STORAGE_KEY, items = []) {
+export function writeStoredCart(
+  storage: Storage | null,
+  storageKey: string = DEFAULT_CART_STORAGE_KEY,
+  items: readonly CartItem[] = [],
+): boolean {
   if (!storage) return false
 
   try {
@@ -81,11 +87,11 @@ export function writeStoredCart(storage, storageKey = DEFAULT_CART_STORAGE_KEY, 
 
 /**
  * Removes the persisted cart.
- * @param {Storage | null} storage Storage to clear.
- * @param {string} [storageKey] Key to remove.
- * @returns {boolean} True when the key was removed.
+ * @param storage Storage to clear.
+ * @param storageKey Key to remove.
+ * @returns True when the key was removed.
  */
-export function clearStoredCart(storage, storageKey = DEFAULT_CART_STORAGE_KEY) {
+export function clearStoredCart(storage: Storage | null, storageKey: string = DEFAULT_CART_STORAGE_KEY): boolean {
   if (!storage) return false
 
   try {

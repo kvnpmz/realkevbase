@@ -19,8 +19,8 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 
 import { Link } from 'react-router-dom'
 
-import { useCartContext } from '../cart/cartContext.js'
-import { formatMoney } from '../cart/formatMoney.js'
+import { useCartContext } from '../cart/cartContext'
+import { formatMoney } from '../cart/formatMoney'
 import { BRAND } from '../data/site'
 import { HUB_LINKS } from '../data/hubLinks'
 

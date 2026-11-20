@@ -5,14 +5,14 @@ import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
-import { CartProvider } from './cart/CartProvider.jsx'
+import { CartProvider } from './cart/CartProvider'
 import { CartDrawer } from './components/CartDrawer.jsx'
 import { CheckoutSuccess } from './components/CheckoutSuccess.jsx'
 import { GuidePage } from './components/GuidePage.jsx'
 import { HomePage } from './components/HomePage.jsx'
 import { Navbar } from './components/Navbar.jsx'
 import { theme } from './theme.js'
-import { useCatalog } from './hooks/useCatalog.js'
+import { useCatalog } from './hooks/useCatalog'
 
 /**
  * Keeps the viewport sensible across client-side navigation: jumps to top on a new page

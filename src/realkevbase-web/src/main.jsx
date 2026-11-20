@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
-import { initAnalytics } from './analytics/ga.js'
+import { initAnalytics } from './analytics/ga'
 
 // Loads Google Analytics only when VITE_GA_ID was set at build time.
 initAnalytics()

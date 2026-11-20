@@ -20,9 +20,9 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded'
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 
-import { useCartContext } from '../cart/cartContext.js'
-import { FULFILLMENT } from '../cart/cartReducer.js'
-import { formatMoney } from '../cart/formatMoney.js'
+import { useCartContext } from '../cart/cartContext'
+import { FULFILLMENT } from '../cart/cartReducer'
+import { formatMoney } from '../cart/formatMoney'
 
 /** @param {{ label: string, value: string, strong?: boolean, muted?: boolean }} props */
 function SummaryRow({ label, value, strong = false, muted = false }) {
@@ -50,7 +50,7 @@ function SummaryRow({ label, value, strong = false, muted = false }) {
 
 /**
  * A single cart line with quantity controls, line total and fulfillment hint.
- * @param {{ item: import('../cart/cartReducer.js').CartItem }} props Component props.
+ * @param {{ item: import('../cart/cartReducer').CartItem }} props Component props.
  * @returns {React.JSX.Element} The cart line.
  */
 function CartLine({ item }) {
