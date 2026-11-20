@@ -6,12 +6,12 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { CartProvider } from './cart/CartProvider'
-import { CartDrawer } from './components/CartDrawer.jsx'
-import { CheckoutSuccess } from './components/CheckoutSuccess.jsx'
-import { GuidePage } from './components/GuidePage.jsx'
-import { HomePage } from './components/HomePage.jsx'
-import { Navbar } from './components/Navbar.jsx'
-import { theme } from './theme.js'
+import { CartDrawer } from './components/CartDrawer'
+import { CheckoutSuccess } from './components/CheckoutSuccess'
+import { GuidePage } from './components/GuidePage'
+import { HomePage } from './components/HomePage'
+import { Navbar } from './components/Navbar'
+import { theme } from './theme'
 import { useCatalog } from './hooks/useCatalog'
 
 /**

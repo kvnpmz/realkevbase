@@ -8,12 +8,11 @@ import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded'
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 
 import { checkoutApi as defaultCheckoutApi } from '../api/checkoutApi'
+import type { CheckoutApi, SessionDownload } from '../api/checkoutApi'
 import { trackPurchase } from '../analytics/ga'
 
 /**
  * Stages the success panel can be in.
- * @readonly
- * @enum {string}
  */
 const STAGE = Object.freeze({
   LOADING: 'loading',
@@ -24,12 +23,28 @@ const STAGE = Object.freeze({
   ERROR: 'error',
 })
 
+/** One of the values in STAGE. */
+type Stage = (typeof STAGE)[keyof typeof STAGE]
+
+/** One product's files on the success panel. */
+interface DownloadGroup {
+  key: string
+  name: string
+  expiresAt: string | null
+  files: SessionDownload[]
+}
+
+/** What the panel is showing. */
+interface SuccessState {
+  stage: Stage
+  downloads: SessionDownload[]
+  message: string
+}
+
 /**
  * Formats a link expiry for display.
- * @param {string | null} value ISO timestamp from the API.
- * @returns {string} Localised date and time, or a generic fallback.
  */
-function formatExpiry(value) {
+function formatExpiry(value: string | null): string {
   if (!value) return 'within 24 hours'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'within 24 hours'
@@ -38,10 +53,8 @@ function formatExpiry(value) {
 
 /**
  * Names one file the way the buyer will see it, for example `US Letter PNG`.
- * @param {import('../api/checkoutApi').SessionDownload} download Download link.
- * @returns {string} Edition and format.
  */
-function fileLabel(download) {
+function fileLabel(download: SessionDownload): string {
   const format = download.format === 'png' ? 'PNG' : 'PDF'
   return download.edition ? `${download.edition} ${format}` : format
 }
@@ -51,18 +64,10 @@ function fileLabel(download) {
  *
  * A guide contributes one entry per file, so the PDF and its full-resolution PNG become a
  * single row of equal-weight buttons instead of two look-alike products.
- *
- * @param {import('../api/checkoutApi').SessionDownload[]} downloads Download links.
- * @returns {Array<{
- *   key: string,
- *   name: string,
- *   expiresAt: string | null,
- *   files: import('../api/checkoutApi').SessionDownload[],
- * }>} One entry per product.
  */
-function groupDownloads(downloads) {
-  const groups = []
-  const byProduct = new Map()
+function groupDownloads(downloads: readonly SessionDownload[]): DownloadGroup[] {
+  const groups: DownloadGroup[] = []
+  const byProduct = new Map<string, DownloadGroup>()
 
   downloads.forEach((download) => {
     const key = download.productId || download.url
@@ -92,19 +97,21 @@ function groupDownloads(downloads) {
  * nothing here can be forged by editing the query string. Renders nothing at all when the
  * visitor did not just check out.
  *
- * @param {{
- *   api?: ReturnType<typeof import('../api/checkoutApi').createCheckoutApi>,
- *   search?: string,
- * }} [props] Component props; both overridable for tests.
- * @returns {React.JSX.Element | null} The panel, or null when not on a success redirect.
  */
-export function CheckoutSuccess({ api = defaultCheckoutApi, search } = {}) {
+export interface CheckoutSuccessProps {
+  /** Checkout client override, for tests. */
+  api?: CheckoutApi
+  /** Query string override, for tests. */
+  search?: string
+}
+
+export function CheckoutSuccess({ api = defaultCheckoutApi, search }: CheckoutSuccessProps = {}) {
   const query = search ?? (typeof window === 'undefined' ? '' : window.location.search)
   const params = typeof URLSearchParams === 'function' ? new URLSearchParams(query) : null
   const isSuccess = params?.get('checkout') === 'success'
   const sessionId = params?.get('session_id')?.trim() ?? ''
 
-  const [state, setState] = useState({
+  const [state, setState] = useState<SuccessState>({
     stage: sessionId ? STAGE.LOADING : STAGE.MISSING,
     downloads: [],
     message: '',

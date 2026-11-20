@@ -38,8 +38,8 @@ const NAV_LINKS = [
  */
 export function Navbar() {
   const { totals, openCart } = useCartContext()
-  const [menuAnchor, setMenuAnchor] = useState(null)
-  const [collectionsAnchor, setCollectionsAnchor] = useState(null)
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const [collectionsAnchor, setCollectionsAnchor] = useState<HTMLElement | null>(null)
 
   const isMenuOpen = Boolean(menuAnchor)
   const isCollectionsOpen = Boolean(collectionsAnchor)

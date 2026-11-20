@@ -24,10 +24,12 @@ import CheckroomRoundedIcon from '@mui/icons-material/CheckroomRounded'
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 
+import type { CatalogProduct } from '../api/catalogApi'
 import { useCartContext } from '../cart/cartContext'
 import { FULFILLMENT } from '../cart/cartReducer'
 import { formatMoney } from '../cart/formatMoney'
 import { CATEGORIES } from '../data/categories'
+import type { CategoryFilterValue } from '../data/categories'
 
 /** Cards rendered per page. Phones get a shorter first page so the grid stays scannable. */
 const PAGE_SIZE_MOBILE = 6
@@ -39,8 +41,6 @@ const PAGE_SIZE_DESKTOP = 12
  * Derived rather than written out so a new family appears in the sentence the moment it is
  * added, instead of leaving copy behind that quietly describes an older, smaller catalogue.
  * `all` and `merch` are filters, not families, so they are left out.
- *
- * @type {string[]}
  */
 const FAMILY_LABELS = CATEGORIES.filter(
   (option) => option.value !== 'all' && option.value !== 'merch',
@@ -48,25 +48,19 @@ const FAMILY_LABELS = CATEGORIES.filter(
 
 /**
  * Joins labels the way a sentence does: "A, B and C".
- *
- * @param {readonly string[]} labels Labels to join.
- * @returns {string} The joined list.
  */
-const joinLabels = (labels) =>
+const joinLabels = (labels: readonly string[]): string =>
   labels.length < 2 ? labels.join('') : `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}`
 
 /**
  * A single product card. Digital PDFs and physical merchandise share the layout but
  * differ in badge, artwork and delivery promise.
- *
- * @param {{ product: import('../hooks/useCatalog').CatalogProduct }} props Component props.
- * @returns {React.JSX.Element} The card.
  */
-function ProductCard({ product }) {
+function ProductCard({ product }: { product: CatalogProduct }) {
   const { addItem } = useCartContext()
   const [justAdded, setJustAdded] = useState(false)
   const [thumbnailFailed, setThumbnailFailed] = useState(false)
-  const resetTimer = useRef(null)
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(
     () => () => {
@@ -261,19 +255,23 @@ function ProductCard({ product }) {
 /**
  * Responsive product section showing the whole catalog in browseable categories, with a
  * page of cards at a time and a `Show more` control for the rest.
- *
- * @param {Object} props Component props.
- * @param {import('../hooks/useCatalog').CatalogProduct[]} [props.products] Products to render.
- * @param {boolean} [props.loading] Whether the catalog request is still in flight.
- * @param {Error | null} [props.error] Catalog load failure, when there is one.
- * @param {() => void} [props.onRetry] Retries the catalog request.
- * @returns {React.JSX.Element} The product section.
  */
-export function ProductGrid({ products = [], loading = false, error = null, onRetry }) {
+export interface ProductGridProps {
+  /** Products to render. */
+  products?: CatalogProduct[]
+  /** Whether the catalog request is still in flight. */
+  loading?: boolean
+  /** Catalog load failure, when there is one. */
+  error?: Error | null
+  /** Retries the catalog request. */
+  onRetry?: () => void
+}
+
+export function ProductGrid({ products = [], loading = false, error = null, onRetry }: ProductGridProps) {
   const isDesktop = useMediaQuery('(min-width:600px)')
   const pageSize = isDesktop ? PAGE_SIZE_DESKTOP : PAGE_SIZE_MOBILE
 
-  const [category, setCategory] = useState('all')
+  const [category, setCategory] = useState<CategoryFilterValue>('all')
   const [extraPages, setExtraPages] = useState(0)
 
   // Kept in sync with the catalog instead of a hard-coded count, so adding a listing
@@ -295,7 +293,7 @@ export function ProductGrid({ products = [], loading = false, error = null, onRe
   const visibleProducts = filteredProducts.slice(0, pageSize * (extraPages + 1))
   const hasMore = filteredProducts.length > visibleProducts.length
 
-  const handleCategoryChange = (_event, nextCategory) => {
+  const handleCategoryChange = (_event: React.SyntheticEvent, nextCategory: CategoryFilterValue | null) => {
     // Keep the current category when the active toggle is clicked again.
     if (nextCategory === null) return
     setCategory(nextCategory)

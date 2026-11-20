@@ -6,8 +6,9 @@ import BoltRoundedIcon from '@mui/icons-material/BoltRounded'
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
-import { ProductGrid } from './ProductGrid.jsx'
-import { Reviews } from './Reviews.jsx'
+import { ProductGrid } from './ProductGrid'
+import type { CatalogProduct } from '../api/catalogApi'
+import { Reviews } from './Reviews'
 import { HOME_HERO } from '../data/home'
 import { HUB_LINKS } from '../data/hubLinks'
 import { ACCENT_WASH } from '../data/site'
@@ -34,15 +35,19 @@ const VALUE_PROPS = [
 
 /**
  * Landing page: hero, the browseable catalog and the reassurance section.
- *
- * @param {Object} props Component props.
- * @param {import('../hooks/useCatalog').CatalogProduct[]} [props.products] Products to render.
- * @param {boolean} [props.loading] Whether the catalog request is still in flight.
- * @param {Error | null} [props.error] Catalog load failure, when there is one.
- * @param {() => void} [props.onRetry] Retries the catalog request.
- * @returns {React.JSX.Element} The landing page.
  */
-export function HomePage({ products = [], loading = false, error = null, onRetry }) {
+export interface HomePageProps {
+  /** Products to render. */
+  products?: CatalogProduct[]
+  /** Whether the catalog request is still in flight. */
+  loading?: boolean
+  /** Catalog load failure, when there is one. */
+  error?: Error | null
+  /** Retries the catalog request. */
+  onRetry?: () => void
+}
+
+export function HomePage({ products = [], loading = false, error = null, onRetry }: HomePageProps) {
   // The guide page rewrites the tab title; coming back here must restore the storefront's.
   useEffect(() => {
     document.title = SITE_TITLE
