@@ -27,7 +27,7 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import { useCartContext } from '../cart/cartContext.js'
 import { FULFILLMENT } from '../cart/cartReducer.js'
 import { formatMoney } from '../cart/formatMoney.js'
-import { CATEGORIES } from '../data/categories.js'
+import { CATEGORIES } from '../data/categories'
 
 /** Cards rendered per page. Phones get a shorter first page so the grid stays scannable. */
 const PAGE_SIZE_MOBILE = 6

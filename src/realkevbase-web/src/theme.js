@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles'
 
-import { ACCENT } from './data/site.js'
+import { ACCENT } from './data/site'
 
 /**
  * Storefront theme: warm, high-contrast, conversion-focused.

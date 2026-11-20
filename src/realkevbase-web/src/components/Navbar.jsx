@@ -21,8 +21,8 @@ import { Link } from 'react-router-dom'
 
 import { useCartContext } from '../cart/cartContext.js'
 import { formatMoney } from '../cart/formatMoney.js'
-import { BRAND } from '../data/site.js'
-import { HUB_LINKS } from '../data/hubLinks.js'
+import { BRAND } from '../data/site'
+import { HUB_LINKS } from '../data/hubLinks'
 
 /** Primary navigation targets, absolute so they also work from a guide page. */
 const NAV_LINKS = [

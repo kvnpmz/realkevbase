@@ -19,4 +19,15 @@ export const HUB_LINKS = [
   { slug: 'household', label: 'Home & cleaning' },
   { slug: 'packing', label: 'Packing & travel' },
   { slug: 'baby', label: 'Baby & kids' },
-]
+] as const
+
+/**
+ * A collection page's slug, for example `'kidney'`.
+ *
+ * Derived from the list above, so adding a hub is one line and every reader of the union —
+ * the filter chips, the navbar, the hub pages — picks the new member up without an edit.
+ */
+export type HubSlug = (typeof HUB_LINKS)[number]['slug']
+
+/** One shared slug/label pair. */
+export type HubLink = (typeof HUB_LINKS)[number]

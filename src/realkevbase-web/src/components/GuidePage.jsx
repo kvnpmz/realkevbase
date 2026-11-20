@@ -16,8 +16,8 @@ import { readInlineProduct } from '../api/catalogApi.js'
 import { useCartContext } from '../cart/cartContext.js'
 import { FULFILLMENT } from '../cart/cartReducer.js'
 import { formatMoney } from '../cart/formatMoney.js'
-import { CATEGORIES } from '../data/categories.js'
-import { SITE_NAME, SITE_TITLE } from '../data/site.js'
+import { CATEGORIES } from '../data/categories'
+import { SITE_NAME, SITE_TITLE } from '../data/site'
 
 /** Category value to its storefront label. */
 const CATEGORY_LABELS = new Map(CATEGORIES.map((option) => [option.value, option.label]))

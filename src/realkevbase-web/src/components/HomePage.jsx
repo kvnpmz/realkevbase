@@ -8,10 +8,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 
 import { ProductGrid } from './ProductGrid.jsx'
 import { Reviews } from './Reviews.jsx'
-import { HOME_HERO } from '../data/home.js'
-import { HUB_LINKS } from '../data/hubLinks.js'
-import { ACCENT_WASH } from '../data/site.js'
-import { SITE_TITLE } from '../data/site.js'
+import { HOME_HERO } from '../data/home'
+import { HUB_LINKS } from '../data/hubLinks'
+import { ACCENT_WASH } from '../data/site'
+import { SITE_TITLE } from '../data/site'
 
 /** Trust/reassurance points shown below the fold. */
 const VALUE_PROPS = [

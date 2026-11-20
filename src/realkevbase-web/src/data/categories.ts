@@ -10,9 +10,19 @@
  * row, the navbar, the home-page chips and the hub pages cannot disagree about a name.
  * Physical merch carries no category and is reachable only through `all` and `merch`.
  */
-import { HUB_LINKS } from './hubLinks.js'
+import { HUB_LINKS } from './hubLinks.ts'
+import type { HubSlug } from './hubLinks.ts'
 
-export const CATEGORIES = [
+/** A filter's value: a real shelf, or one of the two synthetic whole-catalog filters. */
+export type CategoryFilterValue = 'all' | HubSlug | 'merch'
+
+/** One chip in the storefront filter row. */
+export interface CategoryFilter {
+  readonly value: CategoryFilterValue
+  readonly label: string
+}
+
+export const CATEGORIES: readonly CategoryFilter[] = [
   { value: 'all', label: 'All' },
   ...HUB_LINKS.map((hub) => ({ value: hub.slug, label: hub.label })),
   { value: 'merch', label: 'Merch' },

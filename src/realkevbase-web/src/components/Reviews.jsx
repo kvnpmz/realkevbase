@@ -1,14 +1,14 @@
 import { Box, Container, Grid, Stack, Typography } from '@mui/material'
 import FormatQuoteRoundedIcon from '@mui/icons-material/FormatQuoteRounded'
 
-import { REVIEWS } from '../data/reviews.js'
+import { REVIEWS } from '../data/reviews'
 
 /**
  * Buyer quotes on the landing page.
  *
  * Rendered as a plain blockquote list with the source on every card, so a reader can tell
  * these were left on Etsy rather than here. No stars and no aggregate: see
- * `../data/reviews.js` for why the rating stays off the page.
+ * `../data/reviews` for why the rating stays off the page.
  *
  * @returns {React.JSX.Element} The testimonials section.
  */

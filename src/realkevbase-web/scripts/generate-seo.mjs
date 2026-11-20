@@ -34,10 +34,10 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { ACCENT, ACCENT_WASH, SITE_NAME, BRAND } from '../src/data/site.js'
-import { HOME_HERO } from '../src/data/home.js'
-import { HUBS } from '../src/data/hubs.js'
-import { HUB_LINKS } from '../src/data/hubLinks.js'
+import { ACCENT, ACCENT_WASH, SITE_NAME, BRAND } from '../src/data/site.ts'
+import { HOME_HERO } from '../src/data/home.ts'
+import { HUBS } from '../src/data/hubs.ts'
+import { HUB_LINKS } from '../src/data/hubLinks.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const DIST = resolve(HERE, '..', 'dist')
