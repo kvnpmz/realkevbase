@@ -41,7 +41,7 @@ public sealed class InMemoryProductCatalog : IProductCatalog
         {
             Id = Guid.Parse("d0e1fe4f-9b25-52db-89ae-e971cb68ad07"),
             Name = "New Apartment Checklist",
-            Description = "A first-apartment checklist to work through in a single pass while you walk the rooms, taking in living room, office, bathroom, kitchen prep, dining, cleaning, laundry, tools and bedroom, so the first shop covers what a flat needs on day one.",
+            Description = "A one-page first-apartment checklist that walks the whole flat in five dense columns, covering living, office, supplies, bathroom, toilet, prep, kitchen, utensils, pantry, dining, tableware, bedroom, cleaning, laundry, tools and utility so the first shop covers everything a move-in needs.",
             Price = 5.0m,
             Fulfillment = FulfillmentType.DigitalPdf,
             Category = "moving",
