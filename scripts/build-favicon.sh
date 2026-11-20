@@ -6,7 +6,7 @@
 # same gradient, same radius ratio, same weight — so the two match.
 #
 # The colours and initials are hardcoded because this runs without Node; they mirror BRAND
-# in src/realkevbase-web/src/data/site.js. Change one, change the other.
+# in src/realkevbase-web/src/data/site.ts. Change one, change the other.
 #
 # Usage: scripts/build-favicon.sh   (needs ImageMagick 7, writes into public/)
 set -euo pipefail

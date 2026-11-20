@@ -23,6 +23,10 @@
  * a shell without those markers means index.html was edited and the build must stop
  * rather than ship pages with the wrong head.
  *
+ * Requires Node >= 22.18: the copy lives in `src/data/*.ts` and this script imports it
+ * directly, which only works once type stripping is on by default. `package.json` pins the
+ * floor in `engines`, and `scripts/deploy.sh` refuses an older runtime before building.
+ *
  * Usage: node scripts/generate-seo.mjs [--catalog=<products.json>]
  *
  * Environment: SITE_URL (default https://realkevbase.com),
@@ -159,7 +163,7 @@ function toGuide(product) {
  * seconds of empty screen; a visitor arriving from a social link sees nothing for that long
  * and leaves. This block puts the name, the card copy, price, paper sizes and cover in the
  * HTML itself, so something real is on screen within a few hundred milliseconds — and there
- * is something for a crawler to read if the bundle never runs at all. `src/main.jsx` removes
+ * is something for a crawler to read if the bundle never runs at all. `src/main.tsx` removes
  * it the instant React is ready, so there is exactly one product on screen at a time.
  *
  * Everything is inline: the block has to render before any stylesheet or script loads, and
@@ -218,8 +222,8 @@ function guideSeed({ name, description, price, cover, pageSizes }) {
  * The home page was the one route with nothing in its body: a crawler that does not
  * execute JavaScript found `<div id="root"></div>` — no <h1>, no copy, nothing to rank —
  * even though the head carried the right title and canonical. The strings come from
- * `src/data/home.js`, the same module `HomePage` renders from, so the seeded hero and the
- * React hero cannot drift; `src/main.jsx` drops the block the moment the bundle boots, so a
+ * `src/data/home.ts`, the same module `HomePage` renders from, so the seeded hero and the
+ * React hero cannot drift; `src/main.tsx` drops the block the moment the bundle boots, so a
  * reader never sees the hero twice. Everything is inline because it has to paint before
  * any stylesheet, script or web font exists.
  *
@@ -401,6 +405,7 @@ async function loadCatalog(catalogFile) {
     throw new Error(
       `could not reach the catalog API at ${url} (${cause.message}); ` +
         'start the API or pass --catalog=<products.json>',
+      { cause },
     )
   }
 
@@ -674,7 +679,7 @@ ${hubNav}${sections}    </main>
  * Puts the static product block in front of the app root.
  *
  * It sits outside `#root` so React's first render cannot wipe it before there is a product
- * to replace it with; `src/main.jsx` removes the block itself once the bundle is running.
+ * to replace it with; `src/main.tsx` removes the block itself once the bundle is running.
  * The home page and the index get no seed, because neither shows one product.
  *
  * @param {string} shell Page HTML to extend.

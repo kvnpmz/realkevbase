@@ -16,6 +16,10 @@
  * Copy lives here rather than in the generator because it is editorial, and because the
  * hubs are the only pages in the collection whose text is not derived from a listing.
  */
+// Explicit `.ts` on purpose: this file is loaded by `scripts/generate-seo.mjs`, which runs
+// under Node with no bundler, and Node resolves relative specifiers literally — `./hubLinks`
+// would fail there even though Vite and tsc accept it. Every other import in `src/` stays
+// extensionless; this is the one tree the build script reaches into.
 import { HUB_LINKS } from './hubLinks.ts'
 import type { HubLink, HubSlug } from './hubLinks.ts'
 

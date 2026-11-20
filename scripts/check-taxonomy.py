@@ -30,7 +30,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TAXONOMY = os.path.join(ROOT, "scripts", "taxonomy.json")
 FAMILIES = os.path.join(ROOT, "zz_tp", "scripts", "families.py")
 DOCUMENTS = os.path.join(ROOT, "zz_tp", "documents")
-HUB_LINKS = os.path.join(ROOT, "src", "realkevbase-web", "src", "data", "hubLinks.js")
+HUB_LINKS = os.path.join(ROOT, "src", "realkevbase-web", "src", "data", "hubLinks.ts")
 
 CATEGORY = re.compile(r"^\s*category\s*=\s*\"([^\"]+)\"", re.M)
 
@@ -93,7 +93,7 @@ def main(argv: list[str] | None = None) -> int:
         only_shop = sorted(set(labels) - set(buckets))
         only_file = sorted(set(buckets) - set(labels))
         failures.append(
-            f"taxonomy.json and hubLinks.js disagree: {only_file} only in the file, "
+            f"taxonomy.json and hubLinks.ts disagree: {only_file} only in the file, "
             f"{only_shop} only in the shop"
         )
     for slug in {slug for slug in buckets if buckets.count(slug) > 1}:

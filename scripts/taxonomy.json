@@ -12,7 +12,7 @@
     "",
     "buckets lists the shelves the shop has, in display order, so a checker can catch a",
     "config.tl that names one the shop does not have, and a docs page that names one the",
-    "config never uses. The labels live in src/realkevbase-web/src/data/hubLinks.js; the two",
+    "config never uses. The labels live in src/realkevbase-web/src/data/hubLinks.ts; the two",
     "lists are asserted equal rather than copied.",
     "",
     "The four Etsy-era categories (healthy-living, money-budgeting, moving-out, guides) are",

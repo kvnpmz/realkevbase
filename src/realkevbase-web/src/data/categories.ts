@@ -10,6 +10,7 @@
  * row, the navbar, the home-page chips and the hub pages cannot disagree about a name.
  * Physical merch carries no category and is reachable only through `all` and `merch`.
  */
+// Explicit extension to match `./hubs.ts`, which Node loads directly — see the note there.
 import { HUB_LINKS } from './hubLinks.ts'
 import type { HubSlug } from './hubLinks.ts'
 

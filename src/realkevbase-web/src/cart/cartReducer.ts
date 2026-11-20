@@ -169,6 +169,9 @@ function mergeItem(items: CartItem[], incoming: CartItem): CartItem[] {
 export function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action?.type) {
     case 'cart/addItem':
+      // The dispatch sites are typed, but a plain object from JS or a future caller can
+      // still arrive without an item; ignore it rather than dereferencing undefined.
+      if (!action.item) return state
       return { ...state, items: mergeItem(state.items, action.item) }
 
     case 'cart/removeItem': {

@@ -197,6 +197,17 @@ deploy_web() {
   info "building web bundle (VITE_API_BASE_URL=$API_BASE_URL)"
   resolve_node || die "node/npm not found (install Node or set PATH)"
 
+  # `scripts/generate-seo.mjs` imports the copy modules in `src/data/*.ts` directly, which
+  # only works once Node strips types without a flag (>= 22.18). An older runtime fails
+  # after `vite build` has already written dist/, leaving a half-prerendered site; catch it
+  # here instead. `package.json` carries the same floor in `engines`.
+  local node_major node_minor
+  node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+  node_minor="$(node -p 'process.versions.node.split(".")[1]' 2>/dev/null || echo 0)"
+  if [ "$node_major" -lt 22 ] || { [ "$node_major" -eq 22 ] && [ "$node_minor" -lt 18 ]; }; then
+    die "node $(node --version 2>/dev/null) is too old: the SEO step imports src/data/*.ts and needs node >= 22.18"
+  fi
+
   local web_dir="$REPO_ROOT/src/realkevbase-web"
   [ -d "$web_dir" ] || die "web project not found at $web_dir"
 
@@ -205,6 +216,9 @@ deploy_web() {
   # silently fails to load its catalog. Fail loudly instead.
   [ -n "$API_BASE_URL" ] || die "API_BASE_URL must be set so it can be baked into the bundle"
 
+  # Two gates, two scopes: eslint covers .js/.mjs (the Cloudflare functions and the build
+  # scripts), while the SPA is TypeScript, where typescript-eslint cannot be installed
+  # beside TypeScript 7 — tsc is the only checker for src/. Neither replaces the other.
   ( cd "$web_dir" && npm run lint ) || die "eslint failed; fix before deploying"
   ( cd "$web_dir" && npm run typecheck ) || die "tsc failed; fix the types before deploying"
   ( cd "$web_dir" && VITE_API_BASE_URL="$API_BASE_URL" \
