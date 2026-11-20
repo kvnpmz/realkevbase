@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles'
 
-import { ACCENT } from './data/site.js'
+import { ACCENT } from './data/site'
 
 /**
  * Storefront theme: warm, high-contrast, conversion-focused.
@@ -61,8 +61,13 @@ export const theme = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: { borderRadius: 999, paddingInline: 20, paddingBlock: 9 },
-        containedPrimary: { '&:hover': { backgroundColor: '#000000' } },
       },
+      variants: [
+        {
+          props: { variant: 'contained', color: 'primary' },
+          style: { '&:hover': { backgroundColor: '#000000' } },
+        },
+      ],
     },
     MuiCard: {
       defaultProps: { elevation: 0 },

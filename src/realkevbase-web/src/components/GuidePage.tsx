@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 
 import { Link, useParams } from 'react-router-dom'
 
@@ -11,24 +12,22 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PauseRoundedIcon from '@mui/icons-material/PauseRounded'
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded'
 
-import { trackEvent } from '../analytics/ga.js'
-import { readInlineProduct } from '../api/catalogApi.js'
-import { useCartContext } from '../cart/cartContext.js'
-import { FULFILLMENT } from '../cart/cartReducer.js'
-import { formatMoney } from '../cart/formatMoney.js'
-import { CATEGORIES } from '../data/categories.js'
-import { SITE_NAME, SITE_TITLE } from '../data/site.js'
+import { trackEvent } from '../analytics/ga'
+import { readInlineProduct } from '../api/catalogApi'
+import type { CatalogProduct } from '../api/catalogApi'
+import { useCartContext } from '../cart/cartContext'
+import { FULFILLMENT } from '../cart/cartReducer'
+import { formatMoney } from '../cart/formatMoney'
+import { CATEGORIES } from '../data/categories'
+import { SITE_NAME, SITE_TITLE } from '../data/site'
 
 /** Category value to its storefront label. */
-const CATEGORY_LABELS = new Map(CATEGORIES.map((option) => [option.value, option.label]))
+const CATEGORY_LABELS = new Map<string, string>(CATEGORIES.map((option) => [option.value, option.label]))
 
 /**
  * Promises shown under the price, all of them true of the product being viewed.
- *
- * @param {readonly string[]} pageSizes Paper sizes the API says the listing is sold at.
- * @returns {{ icon: typeof BoltRoundedIcon, copy: string }[]} Promise rows.
  */
-const guidePromises = (pageSizes) => [
+const guidePromises = (pageSizes: readonly string[]): { icon: typeof BoltRoundedIcon; copy: string }[] => [
   { icon: BoltRoundedIcon, copy: 'Instant download the moment your payment clears' },
   { icon: CheckRoundedIcon, copy: `Prints on ${pageSizes.join(' and ')} paper` },
   { icon: CheckRoundedIcon, copy: 'Secure link stays live for 24 hours' },
@@ -36,11 +35,14 @@ const guidePromises = (pageSizes) => [
 
 /**
  * Centred message used by the loading, error and not-found states.
- *
- * @param {{ title: string, copy?: string, action?: React.ReactNode }} props Component props.
- * @returns {React.JSX.Element} The message block.
  */
-function PageMessage({ title, copy, action }) {
+interface PageMessageProps {
+  title: string
+  copy?: string
+  action?: ReactNode
+}
+
+function PageMessage({ title, copy, action }: PageMessageProps) {
   return (
     // Full height on purpose: this is what a guide shows while the catalog is still in
     // flight, and a short message left the site footer sitting in the first screen, so the
@@ -68,20 +70,17 @@ function PageMessage({ title, copy, action }) {
  *
  * Kept separate from the route so its state resets when the visitor moves from one guide
  * to another without the component unmounting.
- *
- * @param {{ product: import('../hooks/useCatalog.js').CatalogProduct }} props Component props.
- * @returns {React.JSX.Element} The detail layout.
  */
-function GuideDetail({ product }) {
+function GuideDetail({ product }: { product: CatalogProduct }) {
   const { addItem } = useCartContext()
   const [activeSlot, setActiveSlot] = useState(0)
-  const [failedSlots, setFailedSlots] = useState(() => new Set())
+  const [failedSlots, setFailedSlots] = useState<Set<number>>(() => new Set())
   const [videoFailed, setVideoFailed] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [videoArmed, setVideoArmed] = useState(false)
-  const addedTimer = useRef(null)
-  const videoRef = useRef(null)
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
   // The API states the paper sizes the listing is laid out for; fall back to the Letter
   // edition, which every listing has.
@@ -91,11 +90,13 @@ function GuideDetail({ product }) {
   const currentSlot = availableSlots.includes(activeSlot) ? activeSlot : (availableSlots[0] ?? null)
   const currentUrl = currentSlot === null ? null : slots[currentSlot]
   const { from, to, ink } = product.accent
-  const categoryLabel = CATEGORY_LABELS.get(product.category) ?? 'Digital PDF'
+  const categoryLabel = product.category ? (CATEGORY_LABELS.get(product.category) ?? 'Digital PDF') : 'Digital PDF'
 
   // The clip is the page itself, so it only stands in for slot 0. The other slots are the
   // zoom, tablet and A4 renders, which have no clip of their own.
   const showVideo = Boolean(product.videoUrl) && currentSlot === 0 && !videoFailed
+  // Narrowed once here: the JSX below mounts the clip only when there is one to mount.
+  const videoUrl = showVideo ? product.videoUrl : null
 
   const mediaSx = {
     // Absolute positioning is what makes the percentage height resolve; as a grid item the
@@ -133,7 +134,7 @@ function GuideDetail({ product }) {
     return () => observer.disconnect()
   }, [showVideo, videoArmed])
 
-  const markFailed = (slot) => {
+  const markFailed = (slot: number) => {
     setFailedSlots((previous) => new Set(previous).add(slot))
   }
 
@@ -214,11 +215,11 @@ function GuideDetail({ product }) {
               background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
             }}
           >
-            {showVideo && videoArmed ? (
+            {videoUrl && videoArmed ? (
               <Box
                 component="video"
                 ref={videoRef}
-                src={product.videoUrl}
+                src={videoUrl}
                 poster={slots[0]}
                 muted
                 loop
@@ -398,15 +399,24 @@ function GuideDetail({ product }) {
  *
  * @param {Object} props Component props.
  * @param {{
- *   products: import('../hooks/useCatalog.js').CatalogProduct[],
+ *   products: import('../hooks/useCatalog').CatalogProduct[],
  *   loading: boolean,
  *   error: Error | null,
  *   reload: () => void,
  * }} props.catalog Catalog state from `useCatalog`.
- * @returns {React.JSX.Element} The guide page.
  */
-export function GuidePage({ catalog }) {
-  const { slug } = useParams()
+export interface GuidePageProps {
+  /** Catalog state from `useCatalog`. */
+  catalog: {
+    products: CatalogProduct[]
+    loading: boolean
+    error: Error | null
+    reload: () => void
+  }
+}
+
+export function GuidePage({ catalog }: GuidePageProps) {
+  const { slug = '' } = useParams()
   const { products, loading, error, reload } = catalog
 
   // The build bakes this guide's own catalog record into the page, so the hero can paint

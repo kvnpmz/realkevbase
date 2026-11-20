@@ -11,7 +11,14 @@
  * Pick quotes about the PDF and what it contains. "Fast delivery" reads as nonsense for a
  * download, and a quote with a caveat belongs in a support reply, not on the storefront.
  */
-export const REVIEWS = [
+/** One buyer quote shown on the landing page. */
+export interface Review {
+  readonly quote: string
+  readonly name: string
+  readonly detail: string
+}
+
+export const REVIEWS: readonly Review[] = [
   {
     quote:
       'This is a pretty comprehensive guide for someone who is just starting to learn to eat a low potassium diet. It was quick and easy to download and print for reference.',

@@ -6,23 +6,95 @@
  * storage paths, so no storage detail can leak into the browser bundle.
  */
 
+import type { Fulfillment } from '../cart/cartReducer'
+import { isRecord, readString } from './json'
+
 /** Default API origin. Empty means "same origin". */
 const ENV_BASE_URL =
-  typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_API_BASE_URL ?? '' : ''
+  typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.VITE_API_BASE_URL ?? '') : ''
 
 /** Backend routes this client talks to. */
 export const CATALOG_ROUTES = Object.freeze({
   products: '/api/products',
 })
 
+/** The routes a catalog client instance calls. */
+export interface CatalogRoutes {
+  products: string
+}
+
+/** The card artwork colours a product carries. */
+export interface ProductAccent {
+  from: string
+  to: string
+  ink: string
+}
+
+/**
+ * A product exactly as the card grid renders it: catalog data from the API plus the
+ * presentation values the grid needs.
+ */
+export interface CatalogProduct {
+  /** Product identifier sent to checkout. */
+  id: string
+  /** Display name. */
+  name: string
+  /** Short sales copy. */
+  description: string
+  /** Price in USD. */
+  unitPrice: number
+  /** Delivery type. */
+  fulfillment: Fulfillment
+  /** Browse category, null for merch. */
+  category: string | null
+  /** Listing that backs the PDF, null for merch. */
+  listingId: string | null
+  /** URL-friendly product key used by the detail route. */
+  slug: string | null
+  /** Absolute URL of the product artwork, when published. */
+  thumbnailUrl: string | null
+  /** Absolute URL of the gallery clip, when one was published. */
+  videoUrl: string | null
+  /** Absolute URLs of the published detail gallery slots, empty for merch. */
+  galleryUrls: string[]
+  /** Paper sizes the listing is laid out for, null while unknown. */
+  pageSizes: string[] | null
+  /** Short media-overlay label. */
+  badge: string
+  /** Delivery promise shown on the card. */
+  feature: string
+  /** Card artwork colors. */
+  accent: ProductAccent
+}
+
+/** Options accepted by `CatalogApiError`. */
+export interface CatalogApiErrorOptions {
+  /** HTTP status code, or 0 for network/transport failures. */
+  status?: number
+  /** Underlying failure, kept for logging. */
+  cause?: unknown
+}
+
+/** Constructor options for `createCatalogApi`, mainly for tests. */
+export interface CatalogApiOptions {
+  baseUrl?: string
+  fetchImpl?: typeof fetch
+  routes?: CatalogRoutes
+}
+
+/** The catalog client the hook talks to. */
+export interface CatalogApi {
+  getCatalog(options?: { signal?: AbortSignal }): Promise<{ products: CatalogProduct[] }>
+}
+
 /**
  * Delivery promises shown on a card. These are presentation strings, derived from the
  * fulfillment type the API returns rather than stored per product.
  */
-const DELIVERY_COPY = Object.freeze({
+const DELIVERY_COPY: Record<Fulfillment, { badge: string; feature: string }> = {
   DigitalPdf: { badge: 'Instant PDF', feature: 'Download link valid for 24 hours' },
   PhysicalMerch: { badge: 'Ships worldwide', feature: 'Printed and shipped in 2–4 days' },
-})
+}
 
 /**
  * Gallery slots the API can expose per digital product, mirroring
@@ -37,59 +109,49 @@ const GALLERY_SLOT_COUNT = 6
  * Error raised when the catalog API cannot complete a request.
  */
 export class CatalogApiError extends Error {
-  /**
-   * @param {string} message Human-readable message safe to show in the UI.
-   * @param {{ status?: number, cause?: unknown }} [options] HTTP status, or 0 for transport failures.
-   */
-  constructor(message, { status = 0, cause } = {}) {
+  /** HTTP status code, or 0 for network/transport failures. */
+  status: number
+
+  constructor(message: string, { status = 0, cause }: CatalogApiErrorOptions = {}) {
     super(message, cause === undefined ? undefined : { cause })
     this.name = 'CatalogApiError'
-    /** @type {number} HTTP status code, or 0 for network/transport failures. */
     this.status = status
   }
 }
 
 /**
  * Joins an API origin and a route without doubling slashes.
- * @param {string} baseUrl Origin, possibly empty or with a trailing slash.
- * @param {string} path Route beginning with a slash.
- * @returns {string} Absolute or same-origin URL.
+ * @param baseUrl Origin, possibly empty or with a trailing slash.
+ * @param path Route beginning with a slash.
+ * @returns Absolute or same-origin URL.
  */
-function joinUrl(baseUrl, path) {
+function joinUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/+$/, '')}${path}`
 }
 
 /**
  * Creates a catalog API client.
  *
- * @param {{
- *   baseUrl?: string,
- *   fetchImpl?: typeof fetch,
- *   routes?: { products: string },
- * }} [options] Overrides, mainly for tests.
- * @returns {{
- *   getCatalog: (options?: { signal?: AbortSignal }) => Promise<{
- *     products: import('../hooks/useCatalog.js').CatalogProduct[],
- *   }>,
- * }} The configured client.
+ * @param options Overrides, mainly for tests.
+ * @returns The configured client.
  */
 export function createCatalogApi({
   baseUrl = ENV_BASE_URL,
   fetchImpl = globalThis.fetch,
   routes = CATALOG_ROUTES,
-} = {}) {
+}: CatalogApiOptions = {}): CatalogApi {
   if (typeof fetchImpl !== 'function') {
     throw new TypeError('A fetch implementation is required to create the catalog API client.')
   }
 
   /**
    * Performs a GET request and parses a JSON array response.
-   * @param {string} path Route to call.
-   * @param {{ signal?: AbortSignal }} [options] Abort support.
-   * @returns {Promise<unknown[]>} Parsed array.
+   * @param path Route to call.
+   * @param options Abort support.
+   * @returns Parsed, unvalidated array.
    */
-  async function getArray(path, { signal } = {}) {
-    let response
+  async function getArray(path: string, { signal }: { signal?: AbortSignal } = {}): Promise<unknown[]> {
+    let response: Response
     try {
       response = await fetchImpl(joinUrl(baseUrl, path), {
         method: 'GET',
@@ -107,7 +169,7 @@ export function createCatalogApi({
       throw new CatalogApiError(`The catalog service returned ${response.status}.`, { status: response.status })
     }
 
-    const payload = await response.json()
+    const payload: unknown = await response.json()
     return Array.isArray(payload) ? payload : []
   }
 
@@ -115,10 +177,8 @@ export function createCatalogApi({
     /**
      * Fetches the products for sale.
      *
-     * @param {{ signal?: AbortSignal }} [options] Abort support for an unmounted component.
-     * @returns {Promise<{
-     *   products: import('../hooks/useCatalog.js').CatalogProduct[],
-     * }>} Normalized products.
+     * @param options Abort support for an unmounted component.
+     * @returns Normalized products.
      * @throws {CatalogApiError} When the backend rejects the request or is unreachable.
      */
     async getCatalog({ signal } = {}) {
@@ -145,23 +205,23 @@ export function createCatalogApi({
  * SPA can navigate from one guide to another without a new document), or when it is not
  * valid JSON — in every case the caller falls back to waiting for the catalog.
  *
- * @param {string} slug Guide slug taken from the route.
- * @returns {import('../hooks/useCatalog.js').CatalogProduct | null} Inline product, or null.
+ * @param slug Guide slug taken from the route.
+ * @returns Inline product, or null.
  */
-export function readInlineProduct(slug) {
+export function readInlineProduct(slug: string): CatalogProduct | null {
   if (typeof document === 'undefined') return null
 
   const node = document.getElementById('guide-product')
   if (!node) return null
 
-  let payload
+  let payload: unknown
   try {
     payload = JSON.parse(node.textContent ?? '')
   } catch {
     return null
   }
 
-  if (!payload || payload.slug !== slug || !payload.product) return null
+  if (!isRecord(payload) || payload.slug !== slug || !isRecord(payload.product)) return null
 
   const [product] = normalizeProducts([payload.product], ENV_BASE_URL)
   return product ?? null
@@ -175,19 +235,18 @@ export function readInlineProduct(slug) {
  * waiting for that fetch. Two copies of this mapping would drift the first time a field is
  * added.
  *
- * @param {unknown[]} rawProducts Records as `GET /api/products` returns them.
- * @param {string} baseUrl Origin the records came from, used to resolve relative routes.
- * @returns {import('../hooks/useCatalog.js').CatalogProduct[]} Normalised products.
+ * @param rawProducts Records as `GET /api/products` returns them.
+ * @param baseUrl Origin the records came from, used to resolve relative routes.
+ * @returns Normalised products.
  */
-export function normalizeProducts(rawProducts, baseUrl) {
+export function normalizeProducts(rawProducts: unknown[], baseUrl: string): CatalogProduct[] {
   return rawProducts
-    .filter((entry) => entry && typeof entry === 'object')
-    .map((entry) => /** @type {Record<string, unknown>} */ (entry))
-    .map((record) => {
-      const id = typeof record.id === 'string' ? record.id : ''
-      const fulfillment = record.fulfillment === 'PhysicalMerch' ? 'PhysicalMerch' : 'DigitalPdf'
-      const accent = /** @type {Record<string, unknown>} */ (record.accent ?? {})
-      const listingId = typeof record.listingId === 'string' ? record.listingId : null
+    .filter(isRecord)
+    .map((record): CatalogProduct => {
+      const id = readString(record, 'id') ?? ''
+      const fulfillment: Fulfillment = record.fulfillment === 'PhysicalMerch' ? 'PhysicalMerch' : 'DigitalPdf'
+      const accent = isRecord(record.accent) ? record.accent : {}
+      const listingId = readString(record, 'listingId') ?? null
       // Artwork is resolved against the storefront's own origin, not the API's: the Pages
       // Function at /api/* proxies these reads and caches them at the edge, which costs a
       // round trip instead of the API's ~1.3s before the first byte.
@@ -198,7 +257,7 @@ export function normalizeProducts(rawProducts, baseUrl) {
       // Contentful Paint element on a guide page, so this is the one image whose host
       // matters: the API would answer it after a second of TLS. Merch keeps its own route,
       // because nothing publishes a static copy for a product that is not a PDF.
-      const thumbnailUrl =
+      const thumbnail =
         fulfillment === 'DigitalPdf' && id
           ? `/art/${id}.webp`
           : typeof record.thumbnailUrl === 'string' && record.thumbnailUrl
@@ -206,61 +265,56 @@ export function normalizeProducts(rawProducts, baseUrl) {
             : null
       // The API returns a relative route, not a storage URL, so the browser is redirected
       // to the clip rather than handed a blob name or a signature.
-      const videoUrl =
-        typeof record.videoUrl === 'string' && record.videoUrl
-          ? joinUrl(baseUrl, record.videoUrl)
-          : null
+      const videoUrl = typeof record.videoUrl === 'string' && record.videoUrl ? joinUrl(baseUrl, record.videoUrl) : null
       // The API lists the slots it can actually serve, so the detail page no longer asks
       // for renders a listing never made. A null list means storage could not be read;
       // fall back to probing every slot and dropping the ones that answer 404.
       const publishedSlots = Array.isArray(record.gallerySlots)
         ? record.gallerySlots.filter(
-            (slot) => Number.isInteger(slot) && slot >= 0 && slot < GALLERY_SLOT_COUNT,
+            (slot): slot is number =>
+              typeof slot === 'number' && Number.isInteger(slot) && slot >= 0 && slot < GALLERY_SLOT_COUNT,
           )
         : null
-      const availableSlots =
-        publishedSlots ?? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) => slot)
+      const availableSlots = publishedSlots ?? Array.from({ length: GALLERY_SLOT_COUNT }, (_, slot) => slot)
 
       // Slot 0 renders the same bytes the card already fetched, so it reuses that exact
       // URL: the browser cache serves it and the detail page paints without a new request.
       const galleryUrls =
         fulfillment === 'DigitalPdf' && id
           ? availableSlots.map((slot) =>
-              slot === 0 && thumbnailUrl
-                ? thumbnailUrl
-                : joinUrl(artworkBase, `/api/products/${id}/images/${slot}`),
+              slot === 0 && thumbnail ? thumbnail : joinUrl(artworkBase, `/api/products/${id}/images/${slot}`),
             )
           : []
 
       // Paper sizes are a product fact, not a guess: the API only adds A4 when that
       // edition is published beside the Letter PDF.
       const pageSizes = Array.isArray(record.pageSizes)
-        ? record.pageSizes.filter((size) => typeof size === 'string' && size.length > 0)
+        ? record.pageSizes.filter((size): size is string => typeof size === 'string' && size.length > 0)
         : []
 
       return {
         id,
-        name: typeof record.name === 'string' ? record.name : '',
-        description: typeof record.description === 'string' ? record.description : '',
+        name: readString(record, 'name') ?? '',
+        description: readString(record, 'description') ?? '',
         unitPrice: typeof record.price === 'number' ? record.price : Number(record.price) || 0,
         fulfillment,
-        category: typeof record.category === 'string' ? record.category : null,
+        category: readString(record, 'category') ?? null,
         listingId,
         // The listing id is a stable, human-readable key taken from the PDF's file
         // name, so it makes a better URL than the product GUID.
         slug: listingId ? listingId.replaceAll('_', '-') : null,
         // The API returns relative paths so the bundle stays portable; they were
         // resolved against the same origin the catalog came from.
-        thumbnailUrl,
+        thumbnailUrl: thumbnail,
         videoUrl,
         galleryUrls,
         pageSizes: pageSizes.length > 0 ? pageSizes : null,
         badge: DELIVERY_COPY[fulfillment].badge,
         feature: DELIVERY_COPY[fulfillment].feature,
         accent: {
-          from: typeof accent.from === 'string' ? accent.from : '#ECEFF3',
-          to: typeof accent.to === 'string' ? accent.to : '#D4DAE2',
-          ink: typeof accent.ink === 'string' ? accent.ink : '#334155',
+          from: readString(accent, 'from') ?? '#ECEFF3',
+          to: readString(accent, 'to') ?? '#D4DAE2',
+          ink: readString(accent, 'ink') ?? '#334155',
         },
       }
     })

@@ -16,16 +16,24 @@
  * Copy lives here rather than in the generator because it is editorial, and because the
  * hubs are the only pages in the collection whose text is not derived from a listing.
  */
-import { HUB_LINKS } from './hubLinks.js'
+import { HUB_LINKS } from './hubLinks.ts'
+import type { HubLink, HubSlug } from './hubLinks.ts'
+
+/** One collection page: its shelf, its label, and the copy the static page is built from. */
+export interface Hub {
+  readonly slug: HubSlug
+  readonly label: string
+  readonly title: string
+  readonly metaDescription: string
+  readonly lede: string
+  readonly intro: readonly string[]
+}
 
 /**
  * The label for a collection, taken from the shared link list so the navbar, the home page
  * chips and the hub page itself can never disagree about what a hub is called.
- *
- * @param {string} slug Hub slug.
- * @returns {string} Its label.
  */
-function hubLabel(slug) {
+function hubLabel(slug: HubSlug): HubLink['label'] {
   const match = HUB_LINKS.find((hub) => hub.slug === slug)
   if (!match) throw new Error(`no hub link is defined for ${slug}`)
   return match.label
@@ -156,4 +164,4 @@ export const HUBS = [
       'The first foods tracker is the other half. It names the 150 foods worth offering before a first birthday, in roughly the order they are introduced, with a dot beside each common allergen and a space to note what happened, so a reaction is written down on the day it happens rather than remembered from a photo.',
     ],
   },
-]
+] satisfies readonly Hub[]

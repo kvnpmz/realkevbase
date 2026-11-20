@@ -20,12 +20,20 @@ import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded'
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 
-import { useCartContext } from '../cart/cartContext.js'
-import { FULFILLMENT } from '../cart/cartReducer.js'
-import { formatMoney } from '../cart/formatMoney.js'
+import { useCartContext } from '../cart/cartContext'
+import { FULFILLMENT } from '../cart/cartReducer'
+import type { CartItem } from '../cart/cartReducer'
+import { formatMoney } from '../cart/formatMoney'
 
-/** @param {{ label: string, value: string, strong?: boolean, muted?: boolean }} props */
-function SummaryRow({ label, value, strong = false, muted = false }) {
+/** One label/value row in the totals block. */
+interface SummaryRowProps {
+  label: string
+  value: string
+  strong?: boolean
+  muted?: boolean
+}
+
+function SummaryRow({ label, value, strong = false, muted = false }: SummaryRowProps) {
   return (
     <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
       <Typography
@@ -48,12 +56,7 @@ function SummaryRow({ label, value, strong = false, muted = false }) {
   )
 }
 
-/**
- * A single cart line with quantity controls, line total and fulfillment hint.
- * @param {{ item: import('../cart/cartReducer.js').CartItem }} props Component props.
- * @returns {React.JSX.Element} The cart line.
- */
-function CartLine({ item }) {
+function CartLine({ item }: { item: CartItem }) {
   const { increment, decrement, removeItem } = useCartContext()
   const isDigital = item.fulfillment === FULFILLMENT.DIGITAL_PDF
 

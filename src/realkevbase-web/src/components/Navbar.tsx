@@ -19,10 +19,10 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 
 import { Link } from 'react-router-dom'
 
-import { useCartContext } from '../cart/cartContext.js'
-import { formatMoney } from '../cart/formatMoney.js'
-import { BRAND } from '../data/site.js'
-import { HUB_LINKS } from '../data/hubLinks.js'
+import { useCartContext } from '../cart/cartContext'
+import { formatMoney } from '../cart/formatMoney'
+import { BRAND } from '../data/site'
+import { HUB_LINKS } from '../data/hubLinks'
 
 /** Primary navigation targets, absolute so they also work from a guide page. */
 const NAV_LINKS = [
@@ -38,8 +38,8 @@ const NAV_LINKS = [
  */
 export function Navbar() {
   const { totals, openCart } = useCartContext()
-  const [menuAnchor, setMenuAnchor] = useState(null)
-  const [collectionsAnchor, setCollectionsAnchor] = useState(null)
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const [collectionsAnchor, setCollectionsAnchor] = useState<HTMLElement | null>(null)
 
   const isMenuOpen = Boolean(menuAnchor)
   const isCollectionsOpen = Boolean(collectionsAnchor)

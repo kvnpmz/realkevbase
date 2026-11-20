@@ -2,13 +2,15 @@ import { StrictMode } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import App from './App.jsx'
-import { initAnalytics } from './analytics/ga.js'
+import App from './App'
+import { initAnalytics } from './analytics/ga'
 
 // Loads Google Analytics only when VITE_GA_ID was set at build time.
 initAnalytics()
 
-const root = createRoot(document.getElementById('root'))
+const container = document.getElementById('root')
+if (!container) throw new Error('index.html is missing the #root element.')
+const root = createRoot(container)
 
 // Guide pages ship a static product block and `/` ships its hero, so something real is on
 // screen while this bundle is still downloading. Now that it is running, drop them: React
