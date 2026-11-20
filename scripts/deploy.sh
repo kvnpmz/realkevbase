@@ -206,6 +206,7 @@ deploy_web() {
   [ -n "$API_BASE_URL" ] || die "API_BASE_URL must be set so it can be baked into the bundle"
 
   ( cd "$web_dir" && npm run lint ) || die "eslint failed; fix before deploying"
+  ( cd "$web_dir" && npm run typecheck ) || die "tsc failed; fix the types before deploying"
   ( cd "$web_dir" && VITE_API_BASE_URL="$API_BASE_URL" \
       VITE_GA_ID="$GA_MEASUREMENT_ID" \
       npm run build ) || die "vite build failed"
